@@ -24,10 +24,14 @@
 # 1. IaC 디렉토리로 이동
 cd ~/environment/m2m-travelbuddy/infrastructure
 
-# 2. npm install && npm run build
-npm install && npm run build
+# 2. Upgrade CDK
+npm uninstall -g aws-cdk
+npm install -g aws-cdk
 
-# 3. AWS CDK Bootstrap
+# 3. npm install package dependencies
+npm install
+
+# 4. AWS CDK Bootstrap
 cdk bootstrap
 
 # 4. CDK synthesize & deplloy
