@@ -1,0 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelbuddy
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: travelbuddy
+  template:
+    metadata:
+      labels:
+        app: travelbuddy
+    spec:
+      containers:
+      - name: travelbuddy
+        image: 488861987964.dkr.ecr.ap-northeast-1.amazonaws.com/travelbuddy:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 8080
+        env:
+        - name: JDBC_CONNECTION_STRING
+          value: "jdbc:mysql://travelbuddyrds-dbinstance-d6nozovfnjup.cpcqnyioatys.ap-northeast-1.rds.amazonaws.com:3306/travelbuddy?useSSL=false"
+        - name: JDBC_UID
+          value: "root"
+        - name: JDBC_PWD
+          value: "labpassword"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

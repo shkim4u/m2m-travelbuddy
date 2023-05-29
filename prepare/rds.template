@@ -1,0 +1,67 @@
+Parameters:
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+    Description: VPC ID to use
+  PrivateSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Comma separated list of private subnet IDs
+Resources:
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: M2M/RDSSecurityGroup
+      GroupName: DBSecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      SecurityGroupIngress:
+#        - CidrIp: 0.0.0.0/0
+        - CidrIp:
+          - Fn::ImportValue:
+              'Fn::Sub': 'M2MNetworkStackVPCCidr'
+          Description: From the current VPC
+          FromPort: 3306
+          IpProtocol: tcp
+          ToPort: 3306
+      VpcId:
+        Ref: VpcId
+  DBInstanceSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for DBInstance database
+      SubnetIds: !Ref PrivateSubnetIds
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+#      DBInstanceClass: db.t2.small
+      DBInstanceClass: db.m5.xlarge
+      AllocatedStorage: "5"
+      AutoMinorVersionUpgrade: false
+      BackupRetentionPeriod: 3
+      CopyTagsToSnapshot: true
+      DBName: travelbuddy
+      DBSubnetGroupName:
+        Ref: DBInstanceSubnetGroup
+      DeletionProtection: false
+      Engine: mysql
+      EngineVersion: "8.0"
+      MasterUsername: root
+      MasterUserPassword: labpassword
+      MultiAZ: false
+      Port: "3306"
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: gp2
+      VPCSecurityGroups:
+        - Fn::GetAtt:
+            - RDSSecurityGroup
+            - GroupId
+    UpdateReplacePolicy: Snapshot
+Outputs:
+  RDSEndpoint:
+    Description: RDS database endpoint
+    Value:
+      Fn::GetAtt:
+        - DBInstance
+        - Endpoint.Address
