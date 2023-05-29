@@ -1,15 +1,54 @@
 # TravelBuddy 컨테이너화하기
+앞서 우리가 CDK를 배포한 자원에는 EKS 클러스터와 더불어 빌드 및 전달 (Build and Delivery) 파이프라인도 포함되어 있습니다.
 
-이 실습에서는 TravelBuddy 애플리케이션을 컨테이너화 하는 방법을 학습니다. 기존에 운영중인 Java와 maven을 이용하는 TravelBuddy 애플리케이션이 제공되므로, 우리는 처음부터 애플리케이션을 빌드하는 대신 컨테이너화 하는 것에만 집중하여 학습을 진행합니다.
+우리는 이 파이프라인을 통해 TravelBuddy를 빌드하고 컨테이너화 (Containerize)하여 AWS의 컨테이너 레지스트리 서비스인 ECR (Elastic Container Registry)의 리포지터리로 전달할 예정입니다.
+
+TravelBuddy 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제공하므로, 우리는 애플리케이션을 빌드하는 새로운 Scheme을 구성하는 대신 기존의 빌드 툴인 Maven을 이용하면서 컨테이너화 하는 것에만 집중하여 실습을 진행합니다.
 
 ## Agenda
-
 - 준비하기
 - TravelBuddy 프로젝트 살펴보기
 - 바이너리 및 컨테이너 이미지 빌드하기
 - ECR에 이미지 푸시하기
 
 ## 준비하기
+1. 먼저 어플리케이션의 소스 리포지터리를 확인합니다. 이 리포지터리에 소스 코드가 푸시되면 빌드 및 전달 파이프라인이 트리거되어 소스 코드를 빌드하고 이로부터 컨테이너 이미지를 생성합니다. 그리고 생성된 컨테이너 이미지를 ECR 리포지터리에 푸시합니다.
+   1. CodeCommit > "M2M-BuildAndDeliveryStack-SourceRepository"
+   ![빌드 CodeCommit 리포지터리](./assets/build-codecommit-repository.png)
+   2. 위 그림과 같이 "HTTPS 복제"를 클릭하여 Git 리포지터리 주소를 클립보드에 복사합니다.
+2. TravelBuddy 소스 코드를 CodeCommit 리포지터리에 연결
+   1. (참고) 우리는 이미 실습 가이드 및 소스 코드 전체를 가진 Git Repository 내에서 작업하고 있으므로 아래와 같이 서브 디렉토리 (어플리케이션 소스 코드)를 또 다른 Git Repository로 연결하면 Git 관리에 다소 혼란이 생길 수 있습니다. 하지만 전체 Git 경로는 추가적인 Git 관리 작업이 없음을 가정하고 이렇게 수행하도록 합니다.
+   2. (참고) Git으로 관리되는 리포지터리의 하위 디렉토리를 또 다른 Git 리포지터리와 연계하는 대표적인 방법은 Git Submodule 기법을 활용하는 것입니다. 이에 대해서는 다음을 참고하십시요 - [Git Submodule (from Atlassian)](https://www.atlassian.com/git/tutorials/git-submodule) /  [7.11 Git Tools - Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+```bash
+# 1. 소스 경로로 이동
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build/
+
+# 2. git 연결
+git init
+git branch -M main
+git remote add origin <1에서 복사한 CodeCommit Git 리포지터리 주소>
+# (예)
+# git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/M2M-BuildAndDeliveryStack-SourceRepository
+
+# 3. Git 스테이징 영역에 파일을 추가합니다.
+git add .
+
+# 4. Commit 및 Push합니다.
+git commit -m "First commit."
+git push --set-upstream origin main
+```
+
+3. CodeCommit 리포지터리에 소스 코드가 푸시되었음을 확인합니다.<br>
+![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed.png)
+
+4. 또한 빌드 파이프라인도 트리거되어 실행됨을 확인합니다. 다만, Build Spec이 정의되어 있지 않아 파이프라인은 실패하였을 것입니다.
+![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed.png)<br>
+![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason.png)
+
+
+---
+
+
 
 먼저 다음과 같이 `~/environment`에 [TravelBuddy.zip](https://workshops.devax.academy/monoliths-to-microservices/module1/files/TravelBuddy.zip) 파일을 받아서 압축해제합니다.
 

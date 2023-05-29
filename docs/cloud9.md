@@ -225,3 +225,8 @@ echo "export ACCOUNT_ID=${ACCOUNT_ID}" | tee -a ~/.bash_profile
 curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash
 df -h
 ```
+
+## 실습 가이드 및 소스 리포지터리 받기 (git clone)
+```bash
+git clone https://github.com/shkim4u/m2m-travelbuddy.git
+```

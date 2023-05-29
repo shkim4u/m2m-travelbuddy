@@ -46,7 +46,7 @@ Agenda
 
 ### 실습 1: TravelBuddy 애플리케이션 컨테이너화, 빌드 및 전달 (ECR 푸시)
 
-- [TravelBuddy 컨테이너화](./docs/containerize.md) 내용에 따라서 컨테이너 이미지를 생성합니다.
+- [TravelBuddy 컨테이너화, 빌드 및 전달](./docs/containerize.md) 내용에 따라서 컨테이너 이미지를 생성합니다.
 
 ### 실습 2: Database 구성
 
