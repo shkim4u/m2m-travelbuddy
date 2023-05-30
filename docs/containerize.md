@@ -45,12 +45,12 @@ git push --set-upstream origin main
 ![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed.png)<br>
 ![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason.png)
 
+우리는 여기서 잠깐 멈추고 프로젝트를 살펴봄으로써 빌드 파이프라인에서 필요로 하는 Build Spec을 어떻게 구성할지 단서를 얻도록 하겠습니다.   
 
 ---
 
+우리는 이미 아래 경로에 TravelBuddy 전체 프로젝트 파일을 가지고 있으므로, 이를 살펴보도록 하겠습니다.
 
-
-먼저 다음과 같이 `~/environment`에 [TravelBuddy.zip](https://workshops.devax.academy/monoliths-to-microservices/module1/files/TravelBuddy.zip) 파일을 받아서 압축해제합니다.
 
 ```bash
 # 폴더 이동
