@@ -174,7 +174,7 @@ export class EksStack extends Stack {
     );
 
     /*
-     * Install helm chart for ALB ingress controller.
+     * Install helm chart for cert-manager.
      * https://cert-manager.io/docs/release-notes/release-notes-1.12/
      */
     eksCluster.addHelmChart(
@@ -188,6 +188,39 @@ export class EksStack extends Stack {
         version: "v1.12.1",
         values: {
           installCRDs: true
+        }
+      }
+    );
+
+    /*
+     * Install ArgoCD with helm.
+     * Command to change Service Type: ClusterIP -> LoadBalancer
+     * kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+     *
+     * References:
+     * - https://artifacthub.io/packages/helm/argo/argo-cd
+     * - https://argo-cd.readthedocs.io/en/stable/getting_started/
+     * - https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/
+     * - https://github.com/argoproj/argo-helm/blob/438f7a26b7518ec1fc4133f12f58cb0b8d1a2765/charts/argo-cd/templates/argocd-server/service.yaml#L18
+     * - https://devocean.sk.com/blog/techBoardDetail.do?ID=163103
+     */
+    eksCluster.addHelmChart(
+      `${clusterName}-ArgoCd`,
+      {
+        repository: "https://argoproj.github.io/argo-helm",
+        chart: "argo-cd",
+        release: "argocd",
+        namespace: "argocd",
+        createNamespace: true,
+        // version: "v2.7.3",
+        values: {
+          installCRDs: true,
+          // To be compliant with JSON notation, we need to write as follows to apply 'server.service.type': 'LoadBalancer'.
+          server: {
+            service: {
+              type: "LoadBalancer"
+            }
+          }
         }
       }
     );

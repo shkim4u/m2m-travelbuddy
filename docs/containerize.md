@@ -41,7 +41,7 @@ git push --set-upstream origin main
 3. CodeCommit 리포지터리에 소스 코드가 푸시되었음을 확인합니다.<br>
 ![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed.png)
 
-4. 또한 빌드 파이프라인도 트리거되어 실행됨을 확인합니다. 다만, Build Spec이 정의되어 있지 않아 파이프라인은 실패하였을 것입니다.
+4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않았다는 등이 이유로 파이프라인은 실패하였을 수 있습니다.
 ![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed.png)<br>
 ![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason.png)
 
@@ -49,21 +49,12 @@ git push --set-upstream origin main
 
 ---
 
-우리는 이미 아래 경로에 TravelBuddy 전체 프로젝트 파일을 가지고 있으므로, 이를 살펴보도록 하겠습니다.
-
-
-```bash
-# 폴더 이동
-cd ~/environment
-
-# 다운로드 및 압축해제
-wget https://workshops.devax.academy/monoliths-to-microservices/module1/files/TravelBuddy.zip
-unzip TravelBuddy.zip
-```
+우리는 이미 아래 경로에 TravelBuddy 전체 프로젝트 파일을 가지고 있으므로, 이를 살펴보도록 하겠습니다.<br>
+![TravelBuddy 프로젝트](./assets/travelbuddy-project.png)
 
 ## 프로젝트 살펴보기
 
-먼저 REST API를 구현하고 있는 `TravelBuddy > src > main > java > devlounge > spring > RESTController.java`를 살펴봅니다.
+먼저 REST API를 구현하고 있는 `applications > TravelBuddy > build > src > main > java > devlounge > spring > RESTController.java`를 살펴봅니다.
 
 `/flightspecials`와 `/hotelspecials` API를 확인할 수 있습니다.
 
@@ -72,10 +63,14 @@ unzip TravelBuddy.zip
 대략 어떤 구조를 가지고 동작하는지 코드를 좀 더 살펴봅니다.
 
 ## 빌드하기
-
 이 프로젝트는 CodeBuild 용 buildspec.yml 파일을 포함하고 있습니다. buildspec.yml 파일의 내용을 통해 빌드 방법을 확인합니다.
 
-빌드를 위한 Dockerfile을 작성해봅니다.
+빌드 과정에서는 컨테이너 이미지 빌드가 수행되는데 이 과정을 로컬에서 (Cloud9) 먼저 수행해 보도록 하겠습니다. 이를 위해 아래와 같이 Dockerfile을 작성해봅니다.
+
+```bash
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build
+vi Dockerfile
+```
 
 ```Dockerfile
 FROM openjdk:8-jdk
@@ -101,22 +96,40 @@ docker run -it --rm travelbuddy /bin/bash
 ```
 
 ### Multi-stage build 방식으로 TravelBuddy 컨테이너 이미지 빌드하기
+위에서 생성한 컨테이너 이미지는 어플리케이션 빌드 과정에만 필요한 (런타임에서는 불필요한) 빌드 도구 (예: Apache Maven 등)이 포함되어 있어 최적화되어 있지 않으며 프로덕션 환경에 적용하기에는 적절하지 않을 수 있습니다.
+![최적화되지 않은 컨테이너 이미지](./assets/build-travelbuddy-local-container-image.png)
 
+**(도전 과제)**
+- Multi-stage 빌드를 
 Dockerfile 예시를 확인하기 전에 직접 Dockerfile을 작성하여 컨테이너 이미지를 빌드해보세요.
+- 힌트
+  - 과정 1: Maven 베이스 이미지를 사용하여 War 파일을 빌드
+  - 과정 2: Tomcat 베이스 이미지를 사용하여 TravelBuddy 컨테이너 이미지 빌드
 
-- 힌트 1: maven 베이스 이미지를 사용하여 war 파일을 빌드
-- 힌트 2: tomcat 베이스 이미지를 사용하여 TravelBuddy 컨테이너 이미지 빌드
+[//]: # (Dockerfile 예시는 prepare/Dockerfile에 있습니다.)
 
-Dockerfile 예시는 prepare/Dockerfile에 있습니다.
+**(결과 이미지)** <br>
+멀티 스테이지를 통해 빌드된 컨테이너 이미지의 크기는 아래와 같습니다.
 
-## ECR에 이미지 푸시하기
+![멀티 스테이지 컨테이너 이미지](./assets/build-travelbuddy-local-container-image-multi-stage.png)
 
-ECR에 이미지를 업로드하려면 먼저 레지스트리를 생성해야 합니다. Amazon ECR > Repositories > Create repository를 선택합니다.
+보시다시피 컨테이너 이미지의 크기가 22.3% (659 MB -> 509 MB) 줄어든 것을 확인할 수 있습니다.<br>
 
-Generea settings에서 repository 이름에 travelbuddy를 입력하고 `Create repository` 버튼을 클릭하여 저장소를 생성합니다.
+***(More Considerations)***
+혹시 컨테이너 이미지의 크기를 조금 더 최적화 (크기 축소)할 수 있을까요?
 
-![ecr.png](./assets/ecr.png)
+## ECR (Elastic Container Registry)에 이미지 푸시 테스트
+ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 합니다. 하지만 앞서 EKS 클러스터를 CDK로 생성하는 과정에서 ECR 리포지터리도 함께 생성되었으므로 따로 생성할 필요는 없습니다.<br>
+생성된 ECR 리포지터리는 다음에서 확인할 수 있습니다.<br>
+```Amazon ECR > Repositories > m2m-buildanddeliverystack-repository```
+![TravelBuddy ECR Repository](./assets/travelbuddy-ecr-repository.png)
 
-생성한 repository를 클릭한 후 `View push commands` 버튼을 클릭하여 표시되는 가이드대로 Cloud9 터미널에 입력해서 TravelBuddy 이미지를 ECR에 푸시합니다.
+해당 리포지터리에서 클릭한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드대로 Cloud9 터미널에 입력해서 TravelBuddy 이미지를 ECR에 푸시해 봅니다.
+![ECR Repository Push Command](./assets/travelbuddy-ecr-repository-push-commands.png)
+![ecrcmd.png](./assets/travelbuddy-container-image-in-ecr-repository.png)
 
-![ecrcmd.png](./assets/ecrcmd.png)
+---
+## 빌드 및 전달 (Build and Delivery) 파이프라인에 적용
+
+우리는 이제 로컬 (Cloud9)에서 소스를 빌드하고 빌드 결과물을 담은 컨테이너 이미지를 생성한 후 이를 ECR 리포지터리에 푸시하는 것까지 완료하였습니다.<br>
+이제 이 과정을 CodeBuild의 Build Spec에 적용하여 소스 코드가 CodeCommit Repository에 푸시되면 자동으로 ECR 리포지터리에 전돨되도록 해보겠습니다.
