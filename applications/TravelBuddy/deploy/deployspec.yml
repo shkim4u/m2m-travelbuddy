@@ -14,19 +14,19 @@ version: 0.2
 ###################################################################################################################
 
 env:
+  shell: bash
+  git-credential-helper: yes
   variables:
     AWS_REGION: "ap-northeast-2"
-
+    IMAGE_TAG_KEY: "/application/travelbuddy/container/image/main/tag"
 phases:
   install:
     commands:
       - env
-      - export TAG=latest && echo $TAG
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
       - export EKS_MANIFEST_FILES_DIR=eks-manifest-files
-      - export CDK_DEPLOYMENT_DIR=Deployment/Eksworkshop_Integrations
-      - /usr/local/bin/entrypoint.sh
-
+      - export REPO_IMAGE_TAG=`aws ssm get-parameter --name "/application/travelbuddy/container/image/main/tag" --query "Parameter.Value"`
+      - export IMAGE_TAG=`echo $REPO_IMAGE_TAG | tr -d '"'`
   pre_build:
     commands:
       - env

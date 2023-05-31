@@ -218,6 +218,29 @@ spec:
 EOF
 ```
 
+---
+
+배포 리포지터리는 아직 초기화가 되지 않은 상태이므로 위에서 생성한 ```~/environment/m2m-travelbuddy/application/TravelBuddy/deploy``` 폴더를 아래와 같이 연결하여 배포 파이프라인을 시작한다.<br>
+![배포 리포지터리지 초기화되지 않음](./assets/travelbuddy-deploy-repository-not-initialized.png)
+
+1. 배포 리포지터리 URL 확인
+![배포 리포지터리 URL 확인](./assets/travelbuddy-deploy-repository-url.png)
+
+2. 위에서 확인 URL을 해당 디렉토리에 연결
+```bash
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
+git init
+git branch -M main
+
+# 아래에 위 1에서 확인 URL로 대체할 것.
+# (예시) git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/M2M-BuildAndDeliveryStack-DeployStack-DeploySourceRepository
+git remote add origin <위 1에서 확인한 CodeCommit Git URL>
+
+git add .
+git commit -am "First commit."
+git push --set-upstream origin main
+```
+
 ### manifest로 배포하기
 
 ```bash
