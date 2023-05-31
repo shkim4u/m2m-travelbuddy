@@ -37,10 +37,8 @@ phases:
       - export AWS_EXPIRATION=$(echo "${CREDENTIALS}" | jq -r '.Credentials.Expiration')
       - ls -altr
       - pwd
-      - echo "Creating namespace..."
-      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/00_namespace.yaml
-      - echo "Configuring config map..."
-      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_configmap.yaml
+      - echo "Preparing 02_deployment.yaml file..."
+      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_deployment.yaml
       - env
 
   build:
