@@ -33,11 +33,12 @@ Agenda
 - 1단계: 리플랫폼 (Replatform)
   - EKS 클러스터를 생성. 이 때 빌드/전달 (Build/Delivery) 파이프라인 및 배포 (Deploy) 파이프라인도 함께 생성
   - 위 두 파이프라인을 분리함으로써 Push 기반의 GitOps 체계 도입
+    - (참고) [데브옵스의 확장 모델](https://www.samsungsds.com/kr/insights/gitops.html)
   - Monolith인 TravelBuddy 애플리케이션을 컨테이너화하고 컨테이너 이미지를 ECR에 푸시
-- 2단계: 리팩터 (Refactory Piloting)
+- 2단계: 리팩터 (Refactor Piloting)
   - Monolith 개념을 이해하고 TravelBuddy 애플리케이션을 분석하여 개선 방향을 검토
   - Microservice 개념을 이해하고 HotelSpecial 애플리케이션을 통해 분리하는 과정을 체험
-  - Pull 기반의 GitOps 구조를 구축 (ArgoCD)
+  - (옵션) Pull 기반의 GitOps 구조를 구축 (ArgoCD)
   - FlightSpecial 애플리케이션을 직접 개발하면서 학습 내용을 복습
 
 ### 실습 환경 구성
@@ -62,7 +63,7 @@ Agenda
 
 ## Microservice란?
 
-[Microservice](./docs/%08microservices.md)의 개념을 간단히 살펴보고, 어떤 경우에 마이크로서비스가 필요한지 토론해봅니다.
+[Microservice](./docs/microservices.md)의 개념을 간단히 살펴보고, 어떤 경우에 마이크로서비스가 필요한지 토론해봅니다.
 
 ## FlightSpecial Microservice 애플리케이션
 

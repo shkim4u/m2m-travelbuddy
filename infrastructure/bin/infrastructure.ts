@@ -5,6 +5,9 @@ import {InfrastructureEnvironment} from "./infrastructure-environment";
 import {NetworkStack} from "../lib/network-stack";
 import {EksStack} from "../lib/eks-stack";
 import {BuildDeliveryStack} from "../lib/build-delivery-stack";
+import {SsmStack} from "../lib/ssm-stack";
+import {IamStack} from "../lib/iam-stack";
+import {Ec2Stack} from "../lib/ec2-stack";
 
 const app = new cdk.App();
 
@@ -31,6 +34,18 @@ const infrastructureEnvironment: InfrastructureEnvironment = {
 };
 
 /**
+ * IAM stack.
+ */
+const iamStack = new IamStack(
+  app,
+`${infrastructureEnvironment.stackNamePrefix}-IamStack`,
+  {
+    env
+  }
+);
+
+
+/**
  * Network stack.
  */
 let networkStack: NetworkStack | undefined = undefined;
@@ -38,6 +53,20 @@ networkStack = new NetworkStack(
   app,
   `${infrastructureEnvironment.stackNamePrefix}-NetworkStack`,
   infrastructureEnvironment,
+  {
+    env
+  }
+);
+
+/**
+ * RDS bastion instances and some possible others.
+ */
+const ec2Stack = new Ec2Stack(
+  app,
+  `${infrastructureEnvironment.stackNamePrefix}-Ec2Stack`,
+  networkStack.vpc,
+  networkStack.eksPublicSubnets,
+  iamStack.adminRole,
   {
     env
   }
@@ -75,3 +104,14 @@ const buildAndDeliveryStack = new BuildDeliveryStack(
   }
 );
 buildAndDeliveryStack.addDependency(eksStarck);
+
+/**
+ * SSM Stack.
+ */
+const ssmStack = new SsmStack(
+  app,
+  `${infrastructureEnvironment.stackNamePrefix}-SsmStack`,
+  {
+    env
+  }
+);

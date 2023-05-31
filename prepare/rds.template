@@ -17,9 +17,7 @@ Resources:
           IpProtocol: "-1"
       SecurityGroupIngress:
 #        - CidrIp: 0.0.0.0/0
-        - CidrIp:
-          - Fn::ImportValue:
-              'Fn::Sub': 'M2MNetworkStackVPCCidr'
+        - CidrIp: {'Fn::ImportValue': !Sub 'M2MNetworkStackVPCCidr'}
           Description: From the current VPC
           FromPort: 3306
           IpProtocol: tcp

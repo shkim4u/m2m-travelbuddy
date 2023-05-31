@@ -20,13 +20,12 @@ phases:
     commands:
       - echo Entering post_build phase...
       - echo Build completed on `date`
-      - mv target/devlounge .
-      - mv .ebextensions devlounge/.
-      
+      - mv target/travelbuddy .
+      - mv .ebextensions travelbuddy/.
+
 artifacts:
   type: zip
   files:
-    - 'devlounge/WEB-INF/**/*'
-    - 'devlounge/resources/**/*'
-    - 'devlounge/.ebextensions/**/*'
-    
+    - 'travelbuddy/WEB-INF/**/*'
+    - 'travelbuddy/resources/**/*'
+    - 'travelbuddy/.ebextensions/**/*'

@@ -2,25 +2,18 @@
 
 ## Agenda
 
-- Bastion 호스트에 접속해서 TravelBuddy 애플리케이션 실행해보기
-  - Docker 설치
-  - TravelBuddy 컨테이너 실행
-- EKS 배포
-  - manifest 준비하기
-  - manifest로 TravelBuddy 배포하기
+1. Bastion 호스트에 접속해서 TravelBuddy 애플리케이션 실행해보기 
+   1. Docker 설치 
+   2. TravelBuddy 컨테이너 실행
+2. EKS에 배포
+   1. EKS 배포 형상 (Manifest) 리포지터리 클론하기
+   2. Manifest 준비하기
+   2. Manifest로 TravelBuddy 배포하기
 
-## Bastion 호스트에 접속해서 TravelBuddy 애플리케이션 실행해보기
+## 1. Bastion 호스트에 접속해서 TravelBuddy 애플리케이션 실행해보기
+Bastion 호스트에 SSM 세션 매니저로 접속하여 다음을 수행합니다.
 
-EC2 > Instances로 이동하여, bastion 호스트를 선택한 후 Connect 버튼을 클릭하여 SSH client 접속 명령어를 복사합니다.
-![ssh.png](./assets/ssh.png)
-
-Cloud9 터미널 창에서 아래 예시와 같이 복사한 명령어를 입력하여 bastion 호스트에 접속합니다.
-
-```bash
-ssh -i "m2m-bastion.pem" ec2-user@ec2-43-207-144-210.ap-northeast-1.compute.amazonaws.com
-```
-
-### Docker 설치
+### 1.1. Docker 설치
 
 ```bash
 # 인스턴스에 설치한 패키지 및 패키지 캐시를 업데이트
@@ -37,25 +30,36 @@ sudo systemctl enable docker
 
 # sudo를 사용하지 않고도 Docker 명령을 실행할 수 있도록 docker 그룹에 ec2-user를 추가
 sudo usermod -a -G docker ec2-user
+sudo usermod -a -G docker ssm-user
 
 # 만일 docker를 실행했을 때 권한 오류가 발생하면 인스턴스를 재부팅해봅니다.
 ```
 
 참고: [Amazon Linux 2에 Docker 설치](https://docs.aws.amazon.com/ko_kr/AmazonECS/latest/developerguide/create-container-image.html#create-container-image-install-docker)
 
-### TravelBuddy 컨테이너 실행
+### 1.2. TravelBuddy 컨테이너 실행
 
 #### STEP 1. Docker Login
 
-AWS 콘솔에서 ECR로 이동합니다. Repositories 메뉴에서 `travelbuddy`를 클릭한 후 `View push commands` 버튼을 클릭하여 표시되는 가이드의 1번 명령어를 복사합니다.
+AWS 콘솔에서 ECR로 이동합니다.<br>
+리포지터리에서 `m2m-buildanddeliverystack-repository`으로 이동한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드의 1번 명령어를 복사합니다.<br>
+![TravelBuddy ECR Push Command](./assets/travelbuddy-ecr-push-command-step-1.png)
 
-다시 bastion 호스트의 SSH shell로 돌아와서 위에서 복사한 명령어를 이용하여 docker login을 실행합니다.
+다시 Bastion 호스트의 Shell로 돌아와서 위에서 복사한 명령어를 이용하여 docker login을 실행합니다.
+```bash
+# (예시) 아래를 자신이 복사한 명령으로 대체하여 실행할 것
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 256878912116.dkr.ecr.ap-northeast-2.amazonaws.com
+```
+![TravelBuddy ECR Login Success](./assets/travelbuddy-ecr-login-success.png)
 
 #### STEP 2. 환경 변수 설정
 
 ```bash
-# CF로 배포한 환경의 RDS 주소
+# 아래에 CF로 배포한 환경의 RDS 주소로 대체할 것
+# (예시) export RDS_ENDPOINT=travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com
 export RDS_ENDPOINT=<RDS_ENDPOINT>
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+export AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document| grep region |awk -F\" '{print $4}'`
 ```
 
 #### STEP 3. travelbuddy 컨테이너 실행
@@ -66,7 +70,7 @@ docker run --rm \
   -e JDBC_CONNECTION_STRING="jdbc:mysql://${RDS_ENDPOINT}:3306/travelbuddy?useSSL=false" \
   -e JDBC_UID=root \
   -e JDBC_PWD=labpassword \
-  -dp 8080:8080 <YOUR_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/travelbuddy:latest
+  -dp 8080:8080 ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/m2m-buildanddeliverystack-repository:latest
 
 # 컨테이너 이름을 확인
 docker ps
@@ -94,9 +98,28 @@ curl localhost:8080/travelbuddy/
 ```bash
 # 컨테이너 중지하기
 docker stop <컨테이너 이름>
+docker rm <컨테이너 이름>
 ```
 
-## EKS 배포
+## 2. EKS 배포
+우리는 앞서 모놀리스 어플리케이션의 배포 체계를 다소 단순한 형태의 Push 기반 GitOps 파이프라인으로 구성할 것이라고 하였습니다.<br>
+![Push 기반 GitOps 체계](./assets/M2M-Replatform-Architecture.png)
+
+그리고 어플리케이션을 빌드 및 컨테이너화하여 ECR 리포지터리에 푸시하여 빌드 및 전달 파이프라인을 완료하였고, Bastion 호스트에서 데이터베이스에 접속한 후 어플리케이션이 동작 가능함을 확인하였습니다.
+
+이번에는 배포 Manifest를 작성함으로써 배포 파이프라인 (Push 기반)을 꾸며보도록 하겠습니다.
+
+다행히도 배포 파이프라인을 위한 CodeCommit 리포지터리와 이로부터 Trigger되는 배포 파이프라인은 EKS 클러스터를 CDK로 생성할 때 함께 생성되어 있으므로 우리는 이를 이용하도록 합니다.
+
+### 2.1. EKS 배포 형상 리포지터리를 위한 Manifest 파일 준비하기
+이번에는 Bastion 호스트가 아닌 먼저 사용하던 Cloud9 환경을 다시 사용합니다.<br>
+
+```bash
+# 1. 배포 매니페스트 파일을 담을 디렉토리 생성
+mkdir -p ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
+
+```
 
 ### manifest 준비하기
 

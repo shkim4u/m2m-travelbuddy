@@ -68,6 +68,7 @@ export class BuildDeliveryStack extends Stack {
     );
     buildRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AWSLambda_FullAccess"));		// Reserved.
     buildRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAPIGatewayAdministrator"));
+    buildRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMFullAccess"));
 
     buildRole.addToPolicy(new aws_iam.PolicyStatement({resources: ['*'], actions: ['cloudformation:*']}));
     buildRole.addToPolicy(new aws_iam.PolicyStatement({resources: ['*'], actions: ['iam:*']}));

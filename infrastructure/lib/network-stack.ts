@@ -199,6 +199,7 @@ export class NetworkStack extends Stack {
     new cdk.CfnOutput(
       this,
       `${id}-VPCCidr`, {
+        exportName: "M2MNetworkStackVPCCidr",
         value: this.vpc.vpcCidrBlock
       }
     );
