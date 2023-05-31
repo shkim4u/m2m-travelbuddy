@@ -43,7 +43,9 @@ phases:
 
   build:
     commands:
-      - echo "Step 0 - Configuring service account to access AWS Step Functions. This is required to do before applying deployment yaml file, 02_deployment.yaml file."
+      - echo "Step 0 - Creating k8s namespace travelbuddy."
+      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/00_namespace.yaml
+      - echo "Step 0 - Configuring service account to access AWS services. This is required to do before applying deployment yaml file, 02_deployment.yaml file."
       - export OIDC_PROVIDER=$(aws eks describe-cluster --name $CLUSTER_NAME --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
       - echo $OIDC_PROVIDER
       - export ISSUER_URL=https://$OIDC_PROVIDER
@@ -53,22 +55,22 @@ phases:
       - export PROVIDER_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:oidc-provider/$ISSUER_HOSTPATH"
       - echo $PROVIDER_ARN
       - echo "******************************************* Start of Service Account for Pod *******************************************"
-      - echo "************ Game 2048 Pod Service Account Role Trust Policy ************"
-      - chmod +x create_game2048_pod_service_account_role_trust_policy.sh
-      - ./create_game2048_pod_service_account_role_trust_policy.sh
-      - export GAME2048_POD_ROLE_NAME=Game2048PodEksRole && echo $GAME2048_POD_ROLE_NAME
-      - echo "************ End of Game 2048 Pod Service Account Role Trust Policy ************"
+      - echo "************ TravelBuddy Pod Service Account Role Trust Policy ************"
+      - chmod +x create_travelbuddy_pod_service_account_role_trust_policy.sh
+      - ./create_travelbuddy_pod_service_account_role_trust_policy.sh
+      - export TRAVELBUDDY_POD_ROLE_NAME=TravelBuddyPodEksRole && echo $TRAVELBUDDY_POD_ROLE_NAME
+      - echo "************ End of TravelBuddy Pod Service Account Role Trust Policy ************"
       - echo
-      - echo "************ Game 2048 Pod Role (if it does not exist.) ************"
-      - chmod +x create_game2048_pod_role_if_not_exists.sh
-      - ./create_game2048_pod_role_if_not_exists.sh
-      - export GAME2048_POD_ROLE_ARN=$(aws iam get-role --role-name $GAME2048_POD_ROLE_NAME --query Role.Arn --output text) && echo $GAME2048_POD_ROLE_ARN
-      - echo "************ End of Game 2048 Pod Role ************"
+      - echo "************ TravelBuddy Pod Role (if it does not exist.) ************"
+      - chmod +x create_travelbuddy_pod_role_if_not_exists.sh
+      - ./create_travelbuddy_pod_role_if_not_exists.sh
+      - export TRAVELBUDDY_POD_ROLE_ARN=$(aws iam get-role --role-name $TRAVELBUDDY_POD_ROLE_NAME --query Role.Arn --output text) && echo $TRAVELBUDDY_POD_ROLE_ARN
+      - echo "************ End of TravelBuddy Pod Role ************"
       - echo
-      - echo "************ Game 2048 Pod Kubernetes Service Account (if it does not exist.) ************"
-      - chmod +x create_k8s_game2048_pod_service_account_if_not_exists.sh
-      - ./create_k8s_game2048_pod_service_account_if_not_exists.sh
-      - echo "************ End of Game 2048 Pod Kubernetes Service Account (if it does not exist.) ************"
+      - echo "************ TravelBuddy Pod Kubernetes Service Account (if it does not exist.) ************"
+      - chmod +x create_k8s_travelbuddy_pod_service_account_if_not_exists.sh
+      - ./create_k8s_travelbuddy_pod_service_account_if_not_exists.sh
+      - echo "************ End of TravelBuddy Pod Kubernetes Service Account (if it does not exist.) ************"
       - echo "******************************************* End of Service Account for Pod *******************************************"
       - echo "Step 1 - Setting ConfigMap that will be used inside the application, such as Spring Profile or some more."
       - kubectl apply -f $EKS_MANIFEST_FILES_DIR/01_configmap.yaml
@@ -81,7 +83,7 @@ phases:
       - echo "Step 99 - Applying ConfigMap for logging."
       - kubectl apply -f $EKS_MANIFEST_FILES_DIR/99_aws_logging_cloudwatch_configmap.yaml
       - echo "Final Step - Finally restart deployment to reflect latest container image."
-      - kubectl rollout restart deployment game2048 -n eksworkshop | true
+      - kubectl rollout restart deployment travelbuddy -n travelbuddy | true
 
   post_build:
     commands:
