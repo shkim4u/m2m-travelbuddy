@@ -23,6 +23,13 @@ phases:
   install:
     commands:
       - env
+      - aws eks update-kubeconfig --name $CLUSTER_NAME
+#        if [[ -n ${EKS_ROLE_ARN} ]]; then
+#        echo "[INFO] got EKS_ROLE_ARN=${EKS_ROLE_ARN}, updating kubeconfig with this role"
+#        aws eks update-kubeconfig --name $CLUSTER_NAME --kubeconfig $KUBECONFIG --role-arn "${EKS_ROLE_ARN}"
+#        else
+#        aws eks update-kubeconfig --name $CLUSTER_NAME --kubeconfig $KUBECONFIG
+#        fi
   pre_build:
     commands:
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
@@ -40,7 +47,6 @@ phases:
       - echo "Preparing 02_deployment.yaml file..."
       - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_deployment.yaml
       - env
-
   build:
     commands:
       - echo "Step 0 - Creating k8s namespace travelbuddy."
