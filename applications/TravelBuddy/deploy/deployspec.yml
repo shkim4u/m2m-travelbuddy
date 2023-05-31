@@ -23,13 +23,12 @@ phases:
   install:
     commands:
       - env
+  pre_build:
+    commands:
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
       - export EKS_MANIFEST_FILES_DIR=eks-manifest-files
       - export REPO_IMAGE_TAG=`aws ssm get-parameter --name "/application/travelbuddy/container/image/main/tag" --query "Parameter.Value"`
       - export IMAGE_TAG=`echo $REPO_IMAGE_TAG | tr -d '"'`
-  pre_build:
-    commands:
-      - env
       - export CREDENTIALS=$(aws sts assume-role --role-arn $ASSUME_ROLE_ARN --role-session-name codebuild-deploy-eks-role)
       - echo $CREDENTIALS
       - export AWS_ACCESS_KEY_ID=$(echo "${CREDENTIALS}" | jq -r '.Credentials.AccessKeyId')
@@ -38,7 +37,11 @@ phases:
       - export AWS_EXPIRATION=$(echo "${CREDENTIALS}" | jq -r '.Credentials.Expiration')
       - ls -altr
       - pwd
-      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$TAG"'@' $EKS_MANIFEST_FILES_DIR/02_deployment.yaml
+      - echo "Creating namespace..."
+      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/01_namespace.yaml
+      - echo "Configuring config map..."
+      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_configmap.yaml
+      - env
 
   build:
     commands:
