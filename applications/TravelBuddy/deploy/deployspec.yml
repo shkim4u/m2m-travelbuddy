@@ -38,7 +38,7 @@ phases:
       - ls -altr
       - pwd
       - echo "Creating namespace..."
-      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/01_namespace.yaml
+      - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/00_namespace.yaml
       - echo "Configuring config map..."
       - sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_configmap.yaml
       - env
