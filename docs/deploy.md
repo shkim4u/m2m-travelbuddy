@@ -113,114 +113,21 @@ docker rm <컨테이너 이름>
 
 ### 2.1. EKS 배포 형상 리포지터리를 위한 Manifest 파일 준비하기
 이번에는 Bastion 호스트가 아닌 먼저 사용하던 Cloud9 환경을 다시 사용합니다.<br>
-
+Deployment, Service, Ingress 등의 쿠버네테스 매니페스트 파일은 이미 아래 경로에 저장되어 있을 것입니다.
 ```bash
-# 1. 배포 매니페스트 파일을 담을 디렉토리 생성
-mkdir -p ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
-cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
-
+mkdir -p ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-files
 ```
+![TravelBuddy 매니페스트 파일 경로](./assets/travelbuddy-k8s-manifest-directory.png)
 
-### manifest 준비하기
+1. Deployment 매니페스트 파일
+TravelBuddy 컨테이너 배포 매니페스트 파일 ```02_deployment.yaml```의 38번째 줄 근처에 설정된 데이터베이스 접속 주소를 자신의 RDS 접속 엔트포인트로 대체합니다.<br>
+   1. RDS 접속 주소는 AWS 콘솔의 [RDS 서비스](https://ap-northeast-2.console.aws.amazon.com/rds/home?region=ap-northeast-2#databases:)에서 확인할 수 있습니다.
+   ![TravelBuddy 배포 매니페스트 파일 RDS 주소 교체](./assets/travelbuddy-rds-endpoint.png)
 
-manifests 폴더 (/home/ec2-user/environment/manifests)로 이동하여 아래의 값을 붙여넣습니다. 이 때, 이미지 값에는 ECR에 push한 이미지의 URL 값을 넣습니다.
+2. 그외 매니페스트 파일 (00_namespace.yaml, 01_configmap.yaml, 03_service.yaml, 04_ingress.yaml)은 수정할 필요가 없습니다.
 
-또한 `<RDS_ENDPOINT>` 값을 생성한 RDS의 값으로 변경합니다.
-
-```bash
-cd /home/ec2-user/environment/manifests
-
-cat <<EOF> deployment.yaml
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: travelbuddy
-  namespace: default
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: travelbuddy
-  template:
-    metadata:
-      labels:
-        app: travelbuddy
-    spec:
-      containers:
-      - name: travelbuddy
-        image: $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/travelbuddy:latest
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 8080
-        env:
-        - name: JDBC_CONNECTION_STRING
-          value: "jdbc:mysql://<RDS_ENDPOINT>:3306/travelbuddy?useSSL=false"
-        - name: JDBC_UID
-          value: "root"
-        - name: JDBC_PWD
-          value: "labpassword"
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
-EOF
-```
-
-```bash
-cat <<EOF> service.yaml
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: travelbuddy-service
-  annotations:
-    alb.ingress.kubernetes.io/healthcheck-path: "/travelbuddy/"
-spec:
-  selector:
-    app: travelbuddy
-  type: NodePort
-  ports:
-    - port: 80 # 서비스가 생성할 포트
-      targetPort: 8080 # 서비스가 접근할 pod의 포트
-      protocol: TCP
-EOF
-```
-
-```bash
-cat <<EOF> ingress.yaml
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-    name: "travelbuddy-ingress"
-    namespace: default
-    annotations:
-      kubernetes.io/ingress.class: alb
-      alb.ingress.kubernetes.io/scheme: internet-facing
-      alb.ingress.kubernetes.io/target-type: ip
-      alb.ingress.kubernetes.io/group.name: eks-demo-group
-      alb.ingress.kubernetes.io/group.order: '1'
-spec:
-    rules:
-    - http:
-        paths:
-          - path: /contents
-            pathType: Prefix
-            backend:
-              service:
-                name: "travelbuddy-service"
-                port:
-                  number: 80
-EOF
-```
-
----
-
-배포 리포지터리는 아직 초기화가 되지 않은 상태이므로 위에서 생성한 ```~/environment/m2m-travelbuddy/application/TravelBuddy/deploy``` 폴더를 아래와 같이 연결하여 배포 파이프라인을 시작한다.<br>
+### 2.2. 배포 리포지터리 연결 및 Push하여 배포 파이프라인 시작
+배포 리포지터리는 아직 초기화가 되지 않은 상태이므로 위에서 생성한 ```~/environment/m2m-travelbuddy/application/TravelBuddy/deploy``` 폴더를 아래와 같이 연결하여 배포 파이프라인을 시작합니다.<br>
 ![배포 리포지터리지 초기화되지 않음](./assets/travelbuddy-deploy-repository-not-initialized.png)
 
 1. 배포 리포지터리 URL 확인
@@ -239,14 +146,6 @@ git remote add origin <위 1에서 확인한 CodeCommit Git URL>
 git add .
 git commit -am "First commit."
 git push --set-upstream origin main
-```
-
-### manifest로 배포하기
-
-```bash
-kubectl apply -f deployment.yaml
-kubectl apply -f service.yaml
-kubectl apply -f ingress.yaml
 ```
 
 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.

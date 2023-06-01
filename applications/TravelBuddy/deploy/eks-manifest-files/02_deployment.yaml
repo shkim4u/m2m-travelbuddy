@@ -35,7 +35,7 @@ spec:
               cpu: "1000m"
           env:
             - name: JDBC_CONNECTION_STRING
-              value: "jdbc:mysql://:3306/travelbuddy?useSSL=false"
+              value: "jdbc:mysql://travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com:3306/travelbuddy?useSSL=false"
             - name: JDBC_UID
               value: "root"
             - name: JDBC_PWD
