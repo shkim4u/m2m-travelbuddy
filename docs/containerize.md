@@ -34,14 +34,14 @@ git remote add origin <1에서 복사한 CodeCommit Git 리포지터리 주소>
 git add .
 
 # 4. Commit 및 Push합니다.
-git commit -m "First commit."
+git commit -am "First commit."
 git push --set-upstream origin main
 ```
 
 3. CodeCommit 리포지터리에 소스 코드가 푸시되었음을 확인합니다.<br>
 ![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed.png)
 
-4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않았다는 등이 이유로 파이프라인은 실패하였을 수 있습니다.
+4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않은 등의 이유로 파이프라인은 실패하였을 수 있습니다.
 ![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed.png)<br>
 ![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason.png)
 
@@ -63,9 +63,8 @@ git push --set-upstream origin main
 대략 어떤 구조를 가지고 동작하는지 코드를 좀 더 살펴봅니다.
 
 ## 빌드하기
-이 프로젝트는 CodeBuild 용 buildspec.yml 파일을 포함하고 있습니다. buildspec.yml 파일의 내용을 통해 빌드 방법을 확인합니다.
-
-빌드 과정에서는 컨테이너 이미지 빌드가 수행되는데 이 과정을 로컬에서 (Cloud9) 먼저 수행해 보도록 하겠습니다. 이를 위해 아래와 같이 Dockerfile을 작성해봅니다.
+이 프로젝트는 Maven을 사용하여 빌드되도록 구성되어 있으며 따라서 컨테이너 이미지를 만들 때에도 이를 고려해야 합니다.<br>
+따라서 일반적인 Maven 빌드 과정을 거쳐서 컨테이너 이미지 빌드해 볼 것이며, 이 과정을 로컬에서 (Cloud9) 먼저 수행해 보도록 하겠습니다. 이를 위해 아래와 같이 Dockerfile을 작성해봅니다.
 
 ```bash
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build
@@ -102,7 +101,7 @@ docker run -it --rm travelbuddy /bin/bash
 **(도전 과제)**
 - Multi-stage 빌드를 
 Dockerfile 예시를 확인하기 전에 직접 Dockerfile을 작성하여 컨테이너 이미지를 빌드해보세요.
-- 힌트
+- 힌트: 아래 두 과정을 하나의 Dockerfile에 작성해 보세요.
   - 과정 1: Maven 베이스 이미지를 사용하여 War 파일을 빌드
   - 과정 2: Tomcat 베이스 이미지를 사용하여 TravelBuddy 컨테이너 이미지 빌드
 
@@ -124,7 +123,7 @@ ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 �
 ```Amazon ECR > Repositories > m2m-buildanddeliverystack-repository```
 ![TravelBuddy ECR Repository](./assets/travelbuddy-ecr-repository.png)
 
-해당 리포지터리에서 클릭한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드대로 Cloud9 터미널에 입력해서 TravelBuddy 이미지를 ECR에 푸시해 봅니다.
+해당 리포지터리에서 클릭한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드대로 Cloud9 터미널에 입력해서 TravelBuddy 이미지를 ECR에 푸시해 봅니다.<br>
 ![ECR Repository Push Command](./assets/travelbuddy-ecr-repository-push-commands.png)
 ![ecrcmd.png](./assets/travelbuddy-container-image-in-ecr-repository.png)
 
@@ -135,8 +134,9 @@ ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 �
 이제 이 과정을 CodeBuild의 Build Spec에 적용하여 소스 코드가 CodeCommit Repository에 푸시되면 자동으로 ECR 리포지터리에 전돨되도록 해보겠습니다.
 
 ### 1. Build Spec (buildspec.yml) 파일 작성<br>
-- 사실 우리가 앞서 참조하였던 buildspec.yml 파일은 최종적으로 Elastic Beanstalk으로 배포하기 위하여 작성된 파일입니다 - mvn -f pom.xml compile war:exploded 옵션, .ebextensions를 포함한 Artifact로 업로드 등
-- 이 buildspec.yml을 앞서 살펴보았던 Multi-stage 전략을 사용, 빌드 및 실행 컨테이너 이미지를 분리하여 생성하고 실행 컨테이너 이미지만을 ECR 리포지터리로 Push하는 것으로 바꾸어 보도록 하겠습니다.
+- 빌드 및 전달 파이프라인에서 사용하는 빌드 서버 인스턴스 (CodeBuild)는 내부적으로 Build Spec이라는 규약을 사용하여 빌드 과정을 구성할 수 있습니다.
+- 궁금하신 분들은 CodeBuild에서 이를 확인할 수 있으며, CDK 소스에서도 마찬가지 사항을 발견하실 수 있을 것입니다.
+- 우리는 "buildspec.yml"을 사용하도록 구성하였으므로 이 파일을 앞서 살펴보았던 Multi-stage 전략을 사용, 빌드 및 실행 컨테이너 이미지를 분리하여 생성하고 실행 컨테이너 이미지만을 ECR 리포지터리로 Push하는 것으로 바꾸어 보도록 하겠습니다.
 
 ```bash
 # 1. 소스 경로로 이동
@@ -184,6 +184,7 @@ phases:
         docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
       - |
         echo "### Pushing Container Image ###"
+        docker push $ECR_REPO_URI:latest
         docker push $ECR_REPO_URI:$IMAGE_TAG
   post_build:
     commands:
@@ -200,9 +201,10 @@ cache:
 EOF
 ```
 ### 2. 어플리케이션 소스 푸시 및 빌드 시작<br>
-1. 다음과 같이 어플리케이션 소스를 푸시하면 빌드 및 전달 파이프라인이 시작된다.
+1. 다음과 같이 어플리케이션 소스를 푸시하면 빌드 및 전달 파이프라인이 시작됩니다.
 ```bash
-git commit -am "[Modified] buildspec.yml to build source and deliver to ECR repository."
+git add .
+git commit -am "[Modified] buildspec.yml to build source and deliver to ECR repository." && git push
 ```
 2. 빌드 및 전달 파이프라인 시작<br>
 ![빌드 및 전달 파이프라인 시작](./assets/build-delivery-pipeline-triggered.png)

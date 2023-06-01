@@ -21,7 +21,7 @@ Bastion 호스트에 SSM 세션 매니저로 접속하여 다음을 수행합니
 sudo yum update -y
 
 # 최신 Docker Engine 패키지를 설치
-sudo amazon-linux-extras install docker
+sudo amazon-linux-extras install docker -y
 
 # Docker 서비스를 시작
 sudo service docker start
@@ -33,7 +33,10 @@ sudo systemctl enable docker
 sudo usermod -a -G docker ec2-user
 sudo usermod -a -G docker ssm-user
 
+docker ps
+
 # 만일 docker를 실행했을 때 권한 오류가 발생하면 인스턴스를 재부팅해봅니다.
+sudo reboot
 ```
 
 참고: [Amazon Linux 2에 Docker 설치](https://docs.aws.amazon.com/ko_kr/AmazonECS/latest/developerguide/create-container-image.html#create-container-image-install-docker)
@@ -54,19 +57,26 @@ aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS
 ![TravelBuddy ECR Login Success](./assets/travelbuddy-ecr-login-success.png)
 
 #### STEP 2. 환경 변수 설정
+CloudFormation의 ```TravelBuddyRds``` 스택의 출력값으로부터 RDS 엔드포인트를 확인하고 아래 명령을 수행합니다.<br>
+![TravelBuddy RDS Endpoint](./assets/travelbuddy-rds-endpoint-check.png)
 
 ```bash
 # 아래에 CF로 배포한 환경의 RDS 주소로 대체할 것
 # (예시) export RDS_ENDPOINT=travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com
 export RDS_ENDPOINT=<RDS_ENDPOINT>
+```
+```bash
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
+echo $AWS_ACCOUNT_ID
+
 export AWS_REGION=`curl -s http://169.254.169.254/latest/dynamic/instance-identity/document| grep region |awk -F\" '{print $4}'`
+echo $AWS_REGION
 ```
 
 #### STEP 3. travelbuddy 컨테이너 실행
 
 ```bash
-# env.yaml 파일의 내용을 확인하여 환경변수를 주입하여 컨테이너 실행
+# 환경변수를 주입하여 컨테이너 실행
 docker run --rm \
   -e JDBC_CONNECTION_STRING="jdbc:mysql://${RDS_ENDPOINT}:3306/travelbuddy?useSSL=false" \
   -e JDBC_UID=root \
@@ -100,14 +110,13 @@ curl localhost:8080/travelbuddy/
 ```bash
 # 컨테이너 중지하기
 docker stop <컨테이너 이름>
-docker rm <컨테이너 이름>
 ```
 
 ## 2. EKS 배포
 우리는 앞서 모놀리스 어플리케이션의 배포 체계를 다소 단순한 형태의 Push 기반 GitOps 파이프라인으로 구성할 것이라고 하였습니다.<br>
 ![Push 기반 GitOps 체계](./assets/M2M-Replatform-Architecture.png)
 
-그리고 어플리케이션을 빌드 및 컨테이너화하여 ECR 리포지터리에 푸시하여 빌드 및 전달 파이프라인을 완료하였고, Bastion 호스트에서 데이터베이스에 접속한 후 어플리케이션이 동작 가능함을 확인하였습니다.
+그리고 어플리케이션을 빌드 및 컨테이너화한 후 ECR 리포지터리에 푸시하여 빌드 및 전달 파이프라인을 완료하였고, Bastion 호스트에서 데이터베이스에 접속한 후 어플리케이션이 동작 가능함을 확인하였습니다.
 
 이번에는 배포 Manifest를 작성함으로써 배포 파이프라인 (Push 기반)을 꾸며보도록 하겠습니다.
 
@@ -117,7 +126,7 @@ docker rm <컨테이너 이름>
 이번에는 Bastion 호스트가 아닌 먼저 사용하던 Cloud9 환경을 다시 사용합니다.<br>
 Deployment, Service, Ingress 등의 쿠버네테스 매니페스트 파일은 이미 아래 경로에 저장되어 있을 것입니다.
 ```bash
-mkdir -p ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-files
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-files
 ```
 ![TravelBuddy 매니페스트 파일 경로](./assets/travelbuddy-k8s-manifest-directory.png)
 
@@ -135,7 +144,7 @@ TravelBuddy 컨테이너 배포 매니페스트 파일 ```02_deployment.yaml```�
 1. 배포 리포지터리 URL 확인
 ![배포 리포지터리 URL 확인](./assets/travelbuddy-deploy-repository-url.png)
 
-2. 위에서 확인 URL을 해당 디렉토리에 연결
+2. 위에서 확인한 URL을 해당 디렉토리에 연결
 ```bash
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
 git init
@@ -159,6 +168,11 @@ echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath
 
 ## 3. 어플리케이션 수정해 보기
 
-아래 파일에서 "Red Hot"이라는 문구를 찾아 자신이 원하는 문구로 대체하고 Push하고, 잠시 후 변경된 페이지가 표시되는 것을 확인해 보십시요.<br>
+아래 파일에서 "Red Hot"이라는 문구를 찾아 자신이 원하는 문구로 대체하고 Push하고 (예: Life-time), 잠시 후 변경된 페이지가 표시되는 것을 확인해 보십시요.<br>
 ```~/environment/m2m-travelbuddy/applications/TravelBuddy/build/src/main/webapp/WEB-INF/views/index.jsp```
 ![Change the App](./assets/travelbuddy-change-the-app.png)
+
+**[Backlog 접수!]**<br>
+PO (Product Owner)는 몇몇 고객으로부터 상황에 따라 몇몇 FlighSpecial과 HotelSpecial 정보가 표시되지 않는 것 같다는 VOC를 받았습니다.<br>
+이미 스프린트 15가 끝나가고 있으므로 이번 스프린트에 Expedited Backlog로 추가하기에는 어렵지만, 우선 순위가 높으므로 다음 수요일부터 시작되는 스프린트 16의 백로그에 넣기를 원합니다.<br>
+<u>해당 이슈를 분석하고 스토리 포인트를 산정한 후 수정 및 배포를 진행해 보세요.</u>

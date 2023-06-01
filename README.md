@@ -41,6 +41,11 @@ Agenda
   - (옵션) Pull 기반의 GitOps 구조를 구축 (ArgoCD)
   - FlightSpecial 애플리케이션을 직접 개발하면서 학습 내용을 복습
 
+또한 필요하다면 다음과 같은 주제를 함께 토론해 보면 좋을 것 같습니다.<br>
+- 도메인 주도 설계 (Domain-Driven Design)
+- Layered Architecture 및 SOLID 원칙
+- IRSA (IAM Role for Service Account)
+
 ### 실습 환경 구성
 - 먼저 [Cloud9 환경 구성하기](./docs/cloud9.md)를 합니다.
 - 다음으로 [EKS Cluster를 생성 (CDK 사용)](./docs/eks-cluster-cdk.md)합니다.

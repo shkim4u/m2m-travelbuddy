@@ -64,15 +64,12 @@ aws eks update-kubeconfig --name M2M-EksCluster --region ap-northeast-2 --role-a
 kubectl get nodes
 ```
 
-## kubectl과 AWS IAM Authenticator에 대한 설명 자료
-https://ssup2.github.io/theory_analysis/AWS_EKS_%EC%9D%B8%EC%A6%9D/
-
 ## AWS 콘솔에서 EKS 클러스터 둘러보기
 우리는 CDK를 통하여 EKS 클러스터를 성공적으로 배포하였습니다.<br>
 이제 잠깐 AWS 콘솔을 통해서 생성된 클러스터를 둘러보도록 하겠습니다.
 
 1. 콘솔 권한이 추가된 것을 확인
-2. kubectl과 AWS IAM Authenticator 인증에 대한 설명 추가
+2. [kubectl과 AWS IAM Authenticator 인증](https://ssup2.github.io/theory_analysis/AWS_EKS_%EC%9D%B8%EC%A6%9D/)에 대하여
 
 
 ## TravelBuddy Blue Print 아키텍처
