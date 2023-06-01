@@ -21,6 +21,8 @@ const env = {
 
 /**
  * Basic VPC info for EKS clusters.
+ * (참고) 아래에서 반드시 EKS Admin User와 Admin Role을 자신의 환경에 맞게 설정한다.
+ * (참고) 설정하지 않아도 EKS 클러스터 생성 후에도 kubectl로 접근할 수 있다. 방법은?
  */
 const infrastructureEnvironment: InfrastructureEnvironment = {
   stackNamePrefix: "M2M",
@@ -29,8 +31,8 @@ const infrastructureEnvironment: InfrastructureEnvironment = {
   cidrPublicSubnetAZc: "10.220.12.0/22",
   cidrPrivateSubnetAZa: "10.220.4.0/22",
   cidrPrivateSubnetAZc: "10.220.8.0/22",
-  eksClusterAdminIamUser: "shkim4u",
-  eksClusterAdminIamRole: "m2m-admin",
+  eksClusterAdminIamUser: "admin",
+  eksClusterAdminIamRole: "cloud9-admin",
 };
 
 /**
