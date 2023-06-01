@@ -111,7 +111,7 @@ export class EksStack extends Stack {
       this,
       'EksNodeGroupSLR',
       {
-        awsServiceName: "eks-nodegroup.amazonaws.com
+        awsServiceName: "eks-nodegroup.amazonaws.com"
       }
     );
 
