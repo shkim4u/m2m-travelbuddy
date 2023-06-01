@@ -105,6 +105,17 @@ export class EksStack extends Stack {
     );
 
     /*
+     * Service-linked role (SLR) for EKS node group.
+     */
+    const slrEksNodeGroup = new aws_iam.CfnServiceLinkedRole(
+      this,
+      'EksNodeGroupSLR',
+      {
+        awsServiceName: "eks-nodegroup.amazonaws.com
+      }
+    );
+
+    /*
      * IAM for managed node group.
      * [2023-06-01] Custom managed node group setting is commented out for simplicity.
      */
