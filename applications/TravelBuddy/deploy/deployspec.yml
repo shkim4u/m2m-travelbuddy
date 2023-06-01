@@ -82,8 +82,8 @@ phases:
       - kubectl apply -f $EKS_MANIFEST_FILES_DIR/01_configmap.yaml
       - echo "Step 2 - Applying application deployment manifest file."
       - kubectl apply -f $EKS_MANIFEST_FILES_DIR/02_deployment.yaml
-#      - echo "Step 3 - Applying service (Network Load Balancer) manifest file. Note that Ingress resources will be covered until it becomes necessary."
-#      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/03_service_nlb.yaml
+      - echo "Step 3 - Applying service (Node Port) manifest file."
+      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/03_service.yaml
       - echo "Step 4 - Applying service (Ingress Controller) manifest file."
       - kubectl apply -f $EKS_MANIFEST_FILES_DIR/04_ingress.yaml
       - echo "Step 99 - Applying ConfigMap for logging."
