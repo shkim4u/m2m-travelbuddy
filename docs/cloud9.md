@@ -55,9 +55,9 @@ IAM Role은 특정 권한을 가진 IAM 자격 증명입니다. IAM 역할의 �
 2. AWS Service 및 EC2가 선택된 것을 확인하고 Next: Permissions를 클릭합니다.
 3. AdministratorAccess 정책이 선택된 것을 확인하고 Next: Tags를 클릭합니다.
 4. 태그 추가(선택 사항) 단계에서 Next: Review를 클릭합니다.
-5. Role name에 아래와 같이 m2m-admin을 입력한 후, AdministratorAccess 관리형 정책이 추가된 것을 확인하고 Create role을 클릭합니다.
+5. Role name에 아래와 같이 cloud9-admin을 입력한 후, AdministratorAccess 관리형 정책이 추가된 것을 확인하고 Create role을 클릭합니다. (참고) Role 이름은 조금씩 다르게 지어도 되지만 "m2m-admin"은 앞으로 우리가 CDK를 통해서 생성할 스택에서 자동으로 만들어질 것이므로 비워둡니다 (사용하지 않음).
 ```
-m2m-admin
+cloud9-admin
 ```
 
 ### IDE (AWS Cloud9 인스턴스)에 IAM Role 부여
@@ -68,7 +68,7 @@ AWS Cloud9 환경은 EC2 인스턴스로 구동됩니다. 따라서 EC2 콘솔�
 2. 해당 인스턴스를 선택 후, Actions > Security > Modify IAM Role을 클릭합니다 (참고: 설정된 언어에 따라 동일한 의미를 가지는 다른 언어로 표시될 수 있습니다).
    ![attach-role.png](./assets/attach-role.png)
 3. IAM Role에서 m2m-admin을 선택한 후, Save 버튼을 클릭합니다.
-   ![modify-role.png](./assets/modify-role.png)
+   ![modify-role.png](./assets/modify-role-new.png)
 
 ### IDE에서 IAM 설정 업데이트
 
@@ -87,7 +87,7 @@ rm -vf ${HOME}/.aws/credentials
 - GetCallerIdentity CLI 명령어를 통해, Cloud9 IDE가 올바른 IAM Role을 사용하고 있는지 확인하세요. 결과 값이 나오면 올바르게 설정된 것입니다.
 
 ```bash
-aws sts get-caller-identity --query Arn | grep m2m-admin
+aws sts get-caller-identity --query Arn | grep cloud9-admin
 ```
 
 ## EKS 관련 도구 설치
@@ -140,8 +140,11 @@ eksctl version
 ### AWS CLI 업데이트
 Cloud9에 설치된 AWS CLI의 버전이 1일 경우 kubectl과의 연계에 문제가 있을 수 있습니다. 이를 해소하기 위해 AWS CLI를 업데이트합니다.<br>
 > (참고) aws --version 명령을 실행했을 때 다음과 같이 표시되면 AWS CLI Version 1 환경입니다.<br>
-> 
-> $ aws --version <br>
+>
+> ```bash
+> aws --version
+> ```
+> (버전 1 표시 예)<br>
 > $ aws-cli/1.19.112 Python/2.7.18 Linux/4.14.314-237.533.amzn2.x86_64 botocore/1.20.112
 
 Cloud9의 터미널 창에서 다음을 실행합니다.
