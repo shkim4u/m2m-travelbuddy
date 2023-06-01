@@ -225,6 +225,33 @@ export class EksStack extends Stack {
       }
     );
 
+    /*
+     * Install Argo Rollout with helm.
+     * References:
+     * - https://artifacthub.io/packages/helm/argo/argo-rollouts
+     * - https://argo-rollouts.readthedocs.io/en/latest/installation/
+     * - https://argo-rollouts.readthedocs.io/en/release-1.5/FAQ/
+     */
+    eksCluster.addHelmChart(
+      `${clusterName}-ArgoRollout`,
+      {
+        repository: "https://argoproj.github.io/argo-helm",
+        chart: "argo-rollouts",
+        release: "argo-rollouts",
+        namespace: "argo-rollouts",
+        createNamespace: true,
+        values: {
+          installCRDs: true,
+          dashboard: {
+            enabled: true,
+            service: {
+              type: "LoadBalancer"
+            }
+          },
+        }
+      }
+    );
+
     this.eksCluster = eksCluster;
 
     /**

@@ -67,8 +67,8 @@ Agenda
 
 ## FlightSpecial Microservice 애플리케이션
 
-- Layered architecture를 반영한 [Package 구조](./docs/package.md)를 살펴봅니다.
-- Docker compose를 활용하여 sandbox 환경을 구성하는 방법을 알아봅니다.
+- Layered Architecture를 반영한 [Package 구조](./docs/package.md)를 살펴봅니다.
+- Docker Compose를 활용하여 Sandbox 환경을 구성하는 방법을 알아봅니다.
 
 ### 실습 4: Strangler Fig Pattern - HotelSpecial 애플리케이션을 분리
 

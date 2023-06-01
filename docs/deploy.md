@@ -9,6 +9,7 @@
    1. EKS 배포 형상 (Manifest) 리포지터리 클론하기
    2. Manifest 준비하기
    2. Manifest로 TravelBuddy 배포하기
+3. 어플리케이션 수정해 보기
 
 ## 1. Bastion 호스트에 접속해서 TravelBuddy 애플리케이션 실행해보기
 Bastion 호스트에 SSM 세션 매니저로 접속하여 다음을 수행합니다.
@@ -83,6 +84,7 @@ docker logs <컨테이너 이름>
 
 ```bash
 # 페이지 요청
+# (참고) 마지막에 꼭 "/"를 붙여주어야 합니다.
 curl localhost:8080/travelbuddy/
 
 # html 페이지 응답 확인 (웹브라우저로도 확인 가능)
@@ -151,5 +153,12 @@ git push --set-upstream origin main
 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
-echo http://$(kubectl get ingress/travelbuddy-ingress -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')
+echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')
 ```
+![TravelBuddy Landing Page](./assets/travelbuddy-landing-page.png)
+
+## 3. 어플리케이션 수정해 보기
+
+아래 파일에서 "Red Hot"이라는 문구를 찾아 자신이 원하는 문구로 대체하고 Push하고, 잠시 후 변경된 페이지가 표시되는 것을 확인해 보십시요.<br>
+```~/environment/m2m-travelbuddy/applications/TravelBuddy/build/src/main/webapp/WEB-INF/views/index.jsp```
+![Change the App](./assets/travelbuddy-change-the-app.png)
