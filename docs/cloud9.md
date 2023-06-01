@@ -232,4 +232,5 @@ df -h
 ## 실습 가이드 및 소스 리포지터리 받기 (git clone)
 ```bash
 git clone https://github.com/shkim4u/m2m-travelbuddy.git
+cd m2m-travelbuddy
 ```
