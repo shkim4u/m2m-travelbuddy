@@ -65,12 +65,11 @@ Agenda
 
 [Microservice](./docs/microservices.md)의 개념을 간단히 살펴보고, 어떤 경우에 마이크로서비스가 필요한지 토론해봅니다.
 
-## FlightSpecial Microservice 애플리케이션
+## 실습 4: FlightSpecial Microservice 애플리케이션
 
 - Layered Architecture를 반영한 [Package 구조](./docs/package.md)를 살펴봅니다.
 - Docker Compose를 활용하여 Sandbox 환경을 구성하는 방법을 알아봅니다.
 
-### 실습 4: Strangler Fig Pattern - HotelSpecial 애플리케이션을 분리
-
+### 실습 5: Strangler Fig Pattern - HotelSpecial 애플리케이션을 분리
 - FlightSpecial 프로젝트를 참고하여 직접 HotelSpecial 애플리케이션을 제작합니다.
 - 이 과정을 통해서 앞에서 학습한 세부 기술들을 익히고 내재화합니다.
