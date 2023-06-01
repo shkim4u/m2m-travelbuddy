@@ -49,7 +49,7 @@ export class NetworkStack extends Stack {
         availabilityZone: `${props?.env?.region}a`,
         cidrBlock: networkInformation.cidrPublicSubnetAZa ?? "10.220.0.0/22",
         vpcId: this.vpc.vpcId,
-        mapPublicIpOnLaunch: true
+        mapPublicIpOnLaunch: true,
       }
     );
     publicSubnetA.addDefaultInternetRoute(igw.ref, igwAttachment);
@@ -171,8 +171,16 @@ export class NetworkStack extends Stack {
     cdk.Tags.of(publicSubnetA).add(
       'kubernetes.io/role/elb', '1'
     );
+    cdk.Tags.of(publicSubnetA).add(
+      'aws-cdk:subnet-type',
+        'Public'
+    );
     cdk.Tags.of(publicSubnetC).add(
       'kubernetes.io/role/elb', '1'
+    );
+    cdk.Tags.of(publicSubnetC).add(
+      'aws-cdk:subnet-type',
+      'Public'
     );
     // Print outputs.
     // Stack

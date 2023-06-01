@@ -90,8 +90,8 @@ export class EksStack extends Stack {
             subnets: privateSubnets
           }
         ],
-        defaultCapacity: 4,
-        defaultCapacityInstance: aws_ec2.InstanceType.of(aws_ec2.InstanceClass.M5, aws_ec2.InstanceSize.XLARGE),
+        defaultCapacity: 0,
+        // defaultCapacityInstance: aws_ec2.InstanceType.of(aws_ec2.InstanceClass.M5, aws_ec2.InstanceSize.XLARGE),
         outputMastersRoleArn: true,
         securityGroup: clusterSecurityGroup,
         clusterLogging: [
@@ -108,43 +108,43 @@ export class EksStack extends Stack {
      * IAM for managed node group.
      * [2023-06-01] Custom managed node group setting is commented out for simplicity.
      */
-    // const eksNodeRole = new aws_iam.Role(
-    //   this,
-    //   `${clusterName}-${props?.env?.region}-NodeRole`,
-    //   {
-    //     roleName: `${clusterName}-${props?.env?.region}-NodeRole`,
-    //     assumedBy: new aws_iam.ServicePrincipal("ec2.amazonaws.com")
-    //   }
-    // );
+    const eksNodeRole = new aws_iam.Role(
+      this,
+      `${clusterName}-${props?.env?.region}-NodeRole`,
+      {
+        roleName: `${clusterName}-${props?.env?.region}-NodeRole`,
+        assumedBy: new aws_iam.ServicePrincipal("ec2.amazonaws.com")
+      }
+    );
 
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryPowerUser"));
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKS_CNI_Policy"));
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKSWorkerNodePolicy"));
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy"));
-    // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryPowerUser"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryReadOnly"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKS_CNI_Policy"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKSWorkerNodePolicy"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy"));
+    eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"));
 
     // const eksNodeGroup = eksCluster.addNodegroupCapacity(
-    // const eksNodeGroup = new aws_eks.Nodegroup(
-    //   this,
-    //   `${clusterName}-NodeGroup`,
-    //   {
-    //     cluster: eksCluster,
-    //     amiType: aws_eks.NodegroupAmiType.AL2_X86_64,
-    //     // amiType: eks.NodegroupAmiType.AL2_X86_64_GPU,
-    //     nodegroupName: `${clusterName}-NodeGroup`,
-    //     instanceTypes: [new aws_ec2.InstanceType('m5.xlarge')],
-    //     minSize: 2,
-    //     maxSize: 4,
-    //     desiredSize: 2,
-    //     diskSize: 100,
-    //     capacityType: aws_eks.CapacityType.ON_DEMAND,
-    //     subnets: {
-    //       subnets: privateSubnets
-    //     },
-    //     nodeRole: eksNodeRole
-    //   }
-    // );
+    const eksNodeGroup = new aws_eks.Nodegroup(
+      this,
+      `${clusterName}-NodeGroup`,
+      {
+        cluster: eksCluster,
+        amiType: aws_eks.NodegroupAmiType.AL2_X86_64,
+        // amiType: eks.NodegroupAmiType.AL2_X86_64_GPU,
+        nodegroupName: `${clusterName}-NodeGroup`,
+        instanceTypes: [new aws_ec2.InstanceType('m5.xlarge')],
+        minSize: 2,
+        maxSize: 4,
+        desiredSize: 2,
+        diskSize: 100,
+        capacityType: aws_eks.CapacityType.ON_DEMAND,
+        subnets: {
+          subnets: privateSubnets
+        },
+        nodeRole: eksNodeRole
+      }
+    );
 
     // Add an existing user to the master role of Kubernetes for convenience use at AWS console.
     this.addClusterAdminIamUser(eksCluster, clusterAdminIamUser);
