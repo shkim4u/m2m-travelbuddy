@@ -1,6 +1,16 @@
 # Application Modernization
 
-Agenda
+## 변경 사항<br>
+***[2023-06-03]***
+1. RDS CloudFormation 템플릿 포함 (Include)
+2. FlightSpecial 마이크로서비스를 위한 빌드 파이프라인 추가
+   1. ECR 컨테이너 리포지터리
+   2. CodeCommit, CodeBuild, CodePipeline
+3. FlightSpecial 마이크로서비스를 위한 GitOps 배포 CodeCommit 리포지터리
+4. FlightSpecial Polyglot 데이터베이스를 위한 PostgreSQL 자원 생성 CDK Stack 추가
+
+
+## Agenda
 
 - Sample Application 소개
 - Monolith - TravelBuddy 마이그레이션

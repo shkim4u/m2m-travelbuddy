@@ -8,6 +8,7 @@ import {BuildDeliveryStack} from "../lib/build-delivery-stack";
 import {SsmStack} from "../lib/ssm-stack";
 import {IamStack} from "../lib/iam-stack";
 import {Ec2Stack} from "../lib/ec2-stack";
+import {RdsLegacyStack} from "../lib/rds-legacy-stack";
 
 const app = new cdk.App();
 
@@ -113,6 +114,19 @@ buildAndDeliveryStack.addDependency(eksStarck);
 const ssmStack = new SsmStack(
   app,
   `${infrastructureEnvironment.stackNamePrefix}-SsmStack`,
+  {
+    env
+  }
+);
+
+/**
+ * [2023-06-03] RDS legacy stack for legacy TravelBuddy application.
+ */
+const rdsLegacyStack = new RdsLegacyStack(
+  app,
+  `${infrastructureEnvironment.stackNamePrefix}-RdsLegacyStack`,
+  networkStack.vpc,
+  networkStack.eksPrivateSubnets,
   {
     env
   }
