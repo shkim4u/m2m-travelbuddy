@@ -142,6 +142,7 @@ const flightspecialDatabaseStack = new FlightSpecialDatabaseStack(
     app,
     `${infrastructureEnvironment.stackNamePrefix}-FlightSpecialDatabaseStack`,
     networkStack.vpc,
+    networkStack.eksPrivateSubnets,
     {
         env
     }

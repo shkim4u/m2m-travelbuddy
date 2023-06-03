@@ -1,5 +1,5 @@
 import {Duration, RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
-import {InstanceClass, InstanceSize, InstanceType, IVpc} from "aws-cdk-lib/aws-ec2";
+import {InstanceClass, InstanceSize, InstanceType, ISubnet, IVpc} from "aws-cdk-lib/aws-ec2";
 import {Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVersion} from "aws-cdk-lib/aws-rds";
 import {Construct} from "constructs";
 import {deployEnv, isProductionDeployEnv, KnownDeployEnv, projectEnvSpecificName} from "./env-utils";
@@ -14,6 +14,7 @@ export class FlightSpecialDatabaseStack extends Stack {
         scope: Construct,
         id: string,
         vpc: IVpc,
+        privateSubnets: ISubnet[],
         props: StackProps,
     ) {
         super(scope, id, props);
@@ -41,6 +42,9 @@ export class FlightSpecialDatabaseStack extends Stack {
                 port: FlightSpecialDatabaseStack.databasePort,
                 maxAllocatedStorage: 200,
                 vpc,
+                vpcSubnets: {
+                    subnets: privateSubnets
+                },
                 deletionProtection: deployEnv() == KnownDeployEnv.prod,
                 removalPolicy: removalPolicyAppropriateForEnv(),
                 backupRetention: databaseBackupRetentionDaysForEnv(),
