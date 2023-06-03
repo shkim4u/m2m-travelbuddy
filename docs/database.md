@@ -76,11 +76,24 @@ sudo yum -y install mysql
 ### RDS 접속 및 데이터베이스 초기 구성
 아래에서 <rds_host> 부분은 CloudFormation으로 생성한 RDS의 접속 정보로 대체합니다.<br>
 ![RDS 접속 정보](./assets/rds-endpoint.png)
+
+혹은 아래 명령으로 확인할 수 있습니다.<br>
 ```bash
-mysql -u root --password=labpassword -h <rds_host>
+aws cloudformation describe-stacks --region ap-northeast-2 --query "Stacks[?StackName=='M2M-RdsLegacyStack'][].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text
 ```
-> (예)<br>
-> mysql -u root --password=labpassword -h travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com
+
+(Update) 아래와 같은 명령으로 RDS 엔드포인트 확인 필요없이 바로 접속할 수 있습니다.<br>
+```bash
+mysql -u root --password=labpassword -h `aws cloudformation describe-stacks --region ap-northeast-2 --query "Stacks[?StackName=='M2M-RdsLegacyStack'][].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text`
+```
+
+[//]: # (```bash)
+[//]: # (#mysql -u root --password=labpassword -h <rds_host>)
+[//]: # (```)
+
+[//]: # (> &#40;예&#41;<br>)
+
+[//]: # (> mysql -u root --password=labpassword -h travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com)
 
 접속에 성공하면 다음 명령어로 travelbuddy 데이터베이스를 생성합니다.<br>
 > ***(참고) 데이터베이스 형상 관리 도구 - Flyway***<br>

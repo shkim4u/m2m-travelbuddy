@@ -130,7 +130,10 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-fi
 ```
 ![TravelBuddy 매니페스트 파일 경로](./assets/travelbuddy-k8s-manifest-directory.png)
 
-1. Deployment 매니페스트 파일
+1. Deployment 매니페스트 파일<br>
+> (2023-06-03 업데이트)<br>
+> 아래 수정은 02_deployment.yaml 파일에 RDS Endpoint 정보를 동적으로 주입하도록 설정하였으므로, 더 이상 수행할 필요가 없습니다.
+
 TravelBuddy 컨테이너 배포 매니페스트 파일 ```02_deployment.yaml```의 38번째 줄 근처에 설정된 데이터베이스 접속 주소를 자신의 RDS 접속 엔트포인트로 대체합니다.<br>
    1. RDS 접속 주소는 AWS 콘솔의 [RDS 서비스](https://ap-northeast-2.console.aws.amazon.com/rds/home?region=ap-northeast-2#databases:)에서 확인할 수 있습니다.
    ![TravelBuddy 배포 매니페스트 파일 RDS 주소 교체](./assets/travelbuddy-rds-endpoint.png)

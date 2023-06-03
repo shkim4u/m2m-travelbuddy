@@ -10,6 +10,7 @@ import {IamStack} from "../lib/iam-stack";
 import {Ec2Stack} from "../lib/ec2-stack";
 import {RdsLegacyStack} from "../lib/rds-legacy-stack";
 import * as net from "net";
+import {FlightSpecialDatabaseStack} from "../lib/flightspecial-database-stack";
 
 const app = new cdk.App();
 
@@ -133,3 +134,16 @@ const rdsLegacyStack = new RdsLegacyStack(
   }
 );
 rdsLegacyStack.addDependency(networkStack);
+
+/**
+ * [2023-06-03] Postgres Database stack for FlightSpecial microservice.
+ */
+const flightspecialDatabaseStack = new FlightSpecialDatabaseStack(
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-FlightSpecialDatabaseStack`,
+    networkStack.vpc,
+    {
+        env
+    }
+);
+flightspecialDatabaseStack.addDependency(networkStack);
