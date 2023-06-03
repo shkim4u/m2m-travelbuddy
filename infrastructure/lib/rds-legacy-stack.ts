@@ -23,7 +23,7 @@ export class RdsLegacyStack extends Stack {
       this,
       `$[id}-RdsLegacyStackTemplate`,
       {
-        templateFile: "../../prepare/rds.template",
+        templateFile: "../prepare/rds.template",
         parameters: {
           'VpcId': vpc.vpcId,
           // PrivateSubnetIds: [

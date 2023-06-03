@@ -21,7 +21,7 @@
 
 - (참고) ```~/environment/m2m-travelbuddy/infrastructure/eks-stack.ts``` 파일 34번째 줄 근방에서 EKS Admin User와 Admin Role을 자신의 환경에 맞게 설정한 후에 진행합니다.
     ![EKS Admin User and Role](./assets/cdk-eks-admin-user-and-role.png)
-- (참고) 설정하지 않아도 EKS 클러스터 생성 후에도 kubectl로 접근할 수 있습니다. 방법은?
+- (참고) 설정하지 않아도 EKS 클러스터 생성 후에 kubectl로 접근할 수 있습니다. 방법은?
 
 ```bash
 # 1. IaC 디렉토리로 이동
