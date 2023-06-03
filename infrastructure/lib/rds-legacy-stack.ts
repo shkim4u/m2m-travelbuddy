@@ -21,7 +21,7 @@ export class RdsLegacyStack extends Stack {
 
     const cfnRdsLegacyTemplate = new CfnInclude(
       this,
-      `$[id}-RdsLegacyStackTemplate`,
+      `${id}-CfnTemplate`,
       {
         templateFile: "../prepare/rds.template",
         parameters: {

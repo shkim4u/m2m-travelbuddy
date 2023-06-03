@@ -9,6 +9,7 @@ import {SsmStack} from "../lib/ssm-stack";
 import {IamStack} from "../lib/iam-stack";
 import {Ec2Stack} from "../lib/ec2-stack";
 import {RdsLegacyStack} from "../lib/rds-legacy-stack";
+import * as net from "net";
 
 const app = new cdk.App();
 
@@ -131,3 +132,4 @@ const rdsLegacyStack = new RdsLegacyStack(
     env
   }
 );
+rdsLegacyStack.addDependency(networkStack);

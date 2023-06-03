@@ -35,7 +35,7 @@ spec:
               cpu: "1000m"
           env:
             - name: JDBC_CONNECTION_STRING
-              value: "jdbc:mysql://travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com:3306/travelbuddy?useSSL=false"
+              value: "jdbc:mysql://RDS_ENDPOINT:3306/travelbuddy?useSSL=false"
             - name: JDBC_UID
               value: "root"
             - name: JDBC_PWD
@@ -47,38 +47,38 @@ spec:
                   key: environment
             - name: TZ
               value: Asia/Seoul
-#          readinessProbe:
-#            failureThreshold: 3
-#            successThreshold: 1
-#            httpGet:
-#              path: /index.html
-#              port: 80
-#              scheme: HTTP
-#            initialDelaySeconds: 120
-#            periodSeconds: 5
-# The error log from "kubectl logs" can be safely ignored: [Error] Get instance id metadata failed: RequestError: send request failed
-# Reference: https://github.com/aws/aws-app-mesh-examples/issues/141
+        #          readinessProbe:
+        #            failureThreshold: 3
+        #            successThreshold: 1
+        #            httpGet:
+        #              path: /index.html
+        #              port: 80
+        #              scheme: HTTP
+        #            initialDelaySeconds: 120
+        #            periodSeconds: 5
+        # The error log from "kubectl logs" can be safely ignored: [Error] Get instance id metadata failed: RequestError: send request failed
+        # Reference: https://github.com/aws/aws-app-mesh-examples/issues/141
         - name: xray-daemon
           image: amazon/aws-xray-daemon:latest
           imagePullPolicy: IfNotPresent
-#          command: ["/usr/bin/xray", "-c", "/aws/xray/config.yaml"]
+          #          command: ["/usr/bin/xray", "-c", "/aws/xray/config.yaml"]
           ports:
             # Try to fix: an error in Spring Boot app: Encountered error polling GetSamplingRule: com.amazonaws.xray.internal.XrayClientException: Could not read response code.
             # Related to the following error from X-Ray daemon: [
             # Warn] Delaying sending of additional batches by 30 seconds
-              #2021-07-17T12:08:10Z [Error] Sending segment batch failed with: RequestError: send request failed
-              #caused by: Post "https://xray.ap-northeast-2.amazonaws.com/TraceSegments": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
+            #2021-07-17T12:08:10Z [Error] Sending segment batch failed with: RequestError: send request failed
+            #caused by: Post "https://xray.ap-northeast-2.amazonaws.com/TraceSegments": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)
             - name: xray-ingest
               containerPort: 2000
-#              hostPort: 2000
+              #              hostPort: 2000
               protocol: UDP
             - name: xray-tcp
               containerPort: 2000
-#              hostPort: 2000
+              #              hostPort: 2000
               protocol: TCP
-#            - containerPort: 2000
-##              hostPort: 0
-#              protocol: UDP
+          #            - containerPort: 2000
+          ##              hostPort: 0
+          #              protocol: UDP
           resources:
             requests:
               memory: "128Mi"
