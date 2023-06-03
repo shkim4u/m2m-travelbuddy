@@ -4,6 +4,7 @@ import {Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVer
 import {Construct} from "constructs";
 import {deployEnv, isProductionDeployEnv, KnownDeployEnv, projectEnvSpecificName} from "./env-utils";
 import * as cdk from "aws-cdk-lib";
+import {Secret} from "aws-cdk-lib/aws-secretsmanager";
 
 export class FlightSpecialDatabaseStack extends Stack {
     static readonly databasePort = 5432;
@@ -69,6 +70,19 @@ export class FlightSpecialDatabaseStack extends Stack {
                 value: this.databaseInstance.dbInstanceEndpointPort
             }
         );
+
+        // new cdk.CfnOutput(
+        //     this,
+        //     `${id}-FlightSpecial-DB-User`, {
+        //         value: Secret.fromSecretNameV2(this.databaseInstance.secret!, "username")
+        //     }
+        // );
+        // new cdk.CfnOutput(
+        //     this,
+        //     `${id}-FlightSpecial-DB-Password`, {
+        //         value: Secret.fromSecretsManager(this.databaseInstance.secret!, "password")
+        //     }
+        // );
     }
 }
 
