@@ -3,6 +3,7 @@ import {InstanceClass, InstanceSize, InstanceType, ISubnet, IVpc} from "aws-cdk-
 import {Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVersion} from "aws-cdk-lib/aws-rds";
 import {Construct} from "constructs";
 import {deployEnv, isProductionDeployEnv, KnownDeployEnv, projectEnvSpecificName} from "./env-utils";
+import * as cdk from "aws-cdk-lib";
 
 export class FlightSpecialDatabaseStack extends Stack {
     static readonly databasePort = 5432;
@@ -50,6 +51,22 @@ export class FlightSpecialDatabaseStack extends Stack {
                 backupRetention: databaseBackupRetentionDaysForEnv(),
                 copyTagsToSnapshot: true,
                 iamAuthentication: true
+            }
+        );
+
+        /**
+         * Outputs
+         */
+        new cdk.CfnOutput(
+            this,
+            `${id}-FlightSpecial-DB-Endpoint`, {
+                value: this.databaseInstance.dbInstanceEndpointAddress
+            }
+        );
+        new cdk.CfnOutput(
+            this,
+            `${id}-FlightSpecial-DB-Port`, {
+                value: this.databaseInstance.dbInstanceEndpointPort
             }
         );
     }

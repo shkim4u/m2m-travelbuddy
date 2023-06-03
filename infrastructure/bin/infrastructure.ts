@@ -111,6 +111,20 @@ const buildAndDeliveryStack = new BuildDeliveryStack(
 buildAndDeliveryStack.addDependency(eksStarck);
 
 /**
+ * FlightSpecial build and delivery stack.
+ */
+const flightspecialBuildandDeliveryStack = new BuildDeliveryStack(
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-FlightSpaecialCICDStack`,
+    eksStarck.eksCluster,
+    eksStarck.eksDeployRole,
+    {
+        env
+    }
+);
+flightspecialBuildandDeliveryStack.addDependency(eksStarck);
+
+/**
  * SSM Stack.
  */
 const ssmStack = new SsmStack(
