@@ -71,6 +71,11 @@ export class FlightSpecialDatabaseStack extends Stack {
             }
         );
 
+        /*
+         * Secret 값을 얻는 방법 참조
+         * - https://bobbyhadz.com/blog/get-secrets-manager-values-aws-cdk
+         * - https://blog.makerx.com.au/pattern-secure-aws-secret-handling-with-typescript-cdk/
+         */
         // new cdk.CfnOutput(
         //     this,
         //     `${id}-FlightSpecial-DB-User`, {
