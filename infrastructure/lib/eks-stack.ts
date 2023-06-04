@@ -294,6 +294,12 @@ export class EksStack extends Stack {
         );
         new cdk.CfnOutput(
             this,
+            `${clusterName}-PodServiceAccountName`, {
+                value: podServiceAccount.serviceAccountName
+            }
+        );
+        new cdk.CfnOutput(
+            this,
             `${clusterName}-PodServiceAccountRoleArn`, {
                 value: podServiceAccount.role.roleArn
             }
