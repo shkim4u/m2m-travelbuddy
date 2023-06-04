@@ -58,7 +58,7 @@ export class FlightSpecialDatabaseStack extends Stack {
             projectEnvSpecificName('postgres-db'),
             {
                 databaseName: FlightSpecialDatabaseStack.databaseName,
-                engine: DatabaseInstanceEngine.postgres({version: PostgresEngineVersion.VER_15_2}),
+                engine: DatabaseInstanceEngine.postgres({version: PostgresEngineVersion.VER_14_7}),
                 instanceType: InstanceType.of(InstanceClass.M5, InstanceSize.XLARGE),
                 instanceIdentifier: projectEnvSpecificName('postgres-db'),
                 credentials: databaseCredentials,
