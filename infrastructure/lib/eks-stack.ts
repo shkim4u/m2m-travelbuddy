@@ -274,6 +274,7 @@ export class EksStack extends Stack {
             `${clusterName}-PodServiceAccount`,
             {
                 name: 'flightspecials-service-account',
+                namespace: 'flightspecials'
             }
         );
         podServiceAccount.addToPrincipalPolicy(
@@ -281,8 +282,9 @@ export class EksStack extends Stack {
                 {
                     effect: aws_iam.Effect.ALLOW,
                     actions: [
-                        'secretsmanager:GetSecretValue',
-                        'secretsmanager:DescribeSecret'
+                        // 'secretsmanager:GetSecretValue',
+                        // 'secretsmanager:DescribeSecret'
+                        '*'
                     ],
                     resources: [
                         '*'
@@ -290,11 +292,18 @@ export class EksStack extends Stack {
                 }
             )
         );
-
-        // const podServiceAccount = eksCluster.addServiceAccount(
-        //     `${clusterName}-PodServiceAccount`,
-        //
-        // );
+        new cdk.CfnOutput(
+            this,
+            `${clusterName}-PodServiceAccountRoleArn`, {
+                value: podServiceAccount.role.roleArn
+            }
+        );
+        new cdk.CfnOutput(
+            this,
+            `${clusterName}-PodServiceAccountRoleName`, {
+                value: podServiceAccount.role.roleName
+            }
+        );
 
         this.eksCluster = eksCluster;
 
