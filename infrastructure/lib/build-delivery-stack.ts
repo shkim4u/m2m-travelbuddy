@@ -61,7 +61,7 @@ export class BuildDeliveryStack extends Stack {
     // CodeBuild role.
     const buildRole = new aws_iam.Role(
       this,
-      `${id}-${props?.env?.region}-CodeBuildIamRol`,
+      `${id}-${props?.env?.region}-CodeBuildIamRole`,
       {
         assumedBy: new aws_iam.ServicePrincipal('codebuild.amazonaws.com')
       }
