@@ -135,6 +135,9 @@ export class EksStack extends Stack {
         eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKSWorkerNodePolicy"));
         eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("CloudWatchAgentServerPolicy"));
         eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore"));
+        eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMFullAccess"));
+        eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("SecretsManagerReadWrite"));
+
 
         // const eksNodeGroup = eksCluster.addNodegroupCapacity(
         const eksNodeGroup = new aws_eks.Nodegroup(

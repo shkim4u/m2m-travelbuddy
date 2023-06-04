@@ -1,4 +1,4 @@
-import {Duration, RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
+import {aws_ec2, Duration, RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
 import {InstanceClass, InstanceSize, InstanceType, ISubnet, IVpc} from "aws-cdk-lib/aws-ec2";
 import {Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVersion} from "aws-cdk-lib/aws-rds";
 import {Construct} from "constructs";
@@ -20,6 +20,9 @@ export class FlightSpecialDatabaseStack extends Stack {
     ) {
         super(scope, id, props);
 
+        /*
+         * Basic information.
+         */
         const databaseUserName = "postgres";
         // const databasePassword = "P@ssw0rd";
         const databaseCredentialSecretName = `flightspecial_db_credentials_${deployEnv()}`;
@@ -30,6 +33,25 @@ export class FlightSpecialDatabaseStack extends Stack {
                 secretName: databaseCredentialSecretName
             }
         );
+
+        /*
+         * Security group.
+         */
+        const databaseSecurityGroup = new aws_ec2.SecurityGroup(
+            this,
+            `${id}-FlightSpecial-Database-SecurityGroup`,
+            {
+                vpc,
+                allowAllOutbound: true,
+                description: 'Security group for a bastion host',
+            }
+        );
+        databaseSecurityGroup.addIngressRule(
+            aws_ec2.Peer.ipv4(vpc.vpcCidrBlock),
+            aws_ec2.Port.allTraffic(),
+            'Allow all traffic from inside VPC'
+        );
+
 
         this.databaseInstance = new DatabaseInstance(
             this,
@@ -50,7 +72,8 @@ export class FlightSpecialDatabaseStack extends Stack {
                 removalPolicy: removalPolicyAppropriateForEnv(),
                 backupRetention: databaseBackupRetentionDaysForEnv(),
                 copyTagsToSnapshot: true,
-                iamAuthentication: true
+                iamAuthentication: true,
+                securityGroups: [databaseSecurityGroup]
             }
         );
 
