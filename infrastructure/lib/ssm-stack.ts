@@ -36,7 +36,7 @@ export class SsmStack extends Stack {
             this,
             `${id}-${props?.env?.region}-SsmParam-FlightSpecials`,
             {
-                parameterName: '/config/flightspecials_cloud-property/',
+                parameterName: '/config/flightspecials_cloud-property',
                 stringValue: 'default',     // Initially with 'default'
                 description: 'FlightSpecials application sample config by ParameterStore',
                 tier: aws_ssm.ParameterTier.STANDARD
