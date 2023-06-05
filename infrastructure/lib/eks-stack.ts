@@ -164,6 +164,7 @@ export class EksStack extends Stack {
         // Add an existing user to the master role of Kubernetes for convenience use at AWS console.
         this.addClusterAdminIamUser(eksCluster, clusterAdminIamUser);
         this.addClusterAdminIamRole(eksCluster, clusterAdminIamRole);
+        this.addClusterAdminIamRole(eksCluster, "TeamRole");
 
         // Add service namespace.
         serviceName = serviceName.toLowerCase();
@@ -376,7 +377,7 @@ export class EksStack extends Stack {
 
     addClusterAdminIamRole(cluster: aws_eks.Cluster, iamRoleName: string) {
         if (iamRoleName) {
-            const iamRole = aws_iam.Role.fromRoleName(this, "eks-cluster-admin-iam-role", iamRoleName);
+            const iamRole = aws_iam.Role.fromRoleName(this, `eks-cluster-admin-iam-role-${iamRoleName}`, iamRoleName);
             cluster.awsAuth.addRoleMapping(
                 iamRole,
                 {
