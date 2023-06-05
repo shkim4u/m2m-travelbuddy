@@ -273,6 +273,18 @@ export class EksStack extends Stack {
         /**
          * [2023-06-04] Add service account for pod and a role for that.
          */
+        // Add flightspecials namespace.
+        const flightSpecialNamespace = eksCluster.addManifest(
+            `${clusterName}-Namespace-FlightSpecials`,
+            {
+                apiVersion: 'v1',
+                kind: 'Namespace',
+                metadata: {
+                    name: 'flightspecials'
+                }
+            }
+        );
+
         const podServiceAccount = eksCluster.addServiceAccount(
             `${clusterName}-PodServiceAccount`,
             {
@@ -280,6 +292,8 @@ export class EksStack extends Stack {
                 namespace: 'flightspecials'
             }
         );
+        // Service Account가 'flightspecials' Namespace에 의존하므로 이를 설정한다.
+        podServiceAccount.node.addDependency(flightSpecialNamespace);
         podServiceAccount.addToPrincipalPolicy(
             new aws_iam.PolicyStatement(
                 {
