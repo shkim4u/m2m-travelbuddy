@@ -115,7 +115,7 @@ buildAndDeliveryStack.addDependency(eksStarck);
  */
 const flightspecialBuildandDeliveryStack = new BuildDeliveryStack(
     app,
-    `${infrastructureEnvironment.stackNamePrefix}-FlightSpaecialCICDStack`,
+    `${infrastructureEnvironment.stackNamePrefix}-FlightSpecialCICDStack`,
     eksStarck.eksCluster,
     eksStarck.eksDeployRole,
     {
