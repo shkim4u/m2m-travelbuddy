@@ -13,7 +13,7 @@ export function deployEnv(): DeployEnv {
 
 export type DeployEnv = KnownDeployEnv | string
 
-export const PROJECT_NAME = "travelbuddy";
+export const PROJECT_NAME = "flightspecials";
 
 export function projectEnvSpecificName(name: string = ""): string {
     const prefix = PROJECT_NAME.replace('_', '-') + "-" + DEPLOY_ENV;

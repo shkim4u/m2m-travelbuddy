@@ -300,9 +300,9 @@ export class EksStack extends Stack {
                 {
                     effect: aws_iam.Effect.ALLOW,
                     actions: [
-                        // 'secretsmanager:GetSecretValue',
-                        // 'secretsmanager:DescribeSecret'
-                        '*'
+                        'secretsmanager:GetSecretValue',
+                        'secretsmanager:DescribeSecret'
+                        // '*'
                     ],
                     resources: [
                         '*'
