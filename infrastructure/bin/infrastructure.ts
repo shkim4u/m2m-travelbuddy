@@ -18,8 +18,8 @@ const app = new cdk.App();
  * CDK_INTEG_XXX are set when producing the environment-aware values and CDK_DEFAULT_XXX is passed in through from the CLI in actual deployment.
  */
 const env = {
-  region: app.node.tryGetContext('region') || process.env.CDK_INTEG_REGION || process.env.CDK_DEFAULT_REGION,
-  account: app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
+    region: app.node.tryGetContext('region') || process.env.CDK_INTEG_REGION || process.env.CDK_DEFAULT_REGION,
+    account: app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
 };
 
 /**
@@ -28,25 +28,26 @@ const env = {
  * (참고) 설정하지 않아도 EKS 클러스터 생성 후에도 kubectl로 접근할 수 있다. 방법은?
  */
 const infrastructureEnvironment: InfrastructureEnvironment = {
-  stackNamePrefix: "M2M",
-  vpcCidr: "10.220.0.0/19",
-  cidrPublicSubnetAZa: "10.220.0.0/22",
-  cidrPublicSubnetAZc: "10.220.12.0/22",
-  cidrPrivateSubnetAZa: "10.220.4.0/22",
-  cidrPrivateSubnetAZc: "10.220.8.0/22",
-  eksClusterAdminIamUser: "admin",
-  eksClusterAdminIamRole: "cloud9-admin",
+    stackNamePrefix: "M2M",
+    vpcCidr: "10.220.0.0/19",
+    useKarpenter: true,
+    cidrPublicSubnetAZa: "10.220.0.0/22",
+    cidrPublicSubnetAZc: "10.220.12.0/22",
+    cidrPrivateSubnetAZa: "10.220.4.0/22",
+    cidrPrivateSubnetAZc: "10.220.8.0/22",
+    eksClusterAdminIamUsers: ["admin"],
+    eksClusterAdminIamRoles: ["TeamRole", "cloud9-admin"],
 };
 
 /**
  * IAM stack.
  */
 const iamStack = new IamStack(
-  app,
-`${infrastructureEnvironment.stackNamePrefix}-IamStack`,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-IamStack`,
+    {
+        env
+    }
 );
 
 
@@ -55,44 +56,45 @@ const iamStack = new IamStack(
  */
 let networkStack: NetworkStack | undefined = undefined;
 networkStack = new NetworkStack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-NetworkStack`,
-  infrastructureEnvironment,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-NetworkStack`,
+    infrastructureEnvironment,
+    {
+        env
+    }
 );
 
 /**
  * RDS bastion instances and some possible others.
  */
 const ec2Stack = new Ec2Stack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-Ec2Stack`,
-  networkStack.vpc,
-  networkStack.eksPublicSubnets,
-  iamStack.adminRole,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-Ec2Stack`,
+    networkStack.vpc,
+    networkStack.eksPublicSubnets,
+    iamStack.adminRole,
+    {
+        env
+    }
 );
 
 /**
  * EKS Cluster Stack.
  */
 const eksStarck = new EksStack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-EksStack`,
-  networkStack.vpc,
-  networkStack.eksPublicSubnets,
-  networkStack.eksPrivateSubnets,
-  `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
-  "m2m",
-  infrastructureEnvironment.eksClusterAdminIamUser ?? "",
-  infrastructureEnvironment.eksClusterAdminIamRole ?? "",
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-EksStack`,
+    networkStack.vpc,
+    networkStack.eksPublicSubnets,
+    networkStack.eksPrivateSubnets,
+    `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
+    "m2m",
+    infrastructureEnvironment.eksClusterAdminIamUsers ?? [],
+    infrastructureEnvironment.eksClusterAdminIamRoles ?? [],
+    infrastructureEnvironment,
+    {
+        env
+    }
 );
 eksStarck.addDependency(networkStack);
 
@@ -100,13 +102,13 @@ eksStarck.addDependency(networkStack);
  * Build and delivery stack.
  */
 const buildAndDeliveryStack = new BuildDeliveryStack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-BuildAndDeliveryStack`,
-  eksStarck.eksCluster,
-  eksStarck.eksDeployRole,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-BuildAndDeliveryStack`,
+    eksStarck.eksCluster,
+    eksStarck.eksDeployRole,
+    {
+        env
+    }
 );
 buildAndDeliveryStack.addDependency(eksStarck);
 
@@ -128,24 +130,24 @@ flightspecialBuildandDeliveryStack.addDependency(eksStarck);
  * SSM Stack.
  */
 const ssmStack = new SsmStack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-SsmStack`,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-SsmStack`,
+    {
+        env
+    }
 );
 
 /**
  * [2023-06-03] RDS legacy stack for legacy TravelBuddy application.
  */
 const rdsLegacyStack = new RdsLegacyStack(
-  app,
-  `${infrastructureEnvironment.stackNamePrefix}-RdsLegacyStack`,
-  networkStack.vpc,
-  networkStack.eksPrivateSubnets,
-  {
-    env
-  }
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-RdsLegacyStack`,
+    networkStack.vpc,
+    networkStack.eksPrivateSubnets,
+    {
+        env
+    }
 );
 rdsLegacyStack.addDependency(networkStack);
 

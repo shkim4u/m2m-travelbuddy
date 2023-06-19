@@ -1,10 +1,12 @@
 import * as cdk from 'aws-cdk-lib';
-import {aws_ec2, aws_eks, aws_iam, Stack, StackProps} from 'aws-cdk-lib';
+import {aws_ec2, aws_eks, aws_iam, Duration, Stack, StackProps} from 'aws-cdk-lib';
 import {Construct} from "constructs";
 import {ClusterLoggingTypes, KubernetesVersion} from "aws-cdk-lib/aws-eks";
 import {KubectlV26Layer} from '@aws-cdk/lambda-layer-kubectl-v26';
 import {HelmCharts, HelmRepositories} from "../config/helm";
-import {Role} from "amazon-eks-irsa-cfn";
+import {InfrastructureEnvironment} from "../bin/infrastructure-environment";
+import {AMIFamily, ArchType, Karpenter} from "./karpenter";
+import {InstanceClass, InstanceSize, InstanceType} from "aws-cdk-lib/aws-ec2";
 
 export class EksStack extends Stack {
     public readonly eksCluster: aws_eks.Cluster;
@@ -18,8 +20,9 @@ export class EksStack extends Stack {
         privateSubnets: aws_ec2.ISubnet[],
         clusterName: string,
         serviceName: string,
-        clusterAdminIamUser: string,
-        clusterAdminIamRole: string,
+        clusterAdminIamUsers: string[],
+        clusterAdminIamRoles: string[],
+        infrastructureEnvironment: InfrastructureEnvironment,
         props: StackProps
     ) {
         super(scope, id, props);
@@ -138,8 +141,9 @@ export class EksStack extends Stack {
         // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMFullAccess"));
         // eksNodeRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("SecretsManagerReadWrite"));
 
-
-        // const eksNodeGroup = eksCluster.addNodegroupCapacity(
+        /*
+         * Managed node group.
+         */
         const eksNodeGroup = new aws_eks.Nodegroup(
             this,
             `${clusterName}-NodeGroup`,
@@ -161,10 +165,22 @@ export class EksStack extends Stack {
             }
         );
 
+        if (infrastructureEnvironment.useKarpenter) {
+            // Enable Karpenter.
+            this.enableKarpenter(eksCluster, clusterName);
+        } else {
+            // Enable cluster autoscaler.
+            this.enableClusterAutoscaler(eksCluster, eksNodeGroup, clusterName);
+        }
+
         // Add an existing user to the master role of Kubernetes for convenience use at AWS console.
-        this.addClusterAdminIamUser(eksCluster, clusterAdminIamUser);
-        this.addClusterAdminIamRole(eksCluster, clusterAdminIamRole);
-        this.addClusterAdminIamRole(eksCluster, "TeamRole");
+        // this.addClusterAdminIamUser(eksCluster, clusterAdminIamUser);
+        // this.addClusterAdminIamRole(eksCluster, clusterAdminIamRole);
+        // this.addClusterAdminIamRole(eksCluster, "TeamRole");
+
+        clusterAdminIamUsers.forEach(userName => this.addClusterAdminIamUser(eksCluster, userName));
+        clusterAdminIamRoles.forEach(roleName => this.addClusterAdminIamRole(eksCluster, roleName));
+
 
         // Add service namespace.
         serviceName = serviceName.toLowerCase();
@@ -271,6 +287,29 @@ export class EksStack extends Stack {
             }
         );
 
+        /*
+         * Install "Kubernetes Operational View" with helm.
+         * Regret that this is deprecreated and cannot be installed.
+         */
+        // eksCluster.addHelmChart(
+        //     `${clusterName}-Kube-ops-view`,
+        //     {
+        //         repository: "https://charts.helm.sh/stable",
+        //         chart: "kube-ops-view",
+        //         release: "kube-ops-view",
+        //         namespace: "kube-ops-view",
+        //         createNamespace: true,
+        //         values: {
+        //             service: {
+        //                 type: "LoadBalancer"
+        //             },
+        //             rbac: {
+        //                 create: true
+        //             }
+        //         }
+        //     }
+        // );
+
         /**
          * [2023-06-04] Add service account for pod and a role for that.
          */
@@ -286,16 +325,16 @@ export class EksStack extends Stack {
             }
         );
 
-        const podServiceAccount = eksCluster.addServiceAccount(
-            `${clusterName}-PodServiceAccount`,
+        const flightSpecialsPodServiceAccount = eksCluster.addServiceAccount(
+            `${clusterName}-FlightSpecials-PodServiceAccount`,
             {
                 name: 'flightspecials-service-account',
                 namespace: 'flightspecials'
             }
         );
         // Service Account가 'flightspecials' Namespace에 의존하므로 이를 설정한다.
-        podServiceAccount.node.addDependency(flightSpecialNamespace);
-        podServiceAccount.addToPrincipalPolicy(
+        flightSpecialsPodServiceAccount.node.addDependency(flightSpecialNamespace);
+        flightSpecialsPodServiceAccount.addToPrincipalPolicy(
             new aws_iam.PolicyStatement(
                 {
                     effect: aws_iam.Effect.ALLOW,
@@ -312,20 +351,20 @@ export class EksStack extends Stack {
         );
         new cdk.CfnOutput(
             this,
-            `${clusterName}-PodServiceAccountName`, {
-                value: podServiceAccount.serviceAccountName
+            `${clusterName}-FlightSpeials-PodServiceAccountName`, {
+                value: flightSpecialsPodServiceAccount.serviceAccountName
             }
         );
         new cdk.CfnOutput(
             this,
-            `${clusterName}-PodServiceAccountRoleArn`, {
-                value: podServiceAccount.role.roleArn
+            `${clusterName}-FlightSpecials-PodServiceAccountRoleArn`, {
+                value: flightSpecialsPodServiceAccount.role.roleArn
             }
         );
         new cdk.CfnOutput(
             this,
-            `${clusterName}-PodServiceAccountRoleName`, {
-                value: podServiceAccount.role.roleName
+            `${clusterName}-FlightSpecials-PodServiceAccountRoleName`, {
+                value: flightSpecialsPodServiceAccount.role.roleName
             }
         );
 
@@ -364,7 +403,7 @@ export class EksStack extends Stack {
 
     addClusterAdminIamUser(cluster: aws_eks.Cluster, iamUserName: string) {
         if (iamUserName) {
-            const iamUser = aws_iam.User.fromUserName(this, "eks-cluster-admin-iam-user", iamUserName);
+            const iamUser = aws_iam.User.fromUserName(this, `${cluster.clusterName}-AdminIamUser-${iamUserName}`, iamUserName);
             cluster.awsAuth.addUserMapping(
                 iamUser,
                 {
@@ -377,7 +416,7 @@ export class EksStack extends Stack {
 
     addClusterAdminIamRole(cluster: aws_eks.Cluster, iamRoleName: string) {
         if (iamRoleName) {
-            const iamRole = aws_iam.Role.fromRoleName(this, `eks-cluster-admin-iam-role-${iamRoleName}`, iamRoleName);
+            const iamRole = aws_iam.Role.fromRoleName(this, `${cluster.clusterName}-AdminIamRole-${iamRoleName}`, iamRoleName);
             cluster.awsAuth.addRoleMapping(
                 iamRole,
                 {
@@ -407,5 +446,404 @@ export class EksStack extends Stack {
         eksCluster.awsAuth.addMastersRole(role);
 
         return role;
+    }
+
+    /**
+     * [2023-06-19] Enable Karpenter as cluster autoscaler.
+     * @param eksCluster
+     * @param clusterName
+     * @private
+     */
+    private enableKarpenter(cluster: aws_eks.Cluster, clusterName: string) {
+        const karpenter = new Karpenter(
+            this,
+            `${clusterName}-Karpenter`,
+            {
+                cluster: cluster,
+                vpc: cluster.vpc,
+            }
+        );
+
+        // Default provisioner.
+        // Note: Default provisioner has no cpu/mem limits, nor will cleanup provisioned resources. Use with caution!!!
+        // See: https://karpenter.sh/v0.27.5/concepts/deprovisioning/
+        karpenter.addProvisioner(`${clusterName}-Karpenter-Provisioner-Default`);
+
+        // Custom provisioner.
+        karpenter.addProvisioner(
+            `${clusterName}-Karpenter-Provisioner-Custom`,
+            {
+                requirements: {
+                    archTypes: [ArchType.AMD64],
+                    instanceTypes: [
+                        InstanceType.of(InstanceClass.M5, InstanceSize.XLARGE4),
+                        InstanceType.of(InstanceClass.C5, InstanceSize.XLARGE4),
+                        InstanceType.of(InstanceClass.R5, InstanceSize.XLARGE4),
+                        InstanceType.of(InstanceClass.T3, InstanceSize.XLARGE4),
+                    ],
+                    restrictInstanceTypes: [
+                        InstanceType.of(InstanceClass.G5, InstanceSize.LARGE)
+                    ]
+                },
+                ttlSecondsAfterEmpty: Duration.minutes(10),
+                ttlSecondsUntilExpired: Duration.days(90),
+                labels: {
+                    billing: "aws-proserve"
+                },
+                limits: {
+                    cpu: "250",
+                    mem: "1000Gi"
+                },
+                consolidation: false,
+                provider: {
+                    amiFamily: AMIFamily.AL2,
+                    tags: {
+                        Provider: 'Karpenter'
+                    }
+                }
+            }
+        );
+    }
+
+    /**
+     * [2023-06-18] Enable cluster autoscaler.
+     * References:
+     * - Workshop: https://catalog.us-east-1.prod.workshops.aws/workshops/9c0aa9ab-90a9-44a6-abe1-8dff360ae428/ko-KR/100-scaling/200-cluster-scaling
+     * - Compatibility: https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases
+     */
+    enableClusterAutoscaler(cluster: aws_eks.Cluster, nodeGroup: aws_eks.Nodegroup, clusterName: string, version: string = "v1.26.2") {
+        const autoscalerPolicyStatement = new aws_iam.PolicyStatement();
+        autoscalerPolicyStatement.addResources("*");
+        autoscalerPolicyStatement.addActions(
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:DescribeTags",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "ec2:DescribeLaunchTemplateVersions"
+        );
+
+        /*
+         * CfnJson object to wrap the clusterName as a CDK token (a value that is still not resolved) cannot be used
+         * as a key in tags.
+         * By doing this, the tag operation is delayed until the clusterName is resolved.
+         */
+        // const clusterName = new CfnJson(this, "clusterName", { value: cluster.clusterName, });
+
+        const autoscalerPolicy = new aws_iam.Policy(
+            this,
+            `${clusterName}-Cluster-Autoscaler-Policy`,
+            {
+                policyName: "ClusterAutoscalerPolicy",
+                statements: [autoscalerPolicyStatement],
+            }
+        );
+        // Fallback to node permission.
+        autoscalerPolicy.attachToRole(nodeGroup.role);
+
+        cdk.Tags.of(nodeGroup).add(`k8s.io/cluster-autoscaler/${clusterName}`, "owned", { applyToLaunchedInstances: true });
+        cdk.Tags.of(nodeGroup).add("k8s.io/cluster-autoscaler/enabled", "true", { applyToLaunchedInstances: true });
+
+        // Create the service account with annotated IAM role (IRSA) for least privilege.
+        const clusterAutoscalerServiceAccount = cluster.addServiceAccount(
+            `${clusterName}-Cluster-Autoscaler-Service-Account`,
+            {
+                name: 'cluster-autoscaler',
+                namespace: 'kube-system',
+                labels: {
+                    "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                    "k8s-app": "cluster-autoscaler",
+                },
+            }
+        );
+        clusterAutoscalerServiceAccount.addToPrincipalPolicy(autoscalerPolicyStatement);
+        new cdk.CfnOutput(
+            this,
+            `${clusterName}-Cluster-Autoscaler-Service-Account-Name`, {
+                value: clusterAutoscalerServiceAccount.serviceAccountName
+            }
+        );
+        new cdk.CfnOutput(
+            this,
+            `${clusterName}-Cluster-Autoscaler-Service-Account-Role-Arn`, {
+                value: clusterAutoscalerServiceAccount.role.roleArn
+            }
+        );
+        new cdk.CfnOutput(
+            this,
+            `${clusterName}-Cluster-Autoscaler-Service-Account-Role-Name`, {
+                value: clusterAutoscalerServiceAccount.role.roleName
+            }
+        );
+
+        const autoscalerManifiest = new aws_eks.KubernetesManifest(
+            this,
+            `${clusterName}-Cluster-Autoscaler`, {
+            cluster,
+            // For the latest manifest, refer to: https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+            manifest: [
+                // {
+                //     apiVersion: "v1",
+                //     kind: "ServiceAccount",
+                //     metadata: {
+                //         name: "cluster-autoscaler",
+                //         namespace: "kube-system",
+                //         labels: {
+                //             "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                //             "k8s-app": "cluster-autoscaler",
+                //         },
+                //     },
+                // },
+                {
+                    apiVersion: "rbac.authorization.k8s.io/v1",
+                    kind: "ClusterRole",
+                    metadata: {
+                        name: "cluster-autoscaler",
+                        namespace: "kube-system",
+                        labels: {
+                            "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                            "k8s-app": "cluster-autoscaler",
+                        },
+                    },
+                    rules: [
+                        {
+                            apiGroups: [""],
+                            resources: ["events", "endpoints"],
+                            verbs: ["create", "patch"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["pods/eviction"],
+                            verbs: ["create"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["pods/status"],
+                            verbs: ["update"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["endpoints"],
+                            resourceNames: ["cluster-autoscaler"],
+                            verbs: ["get", "update"],
+                        },
+                        {
+                            apiGroups: ["coordination.k8s.io"],
+                            resources: ["leases"],
+                            verbs: ["watch", "list", "get", "patch", "create", "update"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["nodes"],
+                            verbs: ["watch", "list", "get", "update"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["namespaces", "pods", "services", "replicationcontrollers", "persistentvolumeclaims", "persistentvolumes"],
+                            verbs: ["watch", "list", "get"],
+                        },
+                        {
+                            apiGroups: ["extensions"],
+                            resources: ["replicasets", "daemonsets"],
+                            verbs: ["watch", "list", "get"],
+                        },
+                        {
+                            apiGroups: ["policy"],
+                            resources: ["poddisruptionbudgets"],
+                            verbs: ["watch", "list"],
+                        },
+                        {
+                            apiGroups: ["apps"],
+                            resources: ["statefulsets", "replicasets", "daemonsets"],
+                            verbs: ["watch", "list", "get"],
+                        },
+                        {
+                            apiGroups: ["storage.k8s.io"],
+                            resources: ["storageclasses", "csinodes", "csidrivers", "csistoragecapacities"],
+                            verbs: ["watch", "list", "get"],
+                        },
+                        {
+                            apiGroups: ["batch", "extensions"],
+                            resources: ["jobs"],
+                            verbs: ["get", "list", "watch", "patch"],
+                        },
+                        {
+                            apiGroups: ["coordination.k8s.io"],
+                            resources: ["leases"],
+                            verbs: ["create"],
+                        },
+                        {
+                            apiGroups: ["coordination.k8s.io"],
+                            resourceNames: ["cluster-autoscaler"],
+                            resources: ["leases"],
+                            verbs: ["get", "update"],
+                        },
+                    ],
+                },
+                {
+                    apiVersion: "rbac.authorization.k8s.io/v1",
+                    kind: "Role",
+                    metadata: {
+                        name: "cluster-autoscaler",
+                        namespace: "kube-system",
+                        labels: {
+                            "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                            "k8s-app": "cluster-autoscaler",
+                        },
+                    },
+                    rules: [
+                        {
+                            apiGroups: [""],
+                            resources: ["configmaps"],
+                            verbs: ["create", "list", "watch"],
+                        },
+                        {
+                            apiGroups: [""],
+                            resources: ["configmaps"],
+                            resourceNames: ["cluster-autoscaler-status", "cluster-autoscaler-priority-expander"],
+                            verbs: ["delete", "get", "update", "watch"],
+                        },
+                    ],
+                },
+                {
+                    apiVersion: "rbac.authorization.k8s.io/v1",
+                    kind: "ClusterRoleBinding",
+                    metadata: {
+                        name: "cluster-autoscaler",
+                        namespace: "kube-system",
+                        labels: {
+                            "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                            "k8s-app": "cluster-autoscaler",
+                        },
+                    },
+                    roleRef: {
+                        apiGroup: "rbac.authorization.k8s.io",
+                        kind: "ClusterRole",
+                        name: "cluster-autoscaler",
+                    },
+                    subjects: [
+                        {
+                            kind: "ServiceAccount",
+                            name: "cluster-autoscaler",
+                            namespace: "kube-system",
+                        },
+                    ],
+                },
+                {
+                    apiVersion: "rbac.authorization.k8s.io/v1",
+                    kind: "RoleBinding",
+                    metadata: {
+                        name: "cluster-autoscaler",
+                        namespace: "kube-system",
+                        labels: {
+                            "k8s-addon": "cluster-autoscaler.addons.k8s.io",
+                            "k8s-app": "cluster-autoscaler",
+                        },
+                    },
+                    roleRef: {
+                        apiGroup: "rbac.authorization.k8s.io",
+                        kind: "Role",
+                        name: "cluster-autoscaler",
+                    },
+                    subjects: [
+                        {
+                            kind: "ServiceAccount",
+                            name: "cluster-autoscaler",
+                            namespace: "kube-system",
+                        },
+                    ],
+                },
+                {
+                    apiVersion: "apps/v1",
+                    kind: "Deployment",
+                    metadata: {
+                        name: "cluster-autoscaler",
+                        namespace: "kube-system",
+                        labels: {
+                            app: "cluster-autoscaler",
+                        },
+                        annotations: {
+                            "cluster-autoscaler.kubernetes.io/safe-to-evict": "false",
+                        },
+                    },
+                    spec: {
+                        replicas: 1,
+                        selector: {
+                            matchLabels: {
+                                app: "cluster-autoscaler",
+                            },
+                        },
+                        template: {
+                            metadata: {
+                                labels: {
+                                    app: "cluster-autoscaler",
+                                },
+                                annotations: {
+                                    "prometheus.io/scrape": "true",
+                                    "prometheus.io/port": "8085",
+                                },
+                            },
+                            spec: {
+                                serviceAccountName: "cluster-autoscaler",
+                                containers: [
+                                    {
+                                        image: "registry.k8s.io/autoscaling/cluster-autoscaler:" + version,
+                                        name: "cluster-autoscaler",
+                                        resources: {
+                                            limits: {
+                                                cpu: "100m",
+                                                memory: "600Mi",
+                                            },
+                                            requests: {
+                                                cpu: "100m",
+                                                memory: "600Mi",
+                                            },
+                                        },
+                                        command: [
+                                            "./cluster-autoscaler",
+                                            "--v=4",
+                                            "--stderrthreshold=info",
+                                            "--cloud-provider=aws",
+                                            "--skip-nodes-with-local-storage=false",
+                                            "--expander=least-waste",
+                                            "--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/" + cluster.clusterName,
+                                            "--balance-similar-node-groups",
+                                            "--skip-nodes-with-system-pods=false",
+                                        ],
+                                        volumeMounts: [
+                                            {
+                                                name: "ssl-certs",
+                                                mountPath: "/etc/ssl/certs/ca-certificates.crt",
+                                                readOnly: true,
+                                            },
+                                        ],
+                                        imagePullPolicy: "Always",
+                                        securityContext: {
+                                            allowPrivilegeEscalation: false,
+                                            capabilities: {
+                                                drop: [
+                                                    "ALL"
+                                                ]
+                                            },
+                                            readOnlyRootFilesystem: true
+                                        }
+                                    },
+                                ],
+                                volumes: [
+                                    {
+                                        name: "ssl-certs",
+                                        hostPath: {
+                                            path: "/etc/ssl/certs/ca-bundle.crt",
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            ],
+        });
+        autoscalerManifiest.node.addDependency(clusterAutoscalerServiceAccount);
     }
 }
