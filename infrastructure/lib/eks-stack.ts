@@ -54,7 +54,7 @@ export class EksStack extends Stack {
             `${clusterName}-SecurityGroup`, {
                 vpc,
                 allowAllOutbound: true,
-                description: 'Security group for EKS cluster',
+                description: "Security group for EKS cluster",
             }
         );
 

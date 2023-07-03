@@ -11,6 +11,7 @@ import {Ec2Stack} from "../lib/ec2-stack";
 import {RdsLegacyStack} from "../lib/rds-legacy-stack";
 import * as net from "net";
 import {FlightSpecialDatabaseStack} from "../lib/flightspecial-database-stack";
+import {MskStack} from "../lib/msk-stack";
 
 const app = new cdk.App();
 
@@ -164,3 +165,17 @@ const flightspecialDatabaseStack = new FlightSpecialDatabaseStack(
     }
 );
 flightspecialDatabaseStack.addDependency(networkStack);
+
+/**
+ * Amazon MSK (Managed Streaming for Kafka) stack.
+ */
+const mskStack = new MskStack(
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-MskStack`,
+    networkStack.vpc,
+    networkStack.eksPrivateSubnets,
+    {
+        env
+    }
+);
+mskStack.addDependency(networkStack);
