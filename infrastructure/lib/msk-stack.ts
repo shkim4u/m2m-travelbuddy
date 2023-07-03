@@ -13,11 +13,15 @@ export class MskStack extends Stack {
     ) {
         super(scope, id, props);
 
-        const logGroup = new aws_logs.LogGroup(scope, 'LogGroup', {
-            logGroupName: `/m2m/msk/${id}-MSK-Cluster`,
-            retention: aws_logs.RetentionDays.ONE_WEEK,
-            removalPolicy: RemovalPolicy.DESTROY
-        });
+        const logGroup = new aws_logs.LogGroup(
+            this,
+            `${id}-MSK-CloudWatch-LogGroup`,
+            {
+                logGroupName: `/m2m/msk/${id}-MSK-Cluster`,
+                retention: aws_logs.RetentionDays.ONE_WEEK,
+                removalPolicy: RemovalPolicy.DESTROY
+            }
+        );
 
         /*
          * Security group for MSK.
