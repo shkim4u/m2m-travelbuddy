@@ -134,7 +134,7 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-fi
 > (2023-06-03 업데이트)<br>
 > 아래 수정은 02_deployment.yaml 파일에 RDS Endpoint 정보를 동적으로 주입하도록 설정하였으므로, 더 이상 수행할 필요가 없습니다.
 
-TravelBuddy 컨테이너 배포 매니페스트 파일 ```02_deployment.yaml```의 38번째 줄 근처에 설정된 데이터베이스 접속 주소를 자신의 RDS 접속 엔트포인트로 대체합니다.<br>
+(옵션) TravelBuddy 컨테이너 배포 매니페스트 파일 ```02_deployment.yaml```의 38번째 줄 근처에 설정된 데이터베이스 접속 주소를 자신의 RDS 접속 엔트포인트로 대체합니다.<br>
    1. RDS 접속 주소는 AWS 콘솔의 [RDS 서비스](https://ap-northeast-2.console.aws.amazon.com/rds/home?region=ap-northeast-2#databases:)에서 확인할 수 있습니다.
    ![TravelBuddy 배포 매니페스트 파일 RDS 주소 교체](./assets/travelbuddy-rds-endpoint.png)
 
@@ -153,9 +153,12 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
 git init
 git branch -M main
 
+export DEPLOY_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name M2M-BuildAndDeliveryStack-DeployStack-DeploySourceRepository --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
+echo $DEPLOY_CODECOMMIT_URL
+
 # 아래에 위 1에서 확인 URL로 대체할 것.
 # (예시) git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/M2M-BuildAndDeliveryStack-DeployStack-DeploySourceRepository
-git remote add origin <위 1에서 확인한 CodeCommit Git URL>
+git remote add origin $DEPLOY_CODECOMMIT_URL
 
 git add .
 git commit -am "First commit."

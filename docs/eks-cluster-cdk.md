@@ -40,7 +40,7 @@ npm install
 # 4. AWS CDK Bootstrap
 cdk bootstrap
 
-# 4. CDK synthesize & deplloy
+# 4. CDK synthesize & deploy
 cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never
 ```
 

@@ -490,7 +490,7 @@ export class Karpenter extends Construct {
         this.karpenterHelmChart = new HelmChart(this, 'KarpenterHelmChart', {
             chart: 'karpenter',
             createNamespace: true,
-            version: 'v0.27.5',
+            version: 'v0.28.0',
             cluster: this.cluster,
             namespace: 'karpenter',
             release: 'karpenter',
@@ -503,7 +503,7 @@ export class Karpenter extends Construct {
                         'eks.amazonaws.com/role-arn': this.karpenterControllerRole.roleArn,
                     },
                 },
-                // see: https://karpenter.sh/v0.27.5/concepts/settings/
+                // see: https://karpenter.sh/v0.28/concepts/settings/
                 settings: {
                     aws: {
                         clusterName: this.cluster.clusterName,
@@ -530,8 +530,8 @@ export class Karpenter extends Construct {
             throw new Error('Parameters consolidation and ttlSecondsAfterEmpty are mutually exclusive.');
         }
 
-        // see: https://karpenter.sh/v0.27.5/concepts/provisioners/
-        // see: https://karpenter.sh/v0.27.5/concepts/node-templates/
+        // see: https://karpenter.sh/v0.28/concepts/provisioners/
+        // see: https://karpenter.sh/v0.28/concepts/node-templates/
         const awsNodeTemplateId = `${id}-awsNodeTemplate`.toLowerCase();
         const awsNodeTemplate = this.cluster.addManifest(awsNodeTemplateId, {
             apiVersion: 'karpenter.k8s.aws/v1alpha1',
@@ -540,35 +540,47 @@ export class Karpenter extends Construct {
                 name: awsNodeTemplateId,
             },
             spec: {
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#specsubnetselector
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#specsubnetselector
                 subnetSelector: {
                     [`karpenter.sh/discovery/${this.cluster.clusterName}`]: '*',
                 },
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#specsecuritygroupselector
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#specsecuritygroupselector
                 securityGroupSelector: {
                     [`kubernetes.io/cluster/${this.cluster.clusterName}`]: 'owned',
+                    /*
+                     * Fix:
+                     * (Note) When launching nodes, Karpenter uses all the security groups that match the selector.
+                     * If multiple security groups have the tag kubernetes.io/cluster/MyClusterName, this may result in failures using the AWS Load Balancer controller.
+                     * The Load Balancer controller only supports a single security group having that tag key. See this issue for more details.
+                     * - https://karpenter.sh/v0.28/concepts/node-templates/#specsecuritygroupselector
+                     * - https://github.com/kubernetes-sigs/aws-load-balancer-controller/issues/2367
+                     * - https://github.com/kubernetes-sigs/aws-load-balancer-controller/issues/1897
+                     * - https://nauco.tistory.com/105
+                     * - https://repost.aws/knowledge-center/eks-resolve-failed-health-check-alb-nlb
+                     */
+                    ['aws:eks:cluster-name']: `${this.cluster.clusterName}`
                 },
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#specsecuritygroupselector
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#specsecuritygroupselector
                 // instanceProfile is created using L1 construct (CfnInstanceProfile), thus we're referencing ref directly
                 // TODO: revisit this when L2 InstanceProfile construct is released
                 instanceProfile: this.instanceProfile.ref,
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#specamifamily
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#specamifamily
                 ...(provisionerSpecs?.provider?.amiFamily && {amiFamily: provisionerSpecs!.provider!.amiFamily!}),
-                // see https://karpenter.sh/v0.27.5/concepts/node-templates/#specamiselector
+                // see https://karpenter.sh/v0.28/concepts/node-templates/#specamiselector
                 ...(provisionerSpecs?.provider?.amiSelector && {amiSelector: {...provisionerSpecs!.provider!.amiSelector!}}),
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#spectags
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#spectags
                 ...(provisionerSpecs?.provider?.tags && {tags: {...provisionerSpecs!.provider!.tags!}}),
-                // see: https://karpenter.sh/v0.27.5/concepts/node-templates/#specblockdevicemappings
+                // see: https://karpenter.sh/v0.28/concepts/node-templates/#specblockdevicemappings
                 ...(provisionerSpecs?.provider?.blockDeviceMappings && {blockDeviceMappings: provisionerSpecs!.provider!.blockDeviceMappings!}),
-                // TODO: add userData https://karpenter.sh/v0.27.5/concepts/node-templates/#specuserdata
-                // TODO: add metadataOptions https://karpenter.sh/v0.27.5/concepts/node-templates/#specmetadataoptions
+                // TODO: add userData https://karpenter.sh/v0.28/concepts/node-templates/#specuserdata
+                // TODO: add metadataOptions https://karpenter.sh/v0.28/concepts/node-templates/#specmetadataoptions
             },
         });
 
-        // see: https://karpenter.sh/v0.27.5/concepts/provisioners/#specrequirements
+        // see: https://karpenter.sh/v0.28/concepts/provisioners/#specrequirements
         const requirements = this.setRequirements(provisionerSpecs?.requirements);
 
-        // see: https://karpenter.sh/v0.27.5/concepts/provisioners/
+        // see: https://karpenter.sh/v0.28/concepts/provisioners/
         const provisioner = this.cluster.addManifest(id, {
             apiVersion: 'karpenter.sh/v1alpha5',
             kind: 'Provisioner',
@@ -576,7 +588,7 @@ export class Karpenter extends Construct {
                 name: id.toLowerCase(),
             },
             spec: {
-                // see: https://karpenter.sh/v0.27.5/concepts/provisioners/#speclimitsresources
+                // see: https://karpenter.sh/v0.28/concepts/provisioners/#speclimitsresources
                 ...(provisionerSpecs?.limits && {
                     limits: {
                         resources: {
@@ -585,7 +597,7 @@ export class Karpenter extends Construct {
                         },
                     },
                 }),
-                // see: https://karpenter.sh/v0.27.5/concepts/provisioners/#specconsolidation
+                // see: https://karpenter.sh/v0.28/concepts/provisioners/#specconsolidation
                 ...provisionerSpecs?.consolidation && {
                     consolidation: {
                         enabled: provisionerSpecs!.consolidation,
@@ -593,7 +605,7 @@ export class Karpenter extends Construct {
                 },
                 ...(provisionerSpecs?.ttlSecondsAfterEmpty && {ttlSecondsAfterEmpty: provisionerSpecs!.ttlSecondsAfterEmpty!.toSeconds()}),
                 ...(provisionerSpecs?.ttlSecondsUntilExpired && {ttlSecondsUntilExpired: provisionerSpecs!.ttlSecondsUntilExpired!.toSeconds()}),
-                // see: https://karpenter.sh/v0.27.5/concepts/provisioners/#specrequirements
+                // see: https://karpenter.sh/v0.28/concepts/provisioners/#specrequirements
                 requirements: [
                     ...requirements,
                 ],
@@ -603,7 +615,7 @@ export class Karpenter extends Construct {
                 },
                 ...(provisionerSpecs?.taints && {taints: provisionerSpecs!.taints!}),
                 ...(provisionerSpecs?.startupTaints && {startupTaints: provisionerSpecs!.startupTaints!}),
-                // see: https://karpenter.sh/v0.27.5/concepts/provisioners/#specproviderref
+                // see: https://karpenter.sh/v0.28/concepts/provisioners/#specproviderref
                 providerRef: {
                     name: awsNodeTemplateId,
                 },

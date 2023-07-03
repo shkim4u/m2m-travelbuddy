@@ -12,7 +12,7 @@ TravelBuddy 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제�
 - ECR에 이미지 푸시하기
 
 ## 준비하기
-1. 먼저 어플리케이션의 소스 리포지터리를 확인합니다. 이 리포지터리에 소스 코드가 푸시되면 빌드 및 전달 파이프라인이 트리거되어 소스 코드를 빌드하고 이로부터 컨테이너 이미지를 생성합니다. 그리고 생성된 컨테이너 이미지를 ECR 리포지터리에 푸시합니다.
+1. (옵션) 먼저 어플리케이션의 소스 리포지터리를 확인합니다. 이 리포지터리에 소스 코드가 푸시되면 빌드 및 전달 파이프라인이 트리거되어 소스 코드를 빌드하고 이로부터 컨테이너 이미지를 생성합니다. 그리고 생성된 컨테이너 이미지를 ECR 리포지터리에 푸시합니다.
    1. CodeCommit > "M2M-BuildAndDeliveryStack-SourceRepository"
    ![빌드 CodeCommit 리포지터리](./assets/build-codecommit-repository.png)
    2. 위 그림과 같이 "HTTPS 복제"를 클릭하여 Git 리포지터리 주소를 클립보드에 복사합니다.
@@ -26,7 +26,11 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build/
 # 2. git 연결
 git init
 git branch -M main
-git remote add origin <1에서 복사한 CodeCommit Git 리포지터리 주소>
+
+export BUILD_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name M2M-BuildAndDeliveryStack-SourceRepository --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
+echo $BUILD_CODECOMMIT_URL
+
+git remote add origin $BUILD_CODECOMMIT_URL
 # (예)
 # git remote add origin https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/M2M-BuildAndDeliveryStack-SourceRepository
 

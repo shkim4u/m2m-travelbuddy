@@ -118,6 +118,14 @@ export class EksStack extends Stack {
                 awsServiceName: "eks-nodegroup.amazonaws.com"
             }
         );
+        // For Karpenter.
+        const spotInstanceServiceLinkedRole = new aws_iam.CfnServiceLinkedRole(
+            this,
+            'EksSpotInstanceSLR',
+            {
+                awsServiceName: "spot.amazonaws.com"
+            }
+        );
 
         /*
          * IAM for managed node group.
@@ -466,8 +474,8 @@ export class EksStack extends Stack {
 
         // Default provisioner.
         // Note: Default provisioner has no cpu/mem limits, nor will cleanup provisioned resources. Use with caution!!!
-        // See: https://karpenter.sh/v0.27.5/concepts/deprovisioning/
-        karpenter.addProvisioner(`${clusterName}-Karpenter-Provisioner-Default`);
+        // See: https://karpenter.sh/v0.28/concepts/deprovisioning/
+        // karpenter.addProvisioner(`${clusterName}-Karpenter-Provisioner-Default`);
 
         // Custom provisioner.
         karpenter.addProvisioner(
@@ -485,7 +493,7 @@ export class EksStack extends Stack {
                         InstanceType.of(InstanceClass.G5, InstanceSize.LARGE)
                     ]
                 },
-                ttlSecondsAfterEmpty: Duration.minutes(10),
+                // ttlSecondsAfterEmpty: Duration.minutes(10),
                 ttlSecondsUntilExpired: Duration.days(90),
                 labels: {
                     billing: "aws-proserve"
@@ -494,7 +502,7 @@ export class EksStack extends Stack {
                     cpu: "250",
                     mem: "1000Gi"
                 },
-                consolidation: false,
+                consolidation: true,
                 provider: {
                     amiFamily: AMIFamily.AL2,
                     tags: {
