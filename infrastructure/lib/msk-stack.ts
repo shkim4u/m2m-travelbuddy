@@ -94,6 +94,28 @@ export class MskStack extends Stack {
                 //     },
                 // },
                 enhancedMonitoring: "PER_TOPIC_PER_BROKER",
+                loggingInfo: {
+                    brokerLogs: {
+                        cloudWatchLogs: {
+                            enabled: true,
+                            // The properties below are optional
+                            // logGroup: 'logGroup',
+                        },
+                        // firehose: {
+                        //     enabled: false,
+                        //
+                        //     // the properties below are optional
+                        //     deliveryStream: 'deliveryStream',
+                        // },
+                        // s3: {
+                        //     enabled: false,
+                        //
+                        //     // the properties below are optional
+                        //     bucket: 'bucket',
+                        //     prefix: 'prefix',
+                        // },
+                    },
+                },
                 tags: {
                     "Description": "MSK Cluster for M2M project",
                     "Owner": "AWS ProServe",
