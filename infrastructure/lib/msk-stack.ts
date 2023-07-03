@@ -1,4 +1,4 @@
-import {aws_ec2, aws_msk, Stack, StackProps} from "aws-cdk-lib";
+import {aws_ec2, aws_logs, aws_msk, Stack, StackProps, RemovalPolicy} from "aws-cdk-lib";
 import {Construct} from "constructs";
 
 export class MskStack extends Stack {
@@ -12,6 +12,12 @@ export class MskStack extends Stack {
         props: StackProps
     ) {
         super(scope, id, props);
+
+        const logGroup = new aws_logs.LogGroup(scope, 'LogGroup', {
+            logGroupName: `/m2m/msk/${id}-MSK-Cluster`,
+            retention: aws_logs.RetentionDays.ONE_WEEK,
+            removalPolicy: RemovalPolicy.DESTROY
+        });
 
         /*
          * Security group for MSK.
@@ -99,7 +105,7 @@ export class MskStack extends Stack {
                         cloudWatchLogs: {
                             enabled: true,
                             // The properties below are optional
-                            // logGroup: 'logGroup',
+                            logGroup: logGroup.logGroupName,
                         },
                         // firehose: {
                         //     enabled: false,
