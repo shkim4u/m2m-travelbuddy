@@ -339,6 +339,7 @@ export class EksStack extends Stack {
          * - https://istio-release.storage.googleapis.com/charts
          * - https://istio.io/latest/docs/setup/install/helm/
          * - https://artifacthub.io/packages/helm/istio-official/istiod
+         * - https://github.com/aws-quickstart/cdk-eks-blueprints/blob/main/docs/addons/istio-control-plane.md
          */
         const istioBase = eksCluster.addHelmChart(
             `${clusterName}-Istio-Base`,
@@ -350,18 +351,17 @@ export class EksStack extends Stack {
                 createNamespace: true
             }
         );
-        const istiod = eksCluster.addHelmChart(
+        const istioD = eksCluster.addHelmChart(
             `${clusterName}-Istio-Istiod`,
             {
                 repository: "https://istio-release.storage.googleapis.com/charts",
                 chart: "istiod",
-                release: "istio-istiod",
+                release: "istiod",
                 namespace: "istio-system",
-                createNamespace: false
+                createNamespace: true,
+                // version: "1.18.0"
             }
         );
-        istiod.node.addDependency(istioBase);
-
         const istioGateway = eksCluster.addHelmChart(
             `${clusterName}-Istio-Gateway`,
             {
@@ -372,7 +372,8 @@ export class EksStack extends Stack {
                 createNamespace: true
             }
         );
-        istioGateway.node.addDependency(istiod);
+        istioD.node.addDependency(istioBase);
+        istioGateway.node.addDependency(istioBase);
 
         /*
          * Install Kiali.
@@ -401,14 +402,21 @@ export class EksStack extends Stack {
          * Install Prometheus.
          * - https://artifacthub.io/packages/helm/prometheus-community/prometheus
          */
-        // const prometheus = eksCluster.addHelmChart(
-        //     `${clusterName}-Prometheus`,
-        //     {
-        //         repository: "https://prometheus-community.github.io/helm-charts",
-        //         char: ""
-        //     }
-        //
-        // )
+        const prometheus = eksCluster.addHelmChart(
+            `${clusterName}-Prometheus`,
+            {
+                repository: "https://prometheus-community.github.io/helm-charts",
+                chart: "prometheus",
+                release: "prometheus",
+                namespace: "prometheus",
+                createNamespace: true,
+                values: {
+                    ingress: {
+                        enabled: true
+                    }
+                }
+            }
+        );
 
         /*
          * Install "Kubernetes Operational View" with helm.
