@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: travelbuddy
-  namespace: default
+  namespace: travelbuddy
 spec:
   replicas: 2
   selector:

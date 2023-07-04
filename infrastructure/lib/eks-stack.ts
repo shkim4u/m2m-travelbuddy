@@ -160,7 +160,7 @@ export class EksStack extends Stack {
                 amiType: aws_eks.NodegroupAmiType.AL2_X86_64,
                 // amiType: eks.NodegroupAmiType.AL2_X86_64_GPU,
                 nodegroupName: `${clusterName}-NodeGroup`,
-                instanceTypes: [new aws_ec2.InstanceType('m5.xlarge')],
+                instanceTypes: [new aws_ec2.InstanceType('m5.4xlarge')],
                 minSize: 2,
                 maxSize: 4,
                 desiredSize: 2,
@@ -198,7 +198,11 @@ export class EksStack extends Stack {
                 apiVersion: 'v1',
                 kind: 'Namespace',
                 metadata: {
-                    name: serviceName.toLowerCase()
+                    name: serviceName.toLowerCase(),
+                    // Inject Istio Envoy proxy.
+                    labels: {
+                        "istio-injection": "enabled"
+                    }
                 }
             }
         );
@@ -296,6 +300,117 @@ export class EksStack extends Stack {
         );
 
         /*
+         * Install Kubernetes metrics server.
+         * - https://artifacthub.io/packages/helm/metrics-server/metrics-server
+         */
+        eksCluster.addHelmChart(
+            `${clusterName}-Metrics-Server`,
+            {
+                repository: "https://kubernetes-sigs.github.io/metrics-server/",
+                chart: "metrics-server",
+                release: "metrics-server",
+                namespace: "kube-system",
+                createNamespace: false
+            }
+        );
+
+        /*
+         * Install Kubernetes Dashboard with Helm.
+         * - https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard
+         */
+        eksCluster.addHelmChart(
+            `${clusterName}-Kubernetes-Dashboard`,
+            {
+                repository: "https://kubernetes.github.io/dashboard/",
+                chart: "kubernetes-dashboard",
+                release: "kubernetes-dashboard",
+                namespace: "kubernetes-dashboard",
+                createNamespace: true,
+                values: {
+                    ingress: {
+                        enabled: true
+                    }
+                }
+            }
+        );
+
+        /*
+         * Install Istio with Helm.
+         * - https://istio-release.storage.googleapis.com/charts
+         * - https://istio.io/latest/docs/setup/install/helm/
+         * - https://artifacthub.io/packages/helm/istio-official/istiod
+         */
+        const istioBase = eksCluster.addHelmChart(
+            `${clusterName}-Istio-Base`,
+            {
+                repository: "https://istio-release.storage.googleapis.com/charts",
+                chart: "base",
+                release: "istio-base",
+                namespace: "istio-system",
+                createNamespace: true
+            }
+        );
+        const istiod = eksCluster.addHelmChart(
+            `${clusterName}-Istio-Istiod`,
+            {
+                repository: "https://istio-release.storage.googleapis.com/charts",
+                chart: "istiod",
+                release: "istio-istiod",
+                namespace: "istio-system",
+                createNamespace: false
+            }
+        );
+        istiod.node.addDependency(istioBase);
+
+        const istioGateway = eksCluster.addHelmChart(
+            `${clusterName}-Istio-Gateway`,
+            {
+                repository: "https://istio-release.storage.googleapis.com/charts",
+                chart: "gateway",
+                release: "istio-gateway",
+                namespace: "istio-ingress",
+                createNamespace: true
+            }
+        );
+        istioGateway.node.addDependency(istiod);
+
+        /*
+         * Install Kiali.
+         * - https://kiali.io/docs/installation/installation-guide/install-with-helm/
+         * - https://artifacthub.io/packages/olm/community-operators/kiali
+         */
+        const kiali = eksCluster.addHelmChart(
+            `${clusterName}-Kiali`,
+            {
+                repository: "https://kiali.org/helm-charts",
+                chart: "kiali-operator",
+                release: "kiali-operator",
+                namespace: "kiali-operator",
+                createNamespace: true,
+                values: {
+                    cr: {
+                        create: true,
+                        namespace: "istio-system"
+                    }
+                }
+            }
+        );
+        kiali.node.addDependency(istioBase);
+
+        /*
+         * Install Prometheus.
+         * - https://artifacthub.io/packages/helm/prometheus-community/prometheus
+         */
+        // const prometheus = eksCluster.addHelmChart(
+        //     `${clusterName}-Prometheus`,
+        //     {
+        //         repository: "https://prometheus-community.github.io/helm-charts",
+        //         char: ""
+        //     }
+        //
+        // )
+
+        /*
          * Install "Kubernetes Operational View" with helm.
          * Regret that this is deprecreated and cannot be installed.
          */
@@ -328,7 +443,11 @@ export class EksStack extends Stack {
                 apiVersion: 'v1',
                 kind: 'Namespace',
                 metadata: {
-                    name: 'flightspecials'
+                    name: 'flightspecials',
+                    // Inject Istio Envoy proxy.
+                    labels: {
+                        "istio-injection": "enabled"
+                    }
                 }
             }
         );
