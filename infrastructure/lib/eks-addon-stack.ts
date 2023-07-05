@@ -1,4 +1,4 @@
-import {aws_eks, NestedStack, Stack, StackProps} from "aws-cdk-lib";
+import {aws_eks, aws_iam, NestedStack, Stack, StackProps} from "aws-cdk-lib";
 import {Construct} from "constructs";
 import {AlbController} from "aws-cdk-lib/aws-eks";
 
@@ -87,6 +87,8 @@ export class EksAddonStack extends NestedStack {
                 metadata: {
                     name: 'istio-ingress',
                     labels: {
+                        // This is needed to prevent "Response object is too long" error due to some error when deploying the istiod pod.
+                        // , typically caused by ALB controller not installed in advance.
                         "istio-injection": "enabled"
                     }
                 }
@@ -115,6 +117,28 @@ export class EksAddonStack extends NestedStack {
          * - https://medium.com/gamgyul-tech/container-volumebinding-error-f5fb09431951
          * - https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/install.md
          */
+        // const ebsCsiDriverSaRole = new aws_iam.Role(
+        //     this,
+        //     `${clusterName}-EBS-CSI-Driver-SA-Role`,
+        //     {
+        //         roleName: "ebs-csi-controller-sa",
+        //         assumedBy: new aws_iam.ServicePrincipal('ec2.amazonaws.com')
+        //     }
+        // );
+        // m2mAdminRole.addManagedPolicy(aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+
+        const ebsCsiControllerSaOwned = cluster.addServiceAccount(
+            `${clusterName}-EBS-CSI-Driver-ServiceAccount`,
+            {
+                // Default: ebs-csi-controller-sa (see: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/charts/aws-ebs-csi-driver/values.yaml)
+                name: 'ebs-csi-controller-sa-owned',
+                namespace: 'kube-system'
+            }
+        );
+        ebsCsiControllerSaOwned.role.addManagedPolicy(
+            aws_iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEBSCSIDriverPolicy")
+        );
+
         const ebsCsiDriver = cluster.addHelmChart(
             `${clusterName}-EBS-CSI-Driver`,
             {
@@ -122,7 +146,29 @@ export class EksAddonStack extends NestedStack {
                 chart: "aws-ebs-csi-driver",
                 release: "aws-ebs-csi-driver",
                 namespace: "kube-system",
-                createNamespace: false
+                createNamespace: false,
+                values: {
+                    serviceAccount: {
+                        create: false,
+                        name: ebsCsiControllerSaOwned.serviceAccountName
+                    },
+                    node: {
+                        tolerateAllTaints: true
+                    },
+                    storageClasses: {
+                        name: "gp3",
+                        annotations: {
+                            "storageclass.kubernetes.io/is-default-class": true
+                        },
+                        volumeBindingMode: "WaitForFirstConsumer",
+                        reclaimPolicy: "Delete",
+                        allowVolumeExpansion: true,
+                        parameters: {
+                            type: "gp3",
+                            "csi.storage.k8s.io/fstype": "ext4"
+                        }
+                    }
+                }
             }
         );
 
