@@ -137,7 +137,6 @@ export class EksAddonStack extends NestedStack {
         );
         ebsCsiControllerSaOwned.role.addManagedPolicy(
             aws_iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AmazonEBSCSIDriverPolicy")
-            aws_iam
         );
 
         const ebsCsiDriver = cluster.addHelmChart(
