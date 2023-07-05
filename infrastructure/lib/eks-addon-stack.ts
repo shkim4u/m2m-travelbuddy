@@ -21,7 +21,7 @@ export class EksAddonStack extends NestedStack {
         const metricsServerHelmChart = cluster.addHelmChart(
             `${clusterName}-Metrics-Server`,
             {
-                repository: "https://kubernetes-sigs.github.io/metrics-server/",
+                repository: "https://kubernetes-sigs.github.io/metrics-server",
                 chart: "metrics-server",
                 release: "metrics-server",
                 namespace: "kube-system",
@@ -77,6 +77,22 @@ export class EksAddonStack extends NestedStack {
                 // version: "1.18.0"
             }
         );
+
+        // Istio gateway namespace.
+        const istioGatewayNamespace = cluster.addManifest(
+            `${clusterName}-Istio-Gateway-Namespace`,
+            {
+                apiVersion: 'v1',
+                kind: 'Namespace',
+                metadata: {
+                    name: 'istio-ingress',
+                    labels: {
+                        "istio-injection": "enabled"
+                    }
+                }
+            }
+        );
+
         const istioGateway = cluster.addHelmChart(
             `${clusterName}-Istio-Gateway`,
             {
@@ -84,12 +100,31 @@ export class EksAddonStack extends NestedStack {
                 chart: "gateway",
                 release: "istio-gateway",
                 namespace: "istio-ingress",
-                createNamespace: true
+                createNamespace: false
             }
         );
+
         istioD.node.addDependency(istioBase);
+        istioD.node.addDependency(albController);
         istioGateway.node.addDependency(istioBase);
         istioGateway.node.addDependency(albController);
+        istioGateway.node.addDependency(istioGatewayNamespace);
+
+        /*
+         * EBS CSI Driver for Prometheus.
+         * - https://medium.com/gamgyul-tech/container-volumebinding-error-f5fb09431951
+         * - https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/install.md
+         */
+        const ebsCsiDriver = cluster.addHelmChart(
+            `${clusterName}-EBS-CSI-Driver`,
+            {
+                repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver",
+                chart: "aws-ebs-csi-driver",
+                release: "aws-ebs-csi-driver",
+                namespace: "kube-system",
+                createNamespace: false
+            }
+        );
 
         /*
          * Install Prometheus.
@@ -110,6 +145,7 @@ export class EksAddonStack extends NestedStack {
                 }
             }
         );
+        prometheus.node.addDependency(ebsCsiDriver);
 
         /*
          * Install Kiali.
