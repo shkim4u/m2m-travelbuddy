@@ -1,8 +1,16 @@
 import {aws_eks, NestedStack, Stack, StackProps} from "aws-cdk-lib";
 import {Construct} from "constructs";
+import {AlbController} from "aws-cdk-lib/aws-eks";
 
 export class EksAddonStack extends NestedStack {
-    constructor(scope: Construct, id: string, clusterName: string, cluster: aws_eks.Cluster, props: StackProps) {
+    constructor(
+        scope: Construct,
+        id: string,
+        clusterName: string,
+        cluster: aws_eks.Cluster,
+        albController: AlbController,
+        props: StackProps
+    ) {
         super(scope, id, props);
 
 
@@ -10,7 +18,7 @@ export class EksAddonStack extends NestedStack {
          * Install Kubernetes metrics server.
          * - https://artifacthub.io/packages/helm/metrics-server/metrics-server
          */
-        cluster.addHelmChart(
+        const metricsServerHelmChart = cluster.addHelmChart(
             `${clusterName}-Metrics-Server`,
             {
                 repository: "https://kubernetes-sigs.github.io/metrics-server/",
@@ -81,6 +89,7 @@ export class EksAddonStack extends NestedStack {
         );
         istioD.node.addDependency(istioBase);
         istioGateway.node.addDependency(istioBase);
+        istioGateway.node.addDependency(albController);
 
         /*
          * Install Prometheus.

@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import {aws_ec2, aws_eks, aws_iam, Duration, Stack, StackProps} from 'aws-cdk-lib';
 import {Construct} from "constructs";
-import {ClusterLoggingTypes, KubernetesVersion} from "aws-cdk-lib/aws-eks";
+import {AlbController, ClusterLoggingTypes, KubernetesVersion} from "aws-cdk-lib/aws-eks";
 import {KubectlV26Layer} from '@aws-cdk/lambda-layer-kubectl-v26';
 import {HelmCharts, HelmRepositories} from "../config/helm";
 import {InfrastructureEnvironment} from "../bin/infrastructure-environment";
@@ -12,6 +12,7 @@ import {EksAddonStack} from "./eks-addon-stack";
 export class EksStack extends Stack {
     public readonly eksCluster: aws_eks.Cluster;
     public readonly eksDeployRole: aws_iam.Role;
+    public readonly albController: AlbController;
     public readonly addonStack: EksAddonStack;
 
     constructor(
@@ -214,7 +215,7 @@ export class EksStack extends Stack {
          * Steps below are referred from the EKS documentation at: https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
          * And here: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_eks.AlbController.html
          */
-        const albController = new aws_eks.AlbController(
+        this.albController = new aws_eks.AlbController(
             this,
             'load-balancer-controller', {
                 cluster: eksCluster,
@@ -309,6 +310,7 @@ export class EksStack extends Stack {
             `${id}-AddonStack`,
             clusterName,
             eksCluster,
+            this.albController,
             props
         );
 
