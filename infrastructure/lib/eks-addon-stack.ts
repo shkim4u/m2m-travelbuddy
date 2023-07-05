@@ -155,19 +155,19 @@ export class EksAddonStack extends NestedStack {
                     node: {
                         tolerateAllTaints: true
                     },
-                    storageClasses: {
-                        name: "gp3",
-                        annotations: {
-                            "storageclass.kubernetes.io/is-default-class": true
-                        },
-                        volumeBindingMode: "WaitForFirstConsumer",
-                        reclaimPolicy: "Delete",
-                        // allowVolumeExpansion: true,
-                        // parameters: {
-                        //     type: "gp3",
-                        //     "csi.storage.k8s.io/fstype": "ext4"
-                        // }
-                    }
+                    // storageClasses: {
+                    //     name: "gp3",
+                    //     annotations: {
+                    //         "storageclass.kubernetes.io/is-default-class": true
+                    //     },
+                    //     volumeBindingMode: "WaitForFirstConsumer",
+                    //     reclaimPolicy: "Delete",
+                    //     allowVolumeExpansion: true,
+                    //     parameters: {
+                    //         type: "gp3",
+                    //         "csi.storage.k8s.io/fstype": "ext4"
+                    //     }
+                    // }
                 }
             }
         );
