@@ -171,6 +171,7 @@ export class EksAddonStack extends NestedStack {
                 }
             }
         );
+        ebsCsiDriver.node.addDependency(ebsCsiControllerSaOwned);
 
         /*
          * Install Prometheus.
