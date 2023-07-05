@@ -12,6 +12,7 @@ import {RdsLegacyStack} from "../lib/rds-legacy-stack";
 import * as net from "net";
 import {FlightSpecialDatabaseStack} from "../lib/flightspecial-database-stack";
 import {MskStack} from "../lib/msk-stack";
+import {EksAddonStack} from "../lib/eks-addon-stack";
 
 const app = new cdk.App();
 
@@ -98,6 +99,20 @@ const eksStarck = new EksStack(
     }
 );
 eksStarck.addDependency(networkStack);
+
+/**
+ * EKS Add-on Stack.
+ */
+const eksAddonStack = new EksAddonStack(
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-EksAddonStack`,
+    `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
+    eksStarck.eksCluster,
+    {
+        env
+    }
+);
+eksAddonStack.addDependency(eksStarck);
 
 /**
  * Build and delivery stack.
