@@ -162,11 +162,11 @@ export class EksAddonStack extends NestedStack {
                         },
                         volumeBindingMode: "WaitForFirstConsumer",
                         reclaimPolicy: "Delete",
-                        allowVolumeExpansion: true,
-                        parameters: {
-                            type: "gp3",
-                            "csi.storage.k8s.io/fstype": "ext4"
-                        }
+                        // allowVolumeExpansion: true,
+                        // parameters: {
+                        //     type: "gp3",
+                        //     "csi.storage.k8s.io/fstype": "ext4"
+                        // }
                     }
                 }
             }
