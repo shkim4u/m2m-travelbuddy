@@ -100,19 +100,19 @@ const eksStarck = new EksStack(
 );
 eksStarck.addDependency(networkStack);
 
-/**
- * EKS Add-on Stack.
- */
-const eksAddonStack = new EksAddonStack(
-    app,
-    `${infrastructureEnvironment.stackNamePrefix}-EksAddonStack`,
-    `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
-    eksStarck.eksCluster,
-    {
-        env
-    }
-);
-eksAddonStack.addDependency(eksStarck);
+// /**
+//  * EKS Add-on Stack.
+//  */
+// const eksAddonStack = new EksAddonStack(
+//     app,
+//     `${infrastructureEnvironment.stackNamePrefix}-EksAddonStack`,
+//     `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
+//     eksStarck.eksCluster,
+//     {
+//         env
+//     }
+// );
+// eksAddonStack.addDependency(eksStarck);
 
 /**
  * Build and delivery stack.

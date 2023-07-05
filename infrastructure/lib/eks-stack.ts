@@ -7,10 +7,12 @@ import {HelmCharts, HelmRepositories} from "../config/helm";
 import {InfrastructureEnvironment} from "../bin/infrastructure-environment";
 import {AMIFamily, ArchType, Karpenter} from "./karpenter";
 import {InstanceClass, InstanceSize, InstanceType} from "aws-cdk-lib/aws-ec2";
+import {EksAddonStack} from "./eks-addon-stack";
 
 export class EksStack extends Stack {
     public readonly eksCluster: aws_eks.Cluster;
     public readonly eksDeployRole: aws_iam.Role;
+    public readonly addonStack: EksAddonStack;
 
     constructor(
         scope: Construct,
@@ -299,6 +301,16 @@ export class EksStack extends Stack {
             }
         );
 
+        /**
+         * Nested stack for addon.
+         */
+        this.addonStack = new EksAddonStack(
+            this,
+            `${id}-AddonStack`,
+            clusterName,
+            eksCluster,
+            props
+        );
 
         /*
          * Install "Kubernetes Operational View" with helm.

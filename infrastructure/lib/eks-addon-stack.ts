@@ -1,7 +1,7 @@
-import {aws_eks, Stack, StackProps} from "aws-cdk-lib";
+import {aws_eks, NestedStack, Stack, StackProps} from "aws-cdk-lib";
 import {Construct} from "constructs";
 
-export class EksAddonStack extends Stack {
+export class EksAddonStack extends NestedStack {
     constructor(scope: Construct, id: string, clusterName: string, cluster: aws_eks.Cluster, props: StackProps) {
         super(scope, id, props);
 
