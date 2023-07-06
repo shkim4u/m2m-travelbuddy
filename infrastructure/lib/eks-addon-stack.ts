@@ -32,8 +32,15 @@ export class EksAddonStack extends NestedStack {
         /*
          * Install Kubernetes Dashboard with Helm.
          * - https://artifacthub.io/packages/helm/k8s-dashboard/kubernetes-dashboard
+         *
+         * How to connect
+         * - https://archive.eksworkshop.com/beginner/040_dashboard/
+         * - https://github.com/kubernetes/dashboard/blob/master/charts/helm-chart/kubernetes-dashboard/templates/networking/ingress.yaml
+         *
+         * (참고)
+         * 위의 Ingress Yaml 파일을 보면 Nginx만 Ingress 자원으로 정의하고 있음 -> AWS ALB 미지원!
          */
-        cluster.addHelmChart(
+        const kubernetesDashboardHelmChart = cluster.addHelmChart(
             `${clusterName}-Kubernetes-Dashboard`,
             {
                 repository: "https://kubernetes.github.io/dashboard/",
@@ -43,11 +50,70 @@ export class EksAddonStack extends NestedStack {
                 createNamespace: true,
                 values: {
                     ingress: {
-                        enabled: true
+                        // Will create ingress later below.
+                        enabled: false
                     }
                 }
             }
         );
+
+        const dashboardAlbIngress = cluster.addManifest(
+            `${clusterName}-Kubernetes-Dashboard-Ingress`,
+            {
+                apiVersion: "v1",
+                kind: "Ingress",
+                metadata: {
+                    name: "'kubernetes-dashboard",
+                    namespace: "kubernetes-dashboard",
+                    labels: {
+                        "app.kubernetes.io/part-of": "kubernetes-dashboard",
+                    },
+                    annotations: {
+                        "kubernetes.io/ingress.class": "alb",
+                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                        "alb.ingress.kubernetes.io/target-type": "ip",
+                        "alb.ingress.kubernetes.io/group.name": "kubernetes-dashboard",
+                        "alb.ingress.kubernetes.io/group.order": "1"
+                    }
+                },
+                spec: {
+                    rules: [
+                        {
+                            http: {
+                                paths: [
+                                    {
+                                        path: "/",
+                                        pathType: "Prefix",
+                                        backend: {
+                                            service: {
+                                                name: "kubernetes-dashboard-web",
+                                                port: {
+                                                    name: "web"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        path: "/api",
+                                        pathType: "Prefix",
+                                        backend: {
+                                            service: {
+                                                name: "kubernetes-dashboard-api",
+                                                port: {
+                                                    name: "api"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        );
+        dashboardAlbIngress.node.addDependency(kubernetesDashboardHelmChart);
+
 
         /*
          * Install Istio with Helm.
@@ -135,6 +201,7 @@ export class EksAddonStack extends NestedStack {
                 namespace: 'kube-system'
             }
         );
+        // https://github.com/aws/aws-cdk/issues/9898
         ebsCsiControllerSaOwned.role.addManagedPolicy(
             aws_iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AmazonEBSCSIDriverPolicy")
         );
@@ -148,26 +215,28 @@ export class EksAddonStack extends NestedStack {
                 namespace: "kube-system",
                 createNamespace: false,
                 values: {
-                    serviceAccount: {
-                        create: false,
-                        name: ebsCsiControllerSaOwned.serviceAccountName
+                    controller: {
+                        serviceAccount: {
+                            create: false,
+                            name: ebsCsiControllerSaOwned.serviceAccountName
+                        },
                     },
                     node: {
                         tolerateAllTaints: true
                     },
-                    // storageClasses: {
-                    //     name: "gp3",
-                    //     annotations: {
-                    //         "storageclass.kubernetes.io/is-default-class": true
-                    //     },
-                    //     volumeBindingMode: "WaitForFirstConsumer",
-                    //     reclaimPolicy: "Delete",
-                    //     allowVolumeExpansion: true,
-                    //     parameters: {
-                    //         type: "gp3",
-                    //         "csi.storage.k8s.io/fstype": "ext4"
-                    //     }
-                    // }
+                    storageClasses: [{
+                        name: "gp3",
+                        annotations: {
+                            "storageclass.kubernetes.io/is-default-class": "true"
+                        },
+                        volumeBindingMode: "WaitForFirstConsumer",
+                        reclaimPolicy: "Delete",
+                        allowVolumeExpansion: true,
+                        parameters: {
+                            type: "gp3",
+                            "csi.storage.k8s.io/fstype": "ext4"
+                        }
+                    }]
                 }
             }
         );
