@@ -63,7 +63,7 @@ export class EksAddonStack extends NestedStack {
                 apiVersion: "networking.k8s.io/v1",
                 kind: "Ingress",
                 metadata: {
-                    name: "'kubernetes-dashboard",
+                    name: "kubernetes-dashboard",
                     namespace: "kubernetes-dashboard",
                     labels: {
                         "app.kubernetes.io/part-of": "kubernetes-dashboard",
@@ -280,6 +280,39 @@ export class EksAddonStack extends NestedStack {
                     cr: {
                         create: true,
                         namespace: "istio-system"
+                    },
+                    deployment: {
+                        ingress: {
+                            enabled: true,
+                            override_yaml: {
+                                metadata: {
+                                    annotations: {
+                                        "kubernetes.io/ingress.class": "alb",
+                                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                                        "alb.ingress.kubernetes.io/target-type": "ip",
+                                        "alb.ingress.kubernetes.io/group.name": "kaili",
+                                        "alb.ingress.kubernetes.io/group.order": "1"
+                                    }
+                                },
+                                spec: {
+                                    rules: [
+                                        {
+                                            http: {
+                                                paths: [
+                                                    {
+                                                        path: "/kiali",
+                                                        backend: {
+                                                            serviceName: "kiali",
+                                                            servicePort: 20001
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
                     }
                 }
             }
