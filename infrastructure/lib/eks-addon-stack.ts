@@ -57,6 +57,11 @@ export class EksAddonStack extends NestedStack {
             }
         );
 
+        /*
+         * Disabled for a while.
+         * Uncomment and tune if you need it.
+         */
+        /*
         const dashboardAlbIngress = cluster.addManifest(
             `${clusterName}-Kubernetes-Dashboard-Ingress`,
             {
@@ -113,6 +118,7 @@ export class EksAddonStack extends NestedStack {
             }
         );
         dashboardAlbIngress.node.addDependency(kubernetesDashboardHelmChart);
+         */
 
 
         /*
