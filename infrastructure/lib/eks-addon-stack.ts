@@ -256,7 +256,7 @@ export class EksAddonStack extends NestedStack {
                 createNamespace: true,
                 values: {
                     ingress: {
-                        enabled: true
+                        enabled: false
                     }
                 }
             }
@@ -266,6 +266,7 @@ export class EksAddonStack extends NestedStack {
         /*
          * Install Kiali.
          * - https://kiali.io/docs/installation/installation-guide/install-with-helm/
+         * - https://kiali.io/docs/installation/installation-guide/accessing-kiali/
          * - https://artifacthub.io/packages/olm/community-operators/kiali
          */
         const kiali = cluster.addHelmChart(
