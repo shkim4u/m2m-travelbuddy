@@ -161,22 +161,25 @@ export class EksAddonStack extends NestedStack {
             }
         );
 
+        // https://github.com/istio/istio/blob/master/manifests/charts/gateway/templates/deployment.yaml
+        // https://github.com/istio/istio/blob/master/manifests/charts/gateway/README.md
+        // https://istio.io/latest/docs/setup/additional-setup/sidecar-injection/#controlling-the-injection-policy
         const istioGateway = cluster.addHelmChart(
             `${clusterName}-Istio-Gateway`,
             {
                 repository: "https://istio-release.storage.googleapis.com/charts",
                 chart: "gateway",
-                release: "istio-gateway",
-                namespace: "istio-ingress",
+                release: "istio-ingressgateway",
+                namespace: "istio-system",
                 createNamespace: false
             }
         );
 
         istioD.node.addDependency(istioBase);
         istioD.node.addDependency(albController);
-        istioGateway.node.addDependency(istioBase);
-        istioGateway.node.addDependency(albController);
-        istioGateway.node.addDependency(istioGatewayNamespace);
+        istioGateway.node.addDependency(istioD);
+        // istioGateway.node.addDependency(albController);
+        // istioGateway.node.addDependency(istioGatewayNamespace);
 
         /*
          * EBS CSI Driver for Prometheus.
@@ -206,7 +209,7 @@ export class EksAddonStack extends NestedStack {
             aws_iam.ManagedPolicy.fromAwsManagedPolicyName("service-role/AmazonEBSCSIDriverPolicy")
         );
 
-        const ebsCsiDriver = cluster.addHelmChart(
+        const ebsCsiDriverHelmChart = cluster.addHelmChart(
             `${clusterName}-EBS-CSI-Driver`,
             {
                 repository: "https://kubernetes-sigs.github.io/aws-ebs-csi-driver",
@@ -240,7 +243,7 @@ export class EksAddonStack extends NestedStack {
                 }
             }
         );
-        ebsCsiDriver.node.addDependency(ebsCsiControllerSaOwned);
+        ebsCsiDriverHelmChart.node.addDependency(ebsCsiControllerSaOwned);
 
         /*
          * Install Prometheus.
@@ -261,7 +264,8 @@ export class EksAddonStack extends NestedStack {
                 }
             }
         );
-        prometheus.node.addDependency(ebsCsiDriver);
+        prometheus.node.addDependency(metricsServerHelmChart);
+        prometheus.node.addDependency(ebsCsiDriverHelmChart);
 
         /*
          * Install Kiali.
@@ -275,42 +279,45 @@ export class EksAddonStack extends NestedStack {
                 repository: "https://kiali.org/helm-charts",
                 chart: "kiali-operator",
                 release: "kiali-operator",
-                namespace: "kiali-operator",
+                // namespace: "kiali-operator",
+                namespace: "istio-system",
                 createNamespace: true,
                 values: {
-                    cr: {
-                        create: true,
-                        namespace: "istio-system"
-                    },
-                    deployment: {
-                        ingress: {
-                            enabled: true,
-                            override_yaml: {
-                                metadata: {
-                                    annotations: {
-                                        "kubernetes.io/ingress.class": "alb",
-                                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
-                                        "alb.ingress.kubernetes.io/target-type": "ip",
-                                        "alb.ingress.kubernetes.io/group.name": "kaili",
-                                        "alb.ingress.kubernetes.io/group.order": "1"
-                                    }
-                                },
-                                spec: {
-                                    rules: [
-                                        {
-                                            http: {
-                                                paths: [
-                                                    {
-                                                        path: "/kiali",
-                                                        backend: {
-                                                            serviceName: "kiali",
-                                                            servicePort: 20001
-                                                        }
-                                                    }
-                                                ]
-                                            }
+                    // cr: {
+                    //     create: true,
+                    //     namespace: "istio-system"
+                    // },
+                    kiali_vars: {
+                        deployment: {
+                            ingress: {
+                                enabled: true,
+                                override_yaml: {
+                                    metadata: {
+                                        annotations: {
+                                            "kubernetes.io/ingress.class": "alb",
+                                            "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                                            "alb.ingress.kubernetes.io/target-type": "ip",
+                                            "alb.ingress.kubernetes.io/group.name": "kaili",
+                                            "alb.ingress.kubernetes.io/group.order": "1"
                                         }
-                                    ]
+                                    },
+                                    spec: {
+                                        rules: [
+                                            {
+                                                http: {
+                                                    paths: [
+                                                        {
+                                                            path: "/kiali",
+                                                            backend: {
+                                                                serviceName: "kiali",
+                                                                servicePort: 20001
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        ]
+                                    }
                                 }
                             }
                         }
