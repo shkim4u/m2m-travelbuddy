@@ -60,7 +60,7 @@ export class EksAddonStack extends NestedStack {
         const dashboardAlbIngress = cluster.addManifest(
             `${clusterName}-Kubernetes-Dashboard-Ingress`,
             {
-                apiVersion: "v1",
+                apiVersion: "networking.k8s.io/v1",
                 kind: "Ingress",
                 metadata: {
                     name: "'kubernetes-dashboard",
