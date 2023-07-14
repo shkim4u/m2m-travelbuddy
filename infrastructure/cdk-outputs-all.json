@@ -26,5 +26,9 @@
   "M2M-Ec2Stack": {
     "M2MEc2StackRdsBastionPrivateIp": "10.220.1.210",
     "M2MEc2StackRdsBastionPublicIp": "3.35.222.78"
+  },
+  "M2M-FlightSpecialDatabaseStack": {
+    "M2MFlightSpecialDatabaseStackFlightSpecialDBPort": "5432",
+    "M2MFlightSpecialDatabaseStackFlightSpecialDBEndpoint": "flightspecials-test-postgres-db.c7tz7hvuxrmo.ap-northeast-2.rds.amazonaws.com"
   }
 }
