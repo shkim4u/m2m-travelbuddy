@@ -57,7 +57,7 @@
 - IRSA (IAM Role for Service Account)
 
 ### 실습 환경 구성
-- 먼저 [Cloud9 환경 구성하기](./docs/cloud9.md)를 합니다.
+- 먼저 [Cloud9 환경 구성하기](./docs/cloud9-latest.md)를 합니다.
 - 다음으로 [EKS Cluster를 생성 (CDK 사용)](./docs/eks-cluster-cdk.md)합니다.
 
 ### 실습 1: TravelBuddy 애플리케이션 컨테이너화, 빌드 및 전달 (ECR 푸시)

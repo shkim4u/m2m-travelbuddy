@@ -12,4 +12,5 @@ export class InfrastructureEnvironment {
   readonly cidrPrivateSubnetAZc?: string;
   readonly eksClusterAdminIamUsers?: string[];
   readonly eksClusterAdminIamRoles?: string[];
+  readonly privateCertificateAuthorityArn?: string;
 }

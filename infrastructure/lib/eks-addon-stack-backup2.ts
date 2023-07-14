@@ -17,10 +17,6 @@ export class EksAddonStack extends Stack {
     ) {
         super(scope, id, props);
 
-        if (!infrastructureEnvironment.privateCertificateAuthorityArn?.includes("arn:aws:acm-pca:")) {
-            throw "Please \"export CA_ARN=<Private CA ARN>\" with valid private CA ARN first.";
-        }
-
         const kubectlRole = aws_iam.Role.fromRoleName(
             this,
             `${clusterName}-${props?.env?.region}-MasterRole`,
@@ -426,8 +422,8 @@ export class EksAddonStack extends Stack {
                 repository: "https://prometheus-community.github.io/helm-charts",
                 chart: "prometheus",
                 release: "prometheus",
-                namespace: "istio-system",
-                createNamespace: false,
+                namespace: "prometheus",
+                createNamespace: true,
                 values: {
                     ingress: {
                         enabled: true
@@ -435,6 +431,7 @@ export class EksAddonStack extends Stack {
                 }
             }
         );
+        // prometheus.node.addDependency(albController);
         prometheus.node.addDependency(metricsServerHelmChart);
         prometheus.node.addDependency(ebsCsiDriverHelmChart);
 
@@ -455,73 +452,61 @@ export class EksAddonStack extends Stack {
          * - Kiali 등 다른 자원의 수명주기를 관리해 준다고 하나, CDK 스택이 지워질 때 함께 삭제되지는 않음
          * - 추후 재생성 시 Conflict을 막기 위해서 수동으로 삭제해 주어야 함.
          * - Kiali를 단독으로 설치하는 것을 고려할 것.
-         *
-         * Kiai 단독으로 설치
          */
-        const kialiServer = cluster.addHelmChart(
-            `${clusterName}-Kiali-Server`,
+        const kialiOperator = cluster.addHelmChart(
+            `${clusterName}-Kiali`,
             {
                 repository: "https://kiali.org/helm-charts",
-                chart: "kiali-server",
-                release: "kiali-server",
-                namespace: "istio-system",
-                createNamespace: false,
+                chart: "kiali-operator",
+                release: "kiali-operator",
+                namespace: "kiali-operator",
+                // namespace: "istio-system",
+                createNamespace: true,
                 values: {
-                    external_services: {
-                        prometheus: {
-                            // See: https://stackoverflow.com/questions/63372998/how-to-install-kiali-dashboard-with-prometheus-in-place-in-gke-with-default-isti
-                            // https://pre-v1-41.kiali.io/documentation/v1.24/faq/#how-do-i-access-kiai
-                            // https://pre-v1-41.kiali.io/documentation/v1.24/installation-guide/#_helm_chart
-                            url: "http://prometheus-server"
-                        }
-                    },
-                    kiali_feature_flags: {
-                        clustering: {
-                            autodetect_secrets: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    deployment: {
-                        replicas: 1,
-                        // Why the hell doesn't below take effect?
-                        // Just create ingress on my own.
-                        // See: https://github.com/kiali/kiali-operator.git/crd-docs/cr/kiali.io_v1alpha1_kiali.yaml
-                        ingress: {
-                            enabled: true,
-                            // Suppress default "nginx"
-                            class_name: "",
-                            override_yaml: {
-                                metadata: {
-                                    annotations: {
-                                        "kubernetes.io/ingress.class": "alb",
-                                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
-                                        "alb.ingress.kubernetes.io/target-type": "ip",
-                                        "alb.ingress.kubernetes.io/group.name": "kaili",
-                                        "alb.ingress.kubernetes.io/group.order": "1"
-                                    }
-                                },
-                                spec: {
-                                    rules: [
-                                        {
-                                            http: {
-                                                paths: [
-                                                    {
-                                                        path: "/kiali",
-                                                        pathType: "Prefix",
-                                                        backend: {
-                                                            service: {
-                                                                name: "kiali",
-                                                                port: {
-                                                                    number: 20001
+                    // Kiali Operator will deploy Kiali server if below is specified.
+                    cr: {
+                        create: true,
+                        namespace: "istio-system",
+                        // See: https://kiali.io/docs/installation/installation-guide/advanced-install-options/
+                        spec: {
+                            deployment: {
+                                replicas: 2,
+                                // Why the hell doesn't below take effect?
+                                // Just create ingress on my own.
+                                // See: https://github.com/kiali/kiali-operator.git/crd-docs/cr/kiali.io_v1alpha1_kiali.yaml
+                                ingress: {
+                                    enabled: true,
+                                    // Suppress default "nginx"
+                                    class_name: "",
+                                    override_yaml: {
+                                        metadata: {
+                                            annotations: {
+                                                "kubernetes.io/ingress.class": "alb",
+                                                "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                                                "alb.ingress.kubernetes.io/target-type": "ip",
+                                                "alb.ingress.kubernetes.io/group.name": "kaili",
+                                                "alb.ingress.kubernetes.io/group.order": "1"
+                                            }
+                                        },
+                                        spec: {
+                                            rules: [
+                                                {
+                                                    http: {
+                                                        paths: [
+                                                            {
+                                                                path: "/kiali",
+                                                                pathType: "Prefix",
+                                                                backend: {
+                                                                    serviceName: "kiali",
+                                                                    servicePort: 20001
                                                                 }
                                                             }
-                                                        }
+                                                        ]
                                                     }
-                                                ]
-                                            }
+                                                }
+                                            ]
                                         }
-                                    ]
+                                    }
                                 }
                             }
                         }
@@ -529,80 +514,55 @@ export class EksAddonStack extends Stack {
                 }
             }
         );
-        kialiServer.node.addDependency(istioBase);
-        kialiServer.node.addDependency(prometheus);
+        kialiOperator.node.addDependency(istioBase);
+        kialiOperator.node.addDependency(prometheus);
 
-        /*
-         * Install Grafana with Helm.
-         * TODO: Not completed configured. Get it done when needed.
-         */
-        // const grafana = cluster.addHelmChart(
-        //     `${clusterName}-Grafana`,
+        // const kialiIngress = cluster.addManifest(
+        //     `${clusterName}-Kiali-Ingress`,
         //     {
-        //         repository: "https://grafana.github.io/helm-charts",
-        //         chart: "grafana",
-        //         release: "grafana",
-        //         namespace: "grafana",
-        //         createNamespace: true,
-        //         values: {
-        //             ingress: {
-        //                 enabled: true,
-        //                 annotations: {
-        //                     // Ingress core settings.
-        //                     "kubernetes.io/ingress.class": "alb",
-        //                     "alb.ingress.kubernetes.io/scheme": "internet-facing",
-        //                     "alb.ingress.kubernetes.io/target-type": "ip",
-        //                     "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
-        //                     // Ingress group settings.
-        //                     "alb.ingress.kubernetes.io/group.name": "grafana",
-        //                     "alb.ingress.kubernetes.io/group.order": "1",
-        //                     // Needed when using TLS.
-        //                     "alb.ingress.kubernetes.io/backend-protocol": "HTTPS",
-        //                     "alb.ingress.kubernetes.io/healthcheck-protocol": "HTTPS",
-        //                     // "alb.ingress.kubernetes.io/listen-ports": '[{"HTTP":80}, {"HTTPS":443}]'
-        //                     "alb.ingress.kubernetes.io/listen-ports": '[{"HTTPS":443}]',
-        //                     "alb.ingress.kubernetes.io/certificate-arn": privateCertificate.certificateArn
-        //                 },
-        //                 path: "/",
-        //                 pathType: "Prefix"
+        //         apiVersion: "networking.k8s.io/v1",
+        //         kind: "Ingress",
+        //         metadata: {
+        //             name: "kiali-ingress",
+        //             // Just set for a while.
+        //             namespace: "istio-system",
+        //             labels: {
+        //                 "app.kubernetes.io/part-of": "kiali",
+        //             },
+        //             annotations: {
+        //                 "kubernetes.io/ingress.class": "alb",
+        //                 "alb.ingress.kubernetes.io/scheme": "internet-facing",
+        //                 "alb.ingress.kubernetes.io/target-type": "ip",
+        //                 "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
+        //                 "alb.ingress.kubernetes.io/success-codes": "200,404,301,302",
+        //                 "alb.ingress.kubernetes.io/group.name": "kiali",
+        //                 "alb.ingress.kubernetes.io/group.order": "1"
         //             }
+        //         },
+        //         spec: {
+        //             rules: [
+        //                 {
+        //                     http: {
+        //                         paths: [
+        //                             {
+        //                                 path: "/kiali",
+        //                                 pathType: "Prefix",
+        //                                 backend: {
+        //                                     service: {
+        //                                         name: "kiali",
+        //                                         port: {
+        //                                             number: 20001
+        //                                         }
+        //                                     }
+        //                                 }
+        //                             }
+        //                         ]
+        //                     }
+        //                 }
+        //             ]
         //         }
         //     }
         // );
-
-        /*
-         * Run awscli pod for fun or utility.
-         */
-        const awscliPod = cluster.addManifest(
-            `${clusterName}-AWSCLI-Pod`,
-            {
-                apiVersion: "v1",
-                kind: "Pod",
-                metadata: {
-                    name: "awscli",
-                    namespace: "default",
-                },
-                spec: {
-                    containers: [
-                        {
-                            name: "awscli",
-                            image: "amazon/aws-cli",
-                            command: [
-                                // "sleep",
-                                // "3600"
-                                "tail"
-                            ],
-                            args: [
-                                "-f",
-                                "/dev/null"
-                            ],
-                            imagePullPolicy: "IfNotPresent",
-                        }
-                    ],
-                    restartPolicy: "Always"
-                }
-            }
-        );
-
+        // kialiIngress.node.addDependency(kialiOperator);
     }
 }

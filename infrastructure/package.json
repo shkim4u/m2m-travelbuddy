@@ -9,13 +9,20 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "deploy": "cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never --no-rollback"
+    "synth": "cdk synth",
+    "all": "cdk deploy --all --outputs-file ./cdk-outputs-all.json --require-approval=never --no-rollback",
+    "infra": "cdk deploy M2M-IamStack M2M-Ec2Stack M2M-SsmStack --outputs-file ./cdk-outputs-infra.json --require-approval=never --no-rollback",
+    "eks": "cdk deploy M2M-EksStack --exclusively --outputs-file ./cdk-outputs-eks.json --require-approval=never --no-rollback",
+    "eks-addon": "cdk deploy M2M-EksAddonStack --outputs-file ./cdk-outputs-eks-addon.json --require-approval=never --no-rollback",
+    "eks-and-cicd": "cdk deploy M2M-EksStack M2M-BuildAndDeliveryStack M2M-FlightSpecialCICDStack --exclusively --outputs-file ./cdk-outputs-eks-and-cicd.json --require-approval=never --no-rollback",
+    "eks-and-addon": "cdk deploy M2M-EksStack M2M-EksAddonStack --outputs-file ./cdk-outputs-eks-and-addon.json --require-approval=never --no-rollback",
+    "database": "cdk deploy M2M-RdsLegacyStack M2M-FlightSpecialDatabaseStack M2M-MskStack --outputs-file ./cdk-outputs-database.json --require-approval=never --no-rollback"
   },
   "devDependencies": {
-    "@types/jest": "^29.5.1",
+    "@types/jest": "^29.5.3",
     "@types/node": "20.1.7",
-    "aws-cdk": "2.81.0",
-    "jest": "^29.5.0",
+    "aws-cdk": "2.87.0",
+    "jest": "^29.6.1",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "~5.0.4"
@@ -23,7 +30,7 @@
   "dependencies": {
     "@aws-cdk/lambda-layer-kubectl-v26": "^2.0.0",
     "amazon-eks-irsa-cfn": "^0.1.1",
-    "aws-cdk-lib": "2.81.0",
+    "aws-cdk-lib": "2.87.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }

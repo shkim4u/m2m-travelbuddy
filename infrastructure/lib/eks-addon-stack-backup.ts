@@ -3,7 +3,6 @@ import {Construct} from "constructs";
 import {AlbController} from "aws-cdk-lib/aws-eks";
 import {HelmCharts, HelmRepositories} from "../config/helm";
 import * as iam from "aws-cdk-lib/aws-iam";
-import {InfrastructureEnvironment} from "../bin/infrastructure-environment";
 
 export class EksAddonStack extends Stack {
     constructor(
@@ -12,14 +11,9 @@ export class EksAddonStack extends Stack {
         clusterName: string,
         // cluster: aws_eks.Cluster,
         // albController: AlbController,
-        infrastructureEnvironment: InfrastructureEnvironment,
-        props?: StackProps
+        props: StackProps
     ) {
         super(scope, id, props);
-
-        if (!infrastructureEnvironment.privateCertificateAuthorityArn?.includes("arn:aws:acm-pca:")) {
-            throw "Please \"export CA_ARN=<Private CA ARN>\" with valid private CA ARN first.";
-        }
 
         const kubectlRole = aws_iam.Role.fromRoleName(
             this,
@@ -39,6 +33,7 @@ export class EksAddonStack extends Stack {
             openIdConnectProviderArn
         );
 
+
         const cluster = aws_eks.Cluster.fromClusterAttributes(
             this,
             `${clusterName}`,
@@ -49,6 +44,78 @@ export class EksAddonStack extends Stack {
             }
         );
 
+        /*
+         * Create a private certificate for various ALB using HTTPS.
+         * (주의) 자원 생성 후 Enable해 주어야 한다.
+         * 1. CDK 배포 -> Private CA에서 오류 발생함 (CA가 Activation되지 않았으므로).
+         * 2. AWS ACM 콘솔에서 해당 Private CA -> 인증서 설치
+         * 3. 설치된 인증서를 복사하여 아래 cfnCertificateAuthorityActivation 변수의 certificate 값을 수정.
+         * 4. CDK 재배포
+         */
+        // const cfnCertificateAuthority = new aws_acmpca.CfnCertificateAuthority(
+        //     this,
+        //     `${clusterName}-Cfn-CA`,
+        //     {
+        //         type: 'ROOT',
+        //         keyAlgorithm: 'RSA_2048',
+        //         signingAlgorithm: 'SHA256WITHRSA',
+        //         subject: {
+        //             country: 'KR',
+        //             organization: 'My Demo Organization',
+        //             organizationalUnit: 'My Demo Team',
+        //             distinguishedNameQualifier: 'mydemo.co.kr',
+        //             state: 'Seoul',
+        //             commonName: 'mydemo.co.kr',
+        //             // serialNumber: 'string',
+        //             locality: 'Gangnam-gu',
+        //             // title: 'string',
+        //             // surname: 'string',
+        //             // givenName: 'string',
+        //             // initials: 'DG',
+        //             // pseudonym: 'string',
+        //             // generationQualifier: 'DBG',
+        //         },
+        //     }
+        // );
+
+        // const cfnCertificateAuthorityActivation = new aws_acmpca.CfnCertificateAuthorityActivation(
+        //     this,
+        //     `${clusterName}-Cfn-CA-Activation`,
+        //     {
+        //         certificate: "-----BEGIN CERTIFICATE-----\n" +
+        //             "MIID+jCCAuKgAwIBAgIQdVW+tvjdsQgSy5v9UdBo7DANBgkqhkiG9w0BAQsFADCB\n" +
+        //             "ljELMAkGA1UEBhMCS1IxHTAbBgNVBAoMFE15IERlbW8gT3JnYW5pemF0aW9uMRUw\n" +
+        //             "EwYDVQQLDAxNeSBEZW1vIFRlYW0xFTATBgNVBC4TDG15ZGVtby5jby5rcjEOMAwG\n" +
+        //             "A1UECAwFU2VvdWwxFTATBgNVBAMMDG15ZGVtby5jby5rcjETMBEGA1UEBwwKR2Fu\n" +
+        //             "Z25hbS1ndTAeFw0yMzA3MDcwNjI0MDNaFw0zMzA3MDcwNzIzNTZaMIGWMQswCQYD\n" +
+        //             "VQQGEwJLUjEdMBsGA1UECgwUTXkgRGVtbyBPcmdhbml6YXRpb24xFTATBgNVBAsM\n" +
+        //             "DE15IERlbW8gVGVhbTEVMBMGA1UELhMMbXlkZW1vLmNvLmtyMQ4wDAYDVQQIDAVT\n" +
+        //             "ZW91bDEVMBMGA1UEAwwMbXlkZW1vLmNvLmtyMRMwEQYDVQQHDApHYW5nbmFtLWd1\n" +
+        //             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAi+qqplXHzmBVDwl/F9Sl\n" +
+        //             "BpuXslBx8HZ5enWgNr9VDYMufLeu9Vlvb1RF63Z2BJSK6pTk3y9yevBOogHpghoE\n" +
+        //             "ufO99qsofcnsErDQUZs504QzjKRon2XIEMXjavD2RYViTk9+zDPWeSi5nA32yZSy\n" +
+        //             "1kj2mJUNVHRBxv86hsfydYgE4tA5mCuV3Is5ZFwN+RsAQyueIeCg9zSvzViTzrHu\n" +
+        //             "yyVTtxY76zkyaFlx660fs5TxfBfeR41P1sTMLyxqOanKYhIuG85CiRB6zay/O9Bn\n" +
+        //             "90NnZVsI3ikOdTniOkcha6yJyzlGj9Ueycgak7FsFzJNmDPGKrK9BJmiqSQiE1CD\n" +
+        //             "1wIDAQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSqxicHDavlxla+\n" +
+        //             "s5z5rjYnx6Bj9jAOBgNVHQ8BAf8EBAMCAYYwDQYJKoZIhvcNAQELBQADggEBABC7\n" +
+        //             "hcl6kpMKGrdYwN+BqacBfMzf67CCnsPr4XTv6T8vbD7wRlNnprTAon5D9F/3IDqp\n" +
+        //             "zO4JB/lzR/SnDY5ODCbH9zr7lD8nLJZmlPQtlBPyZ36d6VMB+CoEr0131/E61Kdc\n" +
+        //             "OdEAMXyFxNKDIreY7mhfwhAdiF8EihLdsMeUnYlZvY1EjWO4ksIqh1wIj7v3O09E\n" +
+        //             "Iq5s1hR2wzBqYS7QUUvUZ0ph1U9baG1AOvR2CnMRkoy8/skBvwS2NqHuxxjeimVN\n" +
+        //             "cjsLGnujtZAkx5ByKldblAlMpvT1lb3kAhsJDwp2Sm+uRCjshG2KJUEg8/QU0p1I\n" +
+        //             "vuWvLwuFmOSNXvQoD7M=\n" +
+        //             "-----END CERTIFICATE-----",
+        //         certificateAuthorityArn: cfnCertificateAuthority.attrArn
+        //     }
+        // );
+
+        // const certificateAuthority = aws_acmpca.CertificateAuthority.fromCertificateAuthorityArn(
+        //     this,
+        //     `${clusterName}-CA`,
+        //     cfnCertificateAuthority.attrArn
+        // );
+
         const privateCertificate = new aws_certificatemanager.PrivateCertificate(
             this,
             `${clusterName}-Private-Certificate`,
@@ -58,7 +125,8 @@ export class EksAddonStack extends Stack {
                 certificateAuthority: aws_acmpca.CertificateAuthority.fromCertificateAuthorityArn(
                     this,
                     `${clusterName}-CA`,
-                    infrastructureEnvironment.privateCertificateAuthorityArn ?? ""
+                    // (중요) 자신의 CA 값으로 대체할 것
+                    "arn:aws:acm-pca:ap-northeast-2:805178225346:certificate-authority/6dcddf84-a068-4fe1-8240-a376c7ae9765"
                 )
             }
         );
@@ -93,9 +161,6 @@ export class EksAddonStack extends Stack {
          * - https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/
          * - https://github.com/argoproj/argo-helm/blob/438f7a26b7518ec1fc4133f12f58cb0b8d1a2765/charts/argo-cd/templates/argocd-server/service.yaml#L18
          * - https://devocean.sk.com/blog/techBoardDetail.do?ID=163103
-         *
-         * Read this!
-         * - https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/
          */
         cluster.addHelmChart(
             `${clusterName}-ArgoCd`,
@@ -107,6 +172,21 @@ export class EksAddonStack extends Stack {
                 createNamespace: true,
                 // version: "v2.7.3",
                 values: {
+                    // installCRDs: true,
+                    // To be compliant with JSON notation, we need to write as follows to apply 'server.service.type': 'LoadBalancer'.
+                    // server: {
+                    //     service: {
+                    //         type: "LoadBalancer"
+                    //     }
+                    // }
+
+                    // configs: {
+                    //     params: {
+                    //         server: {
+                    //             insecure: true
+                    //         }
+                    //     }
+                    // },
                     server: {
                         ingress: {
                             enabled: true,
@@ -117,16 +197,24 @@ export class EksAddonStack extends Stack {
                                 "alb.ingress.kubernetes.io/target-type": "ip",
                                 "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
                                 // Ingress group settings.
-                                // "alb.ingress.kubernetes.io/group.name": "argocd-server",
-                                "alb.ingress.kubernetes.io/group.name": "argo",
+                                "alb.ingress.kubernetes.io/group.name": "argocd-server",
                                 "alb.ingress.kubernetes.io/group.order": "1",
                                 // Needed when using TLS.
-                                "alb.ingress.kubernetes.io/backend-protocol": "HTTPS",
+                                // "alb.ingress.kubernetes.io/backend-protocol": "HTTPS",
                                 "alb.ingress.kubernetes.io/healthcheck-protocol": "HTTPS",
                                 // "alb.ingress.kubernetes.io/listen-ports": '[{"HTTP":80}, {"HTTPS":443}]'
                                 "alb.ingress.kubernetes.io/listen-ports": '[{"HTTPS":443}]',
                                 "alb.ingress.kubernetes.io/certificate-arn": privateCertificate.certificateArn
                             },
+                            // hosts: [
+                            //     "*"
+                            // ],
+                            // paths: [
+                            //     {
+                            //         path: "/",
+                            //         pathType: "Prefix"
+                            //     }
+                            // ]
                             paths: ["/"],
                             https: true
                         }
@@ -154,21 +242,8 @@ export class EksAddonStack extends Stack {
                     installCRDs: true,
                     dashboard: {
                         enabled: true,
-                        ingress: {
-                            enabled: true,
-                            annotations: {
-                                // Ingress core settings.
-                                "kubernetes.io/ingress.class": "alb",
-                                "alb.ingress.kubernetes.io/scheme": "internet-facing",
-                                "alb.ingress.kubernetes.io/target-type": "ip",
-                                "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
-                                "alb.ingress.kubernetes.io/success-codes": "200,404,301,302",
-                                // Ingress gorup setting.
-                                // "alb.ingress.kubernetes.io/group.name": "argo-rollouts-dashboard",
-                                "alb.ingress.kubernetes.io/group.name": "argo",
-                                "alb.ingress.kubernetes.io/group.order": "2",
-                                paths: ["/rollouts"]
-                            }
+                        service: {
+                            type: "LoadBalancer"
                         }
                     },
                 }
@@ -200,77 +275,86 @@ export class EksAddonStack extends Stack {
          *
          * (참고)
          * 위의 Ingress Yaml 파일을 보면 Nginx만 Ingress 자원으로 정의하고 있음 -> AWS ALB 미지원!
-         * (필독) https://github.com/kubernetes/dashboard/blob/master/docs/common/arguments.md
-         *
-         * (참고) Kubernetes Dashboard는 다음 경우에만 원격 로그인을 허용 (https://github.com/kubernetes/dashboard/blob/master/docs/user/accessing-dashboard/README.md#login-not-available)
-         * - http://localhost/...
-         * - http://127.0.0.1/...
-         * - https://<domain_name>/...
-         *
-         * * 설정 후 로그인 방법: https://archive.eksworkshop.com/beginner/040_dashboard/connect/
-         * 1. Kubeconfig가 설정된, 혹은 EKS에 접속 가능한 AWS Principal이 설정된 환경에서
-         * 2. aws eks get-token --cluster-name M2M-EksCluster --role arn:aws:iam::805178225346:role/M2M-EksCluster-ap-northeast-2-MasterRole | jq -r '.status.token'
-         * 3. 위 2의 결과를 로그인 창에 복사 후 로그인
-         *
          */
         const kubernetesDashboardHelmChart = cluster.addHelmChart(
             `${clusterName}-Kubernetes-Dashboard`,
             {
                 repository: "https://kubernetes.github.io/dashboard/",
                 chart: "kubernetes-dashboard",
-                version: "v6.0.8",
                 release: "kubernetes-dashboard",
                 namespace: "kubernetes-dashboard",
                 createNamespace: true,
                 values: {
-                    // This will pass "--auto-generate-certificates=false" argument.
-                    protocolHttp: true,
-                    service: {
-                        externalPort: 9090
-                    },
-                    extraArgs: [
-                        "--insecure-bind-address=0.0.0.0",
-                        "--enable-insecure-login",
-                        "--enable-skip-login=false",
-                        "--system-banner=\"!!! Welcome to AWS ProServe Kubernetes !!!\""
-                    ],
                     ingress: {
-                        // Maybe in the next version.
-                        // nginx: {
-                        enabled: true,
-                        annotations: {
-                            // Ingress core settings.
-                            "kubernetes.io/ingress.class": "alb",
-                            "alb.ingress.kubernetes.io/scheme": "internet-facing",
-                            "alb.ingress.kubernetes.io/target-type": "ip",
-                            "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
-                            // Ingress group settings.
-                            "alb.ingress.kubernetes.io/group.name": "kubernetes-dashboard",
-                            "alb.ingress.kubernetes.io/group.order": "1",
-                            // Needed to listen on TLS.
-                            "alb.ingress.kubernetes.io/listen-ports": '[{"HTTPS":443}]',
-                            "alb.ingress.kubernetes.io/certificate-arn": privateCertificate.certificateArn
-                        },
-                        // hosts: ["*"],
-                        // paths: ["/"],
-                        customPaths: [
-                            {
-                                path: "/",
-                                pathType: "Prefix",
-                                backend: {
-                                    service: {
-                                        name: "kubernetes-dashboard",
-                                        port: {
-                                            number: 9090
-                                        }
-                                    }
-                                }
-                            },
-                        ]
-                    },
+                        // Will create ingress later below.
+                        enabled: false
+                    }
                 }
             }
         );
+
+        /*
+         * Disabled for a while.
+         * Uncomment and tune if you need it.
+         */
+        /*
+        const dashboardAlbIngress = cluster.addManifest(
+            `${clusterName}-Kubernetes-Dashboard-Ingress`,
+            {
+                apiVersion: "networking.k8s.io/v1",
+                kind: "Ingress",
+                metadata: {
+                    name: "kubernetes-dashboard",
+                    namespace: "kubernetes-dashboard",
+                    labels: {
+                        "app.kubernetes.io/part-of": "kubernetes-dashboard",
+                    },
+                    annotations: {
+                        "kubernetes.io/ingress.class": "alb",
+                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                        "alb.ingress.kubernetes.io/target-type": "ip",
+                        "alb.ingress.kubernetes.io/group.name": "kubernetes-dashboard",
+                        "alb.ingress.kubernetes.io/group.order": "1"
+                    }
+                },
+                spec: {
+                    rules: [
+                        {
+                            http: {
+                                paths: [
+                                    {
+                                        path: "/",
+                                        pathType: "Prefix",
+                                        backend: {
+                                            service: {
+                                                name: "kubernetes-dashboard-web",
+                                                port: {
+                                                    name: "web"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        path: "/api",
+                                        pathType: "Prefix",
+                                        backend: {
+                                            service: {
+                                                name: "kubernetes-dashboard-api",
+                                                port: {
+                                                    name: "api"
+                                                }
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        );
+        dashboardAlbIngress.node.addDependency(kubernetesDashboardHelmChart);
+        */
 
         /*
          * Install Istio with Helm.
@@ -279,16 +363,6 @@ export class EksAddonStack extends Stack {
          * - https://artifacthub.io/packages/helm/istio-official/istiod
          * - https://github.com/aws-quickstart/cdk-eks-blueprints/blob/main/docs/addons/istio-control-plane.md
          */
-        // const istioSystemNamespace = cluster.addManifest(
-        //     `${clusterName}-Istio-System-Namespace`,
-        //     {
-        //         apiVersion: 'v1',
-        //         kind: 'Namespace',
-        //         metadata: {
-        //             name: 'istio-system',
-        //         }
-        //     }
-        // );
         const istioBase = cluster.addHelmChart(
             `${clusterName}-Istio-Base`,
             {
@@ -299,8 +373,6 @@ export class EksAddonStack extends Stack {
                 createNamespace: true
             }
         );
-        // istioBase.node.addDependency(istioSystemNamespace);
-
         const istioD = cluster.addHelmChart(
             `${clusterName}-Istio-Istiod`,
             {
@@ -308,27 +380,27 @@ export class EksAddonStack extends Stack {
                 chart: "istiod",
                 release: "istiod",
                 namespace: "istio-system",
-                createNamespace: false,
+                createNamespace: true,
                 // version: "1.18.0"
             }
         );
 
-        // // Istio gateway namespace.
-        // const istioGatewayNamespace = cluster.addManifest(
-        //     `${clusterName}-Istio-Gateway-Namespace`,
-        //     {
-        //         apiVersion: 'v1',
-        //         kind: 'Namespace',
-        //         metadata: {
-        //             name: 'istio-ingress',
-        //             labels: {
-        //                 // This is needed to prevent "Response object is too long" error due to some error when deploying the istiod pod.
-        //                 // , typically caused by ALB controller not installed in advance.
-        //                 "istio-injection": "enabled"
-        //             }
-        //         }
-        //     }
-        // );
+        // Istio gateway namespace.
+        const istioGatewayNamespace = cluster.addManifest(
+            `${clusterName}-Istio-Gateway-Namespace`,
+            {
+                apiVersion: 'v1',
+                kind: 'Namespace',
+                metadata: {
+                    name: 'istio-ingress',
+                    labels: {
+                        // This is needed to prevent "Response object is too long" error due to some error when deploying the istiod pod.
+                        // , typically caused by ALB controller not installed in advance.
+                        "istio-injection": "enabled"
+                    }
+                }
+            }
+        );
 
         // https://github.com/istio/istio/blob/master/manifests/charts/gateway/templates/deployment.yaml
         // https://github.com/istio/istio/blob/master/manifests/charts/gateway/README.md
@@ -426,8 +498,8 @@ export class EksAddonStack extends Stack {
                 repository: "https://prometheus-community.github.io/helm-charts",
                 chart: "prometheus",
                 release: "prometheus",
-                namespace: "istio-system",
-                createNamespace: false,
+                namespace: "prometheus",
+                createNamespace: true,
                 values: {
                     ingress: {
                         enabled: true
@@ -435,6 +507,7 @@ export class EksAddonStack extends Stack {
                 }
             }
         );
+        // prometheus.node.addDependency(albController);
         prometheus.node.addDependency(metricsServerHelmChart);
         prometheus.node.addDependency(ebsCsiDriverHelmChart);
 
@@ -443,85 +516,52 @@ export class EksAddonStack extends Stack {
          * - https://kiali.io/docs/installation/installation-guide/install-with-helm/
          * - https://kiali.io/docs/installation/installation-guide/accessing-kiali/
          * - https://artifacthub.io/packages/olm/community-operators/kiali
-         *
-         * Kiali 접근
-         * - https://pre-v1-41.kiali.io/documentation/v1.24/installation-guide/#_helm_chart
-         * - https://pre-v1-41.kiali.io/documentation/v1.24/faq/#how-do-i-access-kiai
-         * - https://github.com/kiali/kiali-operator/blob/master/roles/default/kiali-deploy/templates/kubernetes/ingress.yaml
-         * - https://raw.githubusercontent.com/istio/istio/master/samples/addons/kiali.yaml
-         * - https://github.com/seanlee10/container-expert-workshop/tree/main/02_kubernetes/11_istio
-         *
-         * Kiali Operator의 단점:
-         * - Kiali 등 다른 자원의 수명주기를 관리해 준다고 하나, CDK 스택이 지워질 때 함께 삭제되지는 않음
-         * - 추후 재생성 시 Conflict을 막기 위해서 수동으로 삭제해 주어야 함.
-         * - Kiali를 단독으로 설치하는 것을 고려할 것.
-         *
-         * Kiai 단독으로 설치
          */
-        const kialiServer = cluster.addHelmChart(
-            `${clusterName}-Kiali-Server`,
+        const kiali = cluster.addHelmChart(
+            `${clusterName}-Kiali`,
             {
                 repository: "https://kiali.org/helm-charts",
-                chart: "kiali-server",
-                release: "kiali-server",
+                chart: "kiali-operator",
+                release: "kiali-operator",
+                // namespace: "kiali-operator",
                 namespace: "istio-system",
-                createNamespace: false,
+                createNamespace: true,
                 values: {
-                    external_services: {
-                        prometheus: {
-                            // See: https://stackoverflow.com/questions/63372998/how-to-install-kiali-dashboard-with-prometheus-in-place-in-gke-with-default-isti
-                            // https://pre-v1-41.kiali.io/documentation/v1.24/faq/#how-do-i-access-kiai
-                            // https://pre-v1-41.kiali.io/documentation/v1.24/installation-guide/#_helm_chart
-                            url: "http://prometheus-server"
-                        }
-                    },
-                    kiali_feature_flags: {
-                        clustering: {
-                            autodetect_secrets: {
-                                enabled: false
-                            }
-                        }
-                    },
-                    deployment: {
-                        replicas: 1,
-                        // Why the hell doesn't below take effect?
-                        // Just create ingress on my own.
-                        // See: https://github.com/kiali/kiali-operator.git/crd-docs/cr/kiali.io_v1alpha1_kiali.yaml
-                        ingress: {
-                            enabled: true,
-                            // Suppress default "nginx"
-                            class_name: "",
-                            override_yaml: {
-                                metadata: {
-                                    annotations: {
-                                        "kubernetes.io/ingress.class": "alb",
-                                        "alb.ingress.kubernetes.io/scheme": "internet-facing",
-                                        "alb.ingress.kubernetes.io/target-type": "ip",
-                                        "alb.ingress.kubernetes.io/group.name": "kaili",
-                                        "alb.ingress.kubernetes.io/group.order": "1"
-                                    }
-                                },
-                                spec: {
-                                    rules: [
-                                        {
-                                            http: {
-                                                paths: [
-                                                    {
-                                                        path: "/kiali",
-                                                        pathType: "Prefix",
-                                                        backend: {
-                                                            service: {
-                                                                name: "kiali",
-                                                                port: {
-                                                                    number: 20001
-                                                                }
+                    // cr: {
+                    //     create: true,
+                    //     namespace: "istio-system"
+                    // },
+                    kiali_vars: {
+                        deployment: {
+                            ingress: {
+                                enabled: true,
+                                override_yaml: {
+                                    metadata: {
+                                        annotations: {
+                                            "kubernetes.io/ingress.class": "alb",
+                                            "alb.ingress.kubernetes.io/scheme": "internet-facing",
+                                            "alb.ingress.kubernetes.io/target-type": "ip",
+                                            "alb.ingress.kubernetes.io/group.name": "kaili",
+                                            "alb.ingress.kubernetes.io/group.order": "1"
+                                        }
+                                    },
+                                    spec: {
+                                        rules: [
+                                            {
+                                                http: {
+                                                    paths: [
+                                                        {
+                                                            path: "/kiali",
+                                                            backend: {
+                                                                serviceName: "kiali",
+                                                                servicePort: 20001
                                                             }
                                                         }
-                                                    }
-                                                ]
+                                                    ]
+                                                }
                                             }
-                                        }
-                                    ]
+                                        ]
+                                    }
                                 }
                             }
                         }
@@ -529,80 +569,8 @@ export class EksAddonStack extends Stack {
                 }
             }
         );
-        kialiServer.node.addDependency(istioBase);
-        kialiServer.node.addDependency(prometheus);
-
-        /*
-         * Install Grafana with Helm.
-         * TODO: Not completed configured. Get it done when needed.
-         */
-        // const grafana = cluster.addHelmChart(
-        //     `${clusterName}-Grafana`,
-        //     {
-        //         repository: "https://grafana.github.io/helm-charts",
-        //         chart: "grafana",
-        //         release: "grafana",
-        //         namespace: "grafana",
-        //         createNamespace: true,
-        //         values: {
-        //             ingress: {
-        //                 enabled: true,
-        //                 annotations: {
-        //                     // Ingress core settings.
-        //                     "kubernetes.io/ingress.class": "alb",
-        //                     "alb.ingress.kubernetes.io/scheme": "internet-facing",
-        //                     "alb.ingress.kubernetes.io/target-type": "ip",
-        //                     "alb.ingress.kubernetes.io/target-group-attributes": "stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=60",
-        //                     // Ingress group settings.
-        //                     "alb.ingress.kubernetes.io/group.name": "grafana",
-        //                     "alb.ingress.kubernetes.io/group.order": "1",
-        //                     // Needed when using TLS.
-        //                     "alb.ingress.kubernetes.io/backend-protocol": "HTTPS",
-        //                     "alb.ingress.kubernetes.io/healthcheck-protocol": "HTTPS",
-        //                     // "alb.ingress.kubernetes.io/listen-ports": '[{"HTTP":80}, {"HTTPS":443}]'
-        //                     "alb.ingress.kubernetes.io/listen-ports": '[{"HTTPS":443}]',
-        //                     "alb.ingress.kubernetes.io/certificate-arn": privateCertificate.certificateArn
-        //                 },
-        //                 path: "/",
-        //                 pathType: "Prefix"
-        //             }
-        //         }
-        //     }
-        // );
-
-        /*
-         * Run awscli pod for fun or utility.
-         */
-        const awscliPod = cluster.addManifest(
-            `${clusterName}-AWSCLI-Pod`,
-            {
-                apiVersion: "v1",
-                kind: "Pod",
-                metadata: {
-                    name: "awscli",
-                    namespace: "default",
-                },
-                spec: {
-                    containers: [
-                        {
-                            name: "awscli",
-                            image: "amazon/aws-cli",
-                            command: [
-                                // "sleep",
-                                // "3600"
-                                "tail"
-                            ],
-                            args: [
-                                "-f",
-                                "/dev/null"
-                            ],
-                            imagePullPolicy: "IfNotPresent",
-                        }
-                    ],
-                    restartPolicy: "Always"
-                }
-            }
-        );
+        kiali.node.addDependency(istioBase);
+        kiali.node.addDependency(prometheus);
 
     }
 }

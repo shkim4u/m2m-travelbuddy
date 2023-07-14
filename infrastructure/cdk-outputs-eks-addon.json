@@ -1,0 +1,33 @@
+{
+  "M2M-NetworkStack": {
+    "ExportsOutputRefM2MNetworkStackPublicSubnetaSubnet160BFD1EB24CF5D1": "subnet-053cbc4572688bf16",
+    "M2MNetworkStackStackName": "M2M-NetworkStack",
+    "ExportsOutputRefM2MNetworkStackVPCEAAD42FD41B2145A": "vpc-0d27a1156aeef2524",
+    "M2MNetworkStackPrivateSubnet1": "10.220.8.0/22",
+    "M2MNetworkStackPrivateSubnet0": "10.220.4.0/22",
+    "M2MNetworkStackVPCCidr": "10.220.0.0/19",
+    "ExportsOutputRefM2MNetworkStackPrivateSubnetcSubnet2A35596127E302F7": "subnet-076afb9f9bd128413",
+    "M2MNetworkStackVPCId": "vpc-0d27a1156aeef2524",
+    "M2MNetworkStackStackId": "arn:aws:cloudformation:ap-northeast-2:588333402460:stack/M2M-NetworkStack/c7bb7020-1f87-11ee-8eb6-02d1fc55926e",
+    "ExportsOutputRefM2MNetworkStackPrivateSubnetaSubnet017329EAE2F3E248": "subnet-09547ba2363279ea5",
+    "ExportsOutputFnGetAttM2MNetworkStackVPCEAAD42FDCidrBlockB285E4F1": "10.220.0.0/19",
+    "M2MNetworkStackPublicSubnet0": "10.220.0.0/22",
+    "M2MNetworkStackPublicSubnet1": "10.220.12.0/22"
+  },
+  "M2M-EksStack": {
+    "M2MEksClusterFlightSpeialsPodServiceAccountName": "flightspecials-service-account",
+    "M2MEksClusterFlightSpecialsPodServiceAccountRoleName": "M2M-EksStack-M2MEksClusterM2MEksClusterFlightSpeci-WIGHJ4QPRZO7",
+    "M2MEksClusterKarpenterclusterNameEDDC758D": "M2M-EksCluster",
+    "M2MEksClusterConfigCommand3B10CDA8": "aws eks update-kubeconfig --name M2M-EksCluster --region ap-northeast-2 --role-arn arn:aws:iam::588333402460:role/M2M-EksCluster-ap-northeast-2-MasterRole",
+    "M2MEksClusterMastersRoleArn72C6DE12": "arn:aws:iam::588333402460:role/M2M-EksCluster-ap-northeast-2-MasterRole",
+    "M2MEksClusterEksEndPoint": "https://8C86ED217D2EBD5F9D7FD0E060450060.gr7.ap-northeast-2.eks.amazonaws.com",
+    "M2MEksClusterGetTokenCommandA12CCB16": "aws eks get-token --cluster-name M2M-EksCluster --region ap-northeast-2 --role-arn arn:aws:iam::588333402460:role/M2M-EksCluster-ap-northeast-2-MasterRole",
+    "ExportsOutputRefM2MEksCluster054E4F44AA857191": "M2M-EksCluster",
+    "M2MEksClusterEksClusterName": "M2M-EksCluster",
+    "ExportsOutputFnGetAttM2MEksClusterapnortheast2EksDeployRole0FE626D3Arn0FF13993": "arn:aws:iam::588333402460:role/M2M-EksCluster-ap-northeast-2-EksDeployRole",
+    "M2MEksClusterOpenIdConnectProviderArn": "arn:aws:iam::588333402460:oidc-provider/oidc.eks.ap-northeast-2.amazonaws.com/id/8C86ED217D2EBD5F9D7FD0E060450060",
+    "M2MEksClusterClusterName1B0F1E8C": "M2M-EksCluster",
+    "M2MEksClusterEksDeployRoleArn": "arn:aws:iam::588333402460:role/M2M-EksCluster-ap-northeast-2-EksDeployRole",
+    "M2MEksClusterFlightSpecialsPodServiceAccountRoleArn": "arn:aws:iam::588333402460:role/M2M-EksStack-M2MEksClusterM2MEksClusterFlightSpeci-WIGHJ4QPRZO7"
+  }
+}

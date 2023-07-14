@@ -80,12 +80,6 @@ export class EksStack extends Stack {
             'Allow from this (self-referencing)'
         );
 
-        /*
-         * EKS 클러스터를 CDK로 생성 후 Destory시에 Stuck 이슈
-         *
-         * The cluster is actually destroyed only after the manifests are deleted because of the natural dependency between them. The problem here is that the deletion of manifests is asynchronous, and we currently do not wait for them to be completed before signaling CloudFormation that the resource has been deleted.
-         * We already have an issue for this that we plan to address to address soon.
-         */
         const eksCluster = new aws_eks.Cluster(
             this,
             `${clusterName}`,
@@ -181,7 +175,6 @@ export class EksStack extends Stack {
                 nodeRole: eksNodeRole
             }
         );
-        eksNodeGroup.node.addDependency(slrEksNodeGroup);
 
         if (infrastructureEnvironment.useKarpenter) {
             // Enable Karpenter.
@@ -224,12 +217,125 @@ export class EksStack extends Stack {
          */
         this.albController = new aws_eks.AlbController(
             this,
-            `${clusterName}-Load-Balancer-Controller`,
-            {
+            'load-balancer-controller', {
                 cluster: eksCluster,
                 version: aws_eks.AlbControllerVersion.V2_5_1
             }
         );
+
+        /*
+         * Install helm chart for cert-manager.
+         * https://cert-manager.io/docs/release-notes/release-notes-1.12/
+         */
+        eksCluster.addHelmChart(
+            `${clusterName}-CertManagerChart`,
+            {
+                repository: HelmRepositories.JETSTACK,
+                chart: HelmCharts.CERT_MANAGER,
+                release: "cert-manager",
+                namespace: "cert-manager",
+                createNamespace: true,
+                version: "v1.12.1",
+                values: {
+                    installCRDs: true
+                }
+            }
+        );
+
+        /*
+         * Install ArgoCD with helm.
+         * Command to change Service Type: ClusterIP -> LoadBalancer
+         * kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+         *
+         * References:
+         * - https://artifacthub.io/packages/helm/argo/argo-cd
+         * - https://argo-cd.readthedocs.io/en/stable/getting_started/
+         * - https://argo-cd.readthedocs.io/en/stable/operator-manual/ingress/
+         * - https://github.com/argoproj/argo-helm/blob/438f7a26b7518ec1fc4133f12f58cb0b8d1a2765/charts/argo-cd/templates/argocd-server/service.yaml#L18
+         * - https://devocean.sk.com/blog/techBoardDetail.do?ID=163103
+         */
+        eksCluster.addHelmChart(
+            `${clusterName}-ArgoCd`,
+            {
+                repository: "https://argoproj.github.io/argo-helm",
+                chart: "argo-cd",
+                release: "argocd",
+                namespace: "argocd",
+                createNamespace: true,
+                // version: "v2.7.3",
+                values: {
+                    installCRDs: true,
+                    // To be compliant with JSON notation, we need to write as follows to apply 'server.service.type': 'LoadBalancer'.
+                    server: {
+                        service: {
+                            type: "LoadBalancer"
+                        }
+                    }
+                }
+            }
+        );
+
+        /*
+         * Install Argo Rollout with helm.
+         * References:
+         * - https://artifacthub.io/packages/helm/argo/argo-rollouts
+         * - https://argo-rollouts.readthedocs.io/en/latest/installation/
+         * - https://argo-rollouts.readthedocs.io/en/release-1.5/FAQ/
+         */
+        eksCluster.addHelmChart(
+            `${clusterName}-ArgoRollout`,
+            {
+                repository: "https://argoproj.github.io/argo-helm",
+                chart: "argo-rollouts",
+                release: "argo-rollouts",
+                namespace: "argo-rollouts",
+                createNamespace: true,
+                values: {
+                    installCRDs: true,
+                    dashboard: {
+                        enabled: true,
+                        service: {
+                            type: "LoadBalancer"
+                        }
+                    },
+                }
+            }
+        );
+
+        /**
+         * Nested stack for addon.
+         */
+        this.addonStack = new EksAddonStack(
+            this,
+            `${id}-AddonStack`,
+            clusterName,
+            eksCluster,
+            this.albController,
+            props
+        );
+
+        /*
+         * Install "Kubernetes Operational View" with helm.
+         * Regret that this is deprecreated and cannot be installed.
+         */
+        // eksCluster.addHelmChart(
+        //     `${clusterName}-Kube-ops-view`,
+        //     {
+        //         repository: "https://charts.helm.sh/stable",
+        //         chart: "kube-ops-view",
+        //         release: "kube-ops-view",
+        //         namespace: "kube-ops-view",
+        //         createNamespace: true,
+        //         values: {
+        //             service: {
+        //                 type: "LoadBalancer"
+        //             },
+        //             rbac: {
+        //                 create: true
+        //             }
+        //         }
+        //     }
+        // );
 
         /**
          * [2023-06-04] Add service account for pod and a role for that.
@@ -322,14 +428,6 @@ export class EksStack extends Stack {
             this,
             `${clusterName}-EksDeployRoleArn`, {
                 value: this.eksDeployRole.roleArn
-            }
-        );
-        new cdk.CfnOutput(
-            this,
-            `${clusterName}-OpenIdConnectProviderArn`,
-            {
-                exportName: `${clusterName}-OpenIdConnectProviderArn`,
-                value: this.eksCluster.openIdConnectProvider.openIdConnectProviderArn
             }
         );
     }

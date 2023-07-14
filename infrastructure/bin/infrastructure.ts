@@ -21,7 +21,7 @@ const app = new cdk.App();
  */
 const env = {
     region: app.node.tryGetContext('region') || process.env.CDK_INTEG_REGION || process.env.CDK_DEFAULT_REGION,
-    account: app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT,
+    account: app.node.tryGetContext('account') || process.env.CDK_INTEG_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT
 };
 
 /**
@@ -39,6 +39,9 @@ const infrastructureEnvironment: InfrastructureEnvironment = {
     cidrPrivateSubnetAZc: "10.220.8.0/22",
     eksClusterAdminIamUsers: ["admin"],
     eksClusterAdminIamRoles: ["TeamRole", "cloud9-admin"],
+    // (중요) ACM에서 CA를 만든 후 자신의 CA 값으로 대체할 것
+    // eg) arn:aws:acm-pca:ap-northeast-2:805178225346:certificate-authority/6dcddf84-a068-4fe1-8240-a376c7ae9765
+    privateCertificateAuthorityArn: process.env.CA_ARN
 };
 
 /**
@@ -79,11 +82,12 @@ const ec2Stack = new Ec2Stack(
         env
     }
 );
+ec2Stack.addDependency(networkStack);
 
 /**
  * EKS Cluster Stack.
  */
-const eksStarck = new EksStack(
+const eksStack = new EksStack(
     app,
     `${infrastructureEnvironment.stackNamePrefix}-EksStack`,
     networkStack.vpc,
@@ -98,21 +102,37 @@ const eksStarck = new EksStack(
         env
     }
 );
-eksStarck.addDependency(networkStack);
+eksStack.addDependency(networkStack);
 
-// /**
-//  * EKS Add-on Stack.
-//  */
+/**
+ * EKS Add-on Stack.
+ * - Issue: This stack is deployed as merged into EKS stack above. Why?
+ * - https://stackoverflow.com/questions/69014168/aws-cdk-stack-is-deployed-silently-even-if-not-explicitly-specified
+ */
 // const eksAddonStack = new EksAddonStack(
 //     app,
 //     `${infrastructureEnvironment.stackNamePrefix}-EksAddonStack`,
 //     `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
-//     eksStarck.eksCluster,
+//     eksStack.eksCluster,
+//     eksStack.albController,
 //     {
 //         env
 //     }
 // );
-// eksAddonStack.addDependency(eksStarck);
+// eksAddonStack.addDependency(eksStack);
+const eksAddonStack = new EksAddonStack(
+    app,
+    `${infrastructureEnvironment.stackNamePrefix}-EksAddonStack`,
+    `${infrastructureEnvironment.stackNamePrefix}-EksCluster`,
+    // eksStack.eksCluster,
+    // eksStack.albController,
+    infrastructureEnvironment,
+    {
+        env
+    }
+);
+eksAddonStack.addDependency(eksStack);
+
 
 /**
  * Build and delivery stack.
@@ -120,13 +140,13 @@ eksStarck.addDependency(networkStack);
 const buildAndDeliveryStack = new BuildDeliveryStack(
     app,
     `${infrastructureEnvironment.stackNamePrefix}-BuildAndDeliveryStack`,
-    eksStarck.eksCluster,
-    eksStarck.eksDeployRole,
+    eksStack.eksCluster,
+    eksStack.eksDeployRole,
     {
         env
     }
 );
-buildAndDeliveryStack.addDependency(eksStarck);
+buildAndDeliveryStack.addDependency(eksStack);
 
 /**
  * FlightSpecial build and delivery stack.
@@ -134,13 +154,13 @@ buildAndDeliveryStack.addDependency(eksStarck);
 const flightspecialBuildandDeliveryStack = new BuildDeliveryStack(
     app,
     `${infrastructureEnvironment.stackNamePrefix}-FlightSpecialCICDStack`,
-    eksStarck.eksCluster,
-    eksStarck.eksDeployRole,
+    eksStack.eksCluster,
+    eksStack.eksDeployRole,
     {
         env
     }
 );
-flightspecialBuildandDeliveryStack.addDependency(eksStarck);
+flightspecialBuildandDeliveryStack.addDependency(eksStack);
 
 /**
  * SSM Stack.
