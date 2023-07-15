@@ -339,4 +339,4 @@ fabric.properties
 .aws-sam/
 
 cdk.context.json
-cdk-outputs.json
+cdk-outputs*.json
