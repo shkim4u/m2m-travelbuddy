@@ -73,7 +73,10 @@ export class FlightSpecialDatabaseStack extends Stack {
                 backupRetention: databaseBackupRetentionDaysForEnv(),
                 copyTagsToSnapshot: true,
                 iamAuthentication: true,
-                securityGroups: [databaseSecurityGroup]
+                securityGroups: [databaseSecurityGroup],
+                parameters: {
+                    "rds.logical_replication": "1"
+                }
             }
         );
 

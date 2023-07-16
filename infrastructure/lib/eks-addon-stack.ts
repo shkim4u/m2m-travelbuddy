@@ -574,35 +574,49 @@ export class EksAddonStack extends Stack {
          * Run awscli pod for fun or utility.
          */
         const awscliPod = cluster.addManifest(
-            `${clusterName}-AWSCLI-Pod`,
+            `${clusterName}-AWSCLI-Deployment`,
             {
-                apiVersion: "v1",
-                kind: "Pod",
+                apiVersion: "apps/v1",
+                kind: "Deployment",
                 metadata: {
                     name: "awscli",
                     namespace: "default",
                 },
                 spec: {
-                    containers: [
-                        {
-                            name: "awscli",
-                            image: "amazon/aws-cli",
-                            command: [
-                                // "sleep",
-                                // "3600"
-                                "tail"
-                            ],
-                            args: [
-                                "-f",
-                                "/dev/null"
-                            ],
-                            imagePullPolicy: "IfNotPresent",
+                    replicas: 1,
+                    selector: {
+                        matchLabels: {
+                            app: "awscli"
                         }
-                    ],
-                    restartPolicy: "Always"
+                    },
+                    template: {
+                        metadata: {
+                            labels: {
+                                app: "awscli"
+                            }
+                        },
+                        spec: {
+                            containers: [
+                                {
+                                    name: "awscli",
+                                    image: "amazon/aws-cli",
+                                    command: [
+                                        // "sleep",
+                                        // "3600"
+                                        "tail"
+                                    ],
+                                    args: [
+                                        "-f",
+                                        "/dev/null"
+                                    ],
+                                    imagePullPolicy: "IfNotPresent",
+                                }
+                            ],
+                            restartPolicy: "Always"
+                        }
+                    }
                 }
             }
         );
-
     }
 }

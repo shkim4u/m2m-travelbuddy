@@ -11,6 +11,8 @@
     "cdk": "cdk",
     "synth": "cdk synth",
     "all": "cdk deploy --all --outputs-file ./cdk-outputs-all.json --require-approval=never --no-rollback",
+    "day1": "cdk deploy M2M-IamStack M2M-NetworkStack M2M-Ec2Stack M2M-EksStack M2M-BuildAndDeliveryStack M2M-SsmStack M2M-RdsLegacyStack --outputs-file ./cdk-outputs-day1.json --require-approval=never --no-rollback",
+    "day2": "cdk deploy M2M-EksAddonStack M2M-FlightSpecialCICDStack M2M-FlightSpecialDatabaseStack --outputs-file ./cdk-outputs-day2.json --require-approval=never --no-rollback",
     "infra": "cdk deploy M2M-IamStack M2M-Ec2Stack M2M-SsmStack --outputs-file ./cdk-outputs-infra.json --require-approval=never --no-rollback",
     "eks": "cdk deploy M2M-EksStack --exclusively --outputs-file ./cdk-outputs-eks.json --require-approval=never --no-rollback",
     "eks-addon": "cdk deploy M2M-EksAddonStack --outputs-file ./cdk-outputs-eks-addon.json --require-approval=never --no-rollback",

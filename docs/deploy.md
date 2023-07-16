@@ -168,7 +168,7 @@ git push --set-upstream origin main
 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
-echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')
+echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/travelbuddy/
 ```
 ![TravelBuddy Landing Page](./assets/travelbuddy-landing-page.png)
 
