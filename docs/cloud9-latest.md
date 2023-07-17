@@ -114,3 +114,10 @@ cd ~/environment/
 curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/cloud9.sh | bash
 ```
 
+## 3. 실습 가이드 및 소스 리포지터리 받기 (git clone)
+향후 실습을 도와줄 통합 가이드를 다운로드 받습니다.
+
+```bash
+git clone https://github.com/shkim4u/m2m-travelbuddy.git
+cd m2m-travelbuddy
+```
