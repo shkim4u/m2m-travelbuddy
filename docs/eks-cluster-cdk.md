@@ -19,8 +19,9 @@
 
 아래 명령어를 통해, 클러스터를 배포합니다. 30 ~ 40분 정도 소요됩니다.<br>
 
-- (참고) ```~/environment/m2m-travelbuddy/infrastructure/eks-stack.ts``` 파일 34번째 줄 근방에서 EKS Admin User와 Admin Role을 자신의 환경에 맞게 설정한 후에 진행합니다.
+- (참고) ```~/environment/m2m-travelbuddy/infrastructure/bin/infrastructure.ts``` 파일 40, 42라인 근방에서 EKS Admin User와 Admin Role을 자신이 생성한 User 혹은 Role (예: cloud9-admin)을 포함하고 있는지 확인합니다. 우리는 이 정보를 사용하여 ```aws_auth``` ConfigMap의 동작 양상을 한번 살펴볼 것입니다. (혹시 강사가 언급하는 것을 깜빡한다면 알려주세요~^^)
     ![EKS Admin User and Role](./assets/cdk-eks-admin-user-and-role.png)
+
 - (참고) 설정하지 않아도 EKS 클러스터 생성 후에 kubectl로 접근할 수 있습니다. 방법은?
 
 ```bash

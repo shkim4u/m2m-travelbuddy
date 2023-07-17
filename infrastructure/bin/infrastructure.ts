@@ -38,7 +38,8 @@ const infrastructureEnvironment: InfrastructureEnvironment = {
     cidrPrivateSubnetAZa: "10.220.4.0/22",
     cidrPrivateSubnetAZc: "10.220.8.0/22",
     eksClusterAdminIamUsers: ["admin"],
-    eksClusterAdminIamRoles: ["TeamRole", "cloud9-admin"],
+    // eksClusterAdminIamRoles: ["TeamRole", "cloud9-admin"],   // "aws_auth" ConfigMap 설정을 보기위하여 "TeamRole"은 의도적으로 제외함 (아래)
+    eksClusterAdminIamRoles: ["cloud9-admin"],
     // (중요) ACM에서 CA를 만든 후 자신의 CA 값으로 대체할 것
     // eg) arn:aws:acm-pca:ap-northeast-2:805178225346:certificate-authority/6dcddf84-a068-4fe1-8240-a376c7ae9765
     privateCertificateAuthorityArn: process.env.CA_ARN
