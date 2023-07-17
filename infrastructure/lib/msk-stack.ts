@@ -25,6 +25,8 @@ export class MskStack extends Stack {
 
         /*
          * Security group for MSK.
+         * https://docs.aws.amazon.com/msk/latest/developerguide/port-info.html
+         * https://docs.aws.amazon.com/msk/latest/developerguide/iam-access-control.html
          */
         const mskSecurityGroup = new aws_ec2.SecurityGroup(
             this,
@@ -51,6 +53,16 @@ export class MskStack extends Stack {
             aws_ec2.Peer.ipv4(vpc.vpcCidrBlock),
             aws_ec2.Port.tcp(9094),
             "Kafka communication (TLS)"
+        );
+        mskSecurityGroup.addIngressRule(
+            aws_ec2.Peer.ipv4(vpc.vpcCidrBlock),
+            aws_ec2.Port.tcp(9096),
+            "Kafka communication (SASL/SCRAM)"
+        );
+        mskSecurityGroup.addIngressRule(
+            aws_ec2.Peer.ipv4(vpc.vpcCidrBlock),
+            aws_ec2.Port.tcp(9098),
+            "Kafka communication (IAM)"
         );
         mskSecurityGroup.addIngressRule(
             aws_ec2.Peer.ipv4(vpc.vpcCidrBlock),
