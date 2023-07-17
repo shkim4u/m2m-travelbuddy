@@ -41,7 +41,16 @@ npm install
 # 4. AWS CDK Bootstrap
 cdk bootstrap
 
-# 4. CDK synthesize & deploy for Day 1
+# 5. Create Private Certificate Authority
+aws acm-pca create-certificate-authority \
+     --certificate-authority-configuration file://../prepare/acm/ca_config.txt \
+     --revocation-configuration file://../prepare/acm/revoke_config.txt \
+     --certificate-authority-type "ROOT" \
+     --idempotency-token 01234567 \
+     --tags Key=Name,Value=AwsProservePCA
+
+
+# 5. CDK synthesize & deploy for Day 1
 #cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never
 npm run day1
 ```
