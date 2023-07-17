@@ -609,6 +609,16 @@ export class EksAddonStack extends Stack {
                                         "-f",
                                         "/dev/null"
                                     ],
+                                    resources: {
+                                        requests: {
+                                            memory: "256Mi",
+                                            cpu: "250m",
+                                        },
+                                        limits: {
+                                            memory: "512Mi",
+                                            cpu: "500m"
+                                        }
+                                    },
                                     imagePullPolicy: "IfNotPresent",
                                 }
                             ],
