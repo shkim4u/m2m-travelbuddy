@@ -24,6 +24,19 @@
 
 - (참고) 설정하지 않아도 EKS 클러스터 생성 후에 kubectl로 접근할 수 있습니다. 방법은?
 
+아래 명령을 실행하여 Day 1 자원을 생성하기에 앞서 몇몇 ALB (ArgoCD, Argo Rollouts 등)에서 사용하기 위한 Amazon Certificate Manager (ACM) Private CA를 생성합니다.
+```bash
+cd ~/environment/m2m-travelbuddy/prepare/acm
+
+# Create Private Certificate Authority
+aws acm-pca create-certificate-authority \
+     --certificate-authority-configuration file://ca_config.txt \
+     --revocation-configuration file://revoke_config.txt \
+     --certificate-authority-type "ROOT" \
+     --idempotency-token 01234567 \
+     --tags Key=Name,Value=AwsProservePCA
+```
+
 ```bash
 # 1. IaC 디렉토리로 이동
 cd ~/environment/m2m-travelbuddy/infrastructure
@@ -40,14 +53,6 @@ npm install
 
 # 4. AWS CDK Bootstrap
 cdk bootstrap
-
-# 5. Create Private Certificate Authority
-aws acm-pca create-certificate-authority \
-     --certificate-authority-configuration file://../prepare/acm/ca_config.txt \
-     --revocation-configuration file://../prepare/acm/revoke_config.txt \
-     --certificate-authority-type "ROOT" \
-     --idempotency-token 01234567 \
-     --tags Key=Name,Value=AwsProservePCA
 
 
 # 5. CDK synthesize & deploy for Day 1
