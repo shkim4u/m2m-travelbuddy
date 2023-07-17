@@ -84,7 +84,14 @@
 
 - Layered Architecture를 반영한 [Package 구조](./docs/package.md)를 살펴봅니다.
 - Docker Compose를 활용하여 Sandbox 환경을 구성하는 방법을 알아봅니다.
+- AWS DMS를 통하여 마이크로서비스에서 발생하는 데이터 변경 사항을 레거시 모놀리스 어플리케이션으로 동기화합니다.
 
-### 실습 5: Strangler Fig Pattern - HotelSpecial 애플리케이션을 분리
+## (Optional) 실습 5 (Self-Paced Project): HotelSpecial 애플리케이션을 분리
 - FlightSpecial 프로젝트를 참고하여 직접 HotelSpecial 애플리케이션을 제작합니다.
 - 이 과정을 통해서 앞에서 학습한 세부 기술들을 익히고 내재화합니다.
+
+## (Optional) 실습 6: FlightSpecial 마이크로서비스 이벤기 기반 아키텍처
+Apache Kafka에 FlightSpecial 마이크로서비스의 도메인 이벤트를 Publish해 봅니다. 이 과정에서 IRSA를 Kubernetes Pod에 적용하는 과정도 실무적으로 살펴보도록 합니다.
+
+## 추후 연계 세션: Migration Hub 서비스의 Refactor Space를 활용한 Strangler-Fig Application 체험
+- 프론트엔드의 분리와 연계
