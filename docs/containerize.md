@@ -65,6 +65,11 @@ git push --set-upstream origin main
 
 먼저 REST API를 구현하고 있는 `applications > TravelBuddy > build > src > main > java > devlounge > spring > RESTController.java`를 살펴봅니다.
 
+```bash
+cd ~/environment/m2m-travelbuddy
+c9 open applications/TravelBuddy/build/src/main/java/devlounge/spring/RESTController.java
+```
+
 `/flightspecials`와 `/hotelspecials` API를 확인할 수 있습니다.
 
 ![travelbuddy-api.png](./assets/travelbuddy-api.png)
