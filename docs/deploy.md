@@ -35,8 +35,9 @@ sudo usermod -a -G docker ssm-user
 
 docker ps
 
-# 만일 docker를 실행했을 때 권한 오류가 발생하면 인스턴스를 재부팅해봅니다.
-sudo reboot
+# 만일 docker를 실행했을 때 권한 오류가 발생하면 docker 그룹으로 Change 하거나 인스턴스를 재부팅해봅니다.
+newgrp docker
+#sudo reboot
 ```
 
 참고: [Amazon Linux 2에 Docker 설치](https://docs.aws.amazon.com/ko_kr/AmazonECS/latest/developerguide/create-container-image.html#create-container-image-install-docker)
@@ -61,9 +62,13 @@ CloudFormation의 ```TravelBuddyRds``` 스택의 출력값으로부터 RDS 엔�
 ![TravelBuddy RDS Endpoint](./assets/travelbuddy-rds-endpoint-check.png)
 
 ```bash
+# (2023-07-17) 아래 명령을 통해 더 이상 콘솔에서 확인할 필요가 없습니다.
 # 아래에 CF로 배포한 환경의 RDS 주소로 대체할 것
 # (예시) export RDS_ENDPOINT=travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com
-export RDS_ENDPOINT=<RDS_ENDPOINT>
+
+#export RDS_ENDPOINT=<RDS_ENDPOINT>
+export RDS_ENDPOINT=`aws cloudformation describe-stacks --region ap-northeast-2 --query "Stacks[?StackName=='M2M-RdsLegacyStack'][].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text`
+echo $RDS_ENDPOINT
 ```
 ```bash
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
@@ -165,7 +170,14 @@ git commit -am "First commit."
 git push --set-upstream origin main
 ```
 
-다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
+배포 파이프라인이 수행되면 ```k9s```를 구동하여 Pod의 상태를 모니터링해 봅니다.<br>
+![TravelBuddy Pod Status](./assets/travelbuddy-pods.png)
+
+동시에 AWS Load Balancer Controller가 배포하는 ALB의 생성 상태도 AWS 콘솔에서 볼 수 있습니다.<br>
+![TravelBuddy ALB Status](./assets/travelbuddy-ingress-alb.png)
+
+
+잠시 후 배포가 완료되면 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
 echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/travelbuddy/

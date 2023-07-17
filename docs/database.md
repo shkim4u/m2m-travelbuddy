@@ -10,7 +10,11 @@
     - MySQL 클라이언트 설치하기
     - RDS 접속 및 데이터베이스 초기 구성
 
-## 1. RDS MySQL 인스턴스 생성
+## ~~1. RDS MySQL 인스턴스 생성~~
+> (참고)<br>
+> 모놀리스 어플리케이션을 위한 RDS MySQL 데이터베이스도 Day 1 자원을 CDK로 배포하는 과정에서 미리 생성되었습니다.<br>
+> 따라서 이 섹션은 Skip해도 됩니다.
+
 RDS 인스턴스는 CloudFormation을 이용하여 배포합니다.
 
 CloudFormation 콘솔로 이동하여 `Create stack` > `With new resources (standard)`를 클릭하여 Create stack 화면으로 진입합니다.
@@ -22,7 +26,7 @@ Specify stack details 화면이 나타나면, Stack name으로 `TravelBuddyRds`�
 
 Next를 클릭해서 RDS를 생성합니다.
 
-## 2. (옵션) Bastion Host 프로비저닝
+## ~~2. (옵션) Bastion Host 프로비저닝~~
 <u>**(참고) 우리는 이미 CDK를 통해 Bastion Host와 이에 필요한 Security Group, EC2 Role 등을 생성하였으므로, 2, 3의 Bastion Host 프로비저닝 및 IAM Role 부여 단계는 이 자원들이 생성되지 않았을 경우에만 수행하여도 됩니다.**</u>
 
 RDS에는 Public Access가 불가하기 때문에, RDS 설정을 위한 Bastion Host가 필요합니다.<br>
@@ -51,7 +55,7 @@ AMI는 `Amazon Linux 2023 AMI`를 선택합니다.<br>
 요약 내용을 확인한 후 `인스턴스 시작 (Launch instance)` 버튼을 클릭하여 인스턴스를 시작합니다.<br>
 ![bastion8.png](./assets/rds-create-bastion-instance-launch-instance.png)
 
-## 3. (옵션) 인스턴스에 IAM Role 부여하기
+## ~~3. (옵션) 인스턴스에 IAM Role 부여하기~~
 
 EC2 콘솔에서 위에서 생성한 bastion 호스트 인스턴스를 선택 후, ```작업 (Actions) > 보안 (Security) > IAM 역할 수정 (Modify IAM Role)```을 클릭합니다.<br>
 ![attach-role.png](./assets/rds-bastion-instance-instance-profile.png)
@@ -59,25 +63,25 @@ EC2 콘솔에서 위에서 생성한 bastion 호스트 인스턴스를 선택 �
 IAM Role에서 ```m2m-admin```을 선택한 후, Save 버튼을 클릭합니다.<br>
 ![modify-role.png](./assets/rds-bastion-instance-select-instance-profile.png)
 
-## MySQL 설정하기
+## 4. MySQL 설정하기
 
 ### SSM 세션 매니저로 Bastion 호스트에 접속
 ![RDS Bastion 연결](./assets/rds-bastion-instance-connect.png)<br>
 ![RDS Bastion 연결 SSM](./assets/rds-bastion-instance-connect-with-ssm.png)<br>
 ![RDS Bastion 연결](./assets/rds-bastion-instance-ssm-connected.png)<br>
 
-### MySQL 클라이언트 설치하기
+### 4.1. MySQL 클라이언트 설치하기
 
 ```bash
 sudo yum update -y
 sudo yum -y install mysql
 ```
 
-### RDS 접속 및 데이터베이스 초기 구성
-아래에서 <rds_host> 부분은 CloudFormation으로 생성한 RDS의 접속 정보로 대체합니다.<br>
+### 4.2. RDS 접속 및 데이터베이스 초기 구성
+~~아래에서 <rds_host> 부분은 CloudFormation으로 생성한 RDS의 접속 정보로 대체합니다.~~<br>
 ![RDS 접속 정보](./assets/rds-endpoint.png)
 
-혹은 아래 명령으로 확인할 수 있습니다.<br>
+~~혹은 아래 명령으로 확인할 수 있습니다.~~<br>
 ```bash
 aws cloudformation describe-stacks --region ap-northeast-2 --query "Stacks[?StackName=='M2M-RdsLegacyStack'][].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text
 ```
