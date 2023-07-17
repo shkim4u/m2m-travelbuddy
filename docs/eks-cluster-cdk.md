@@ -28,11 +28,11 @@
 # 1. IaC 디렉토리로 이동
 cd ~/environment/m2m-travelbuddy/infrastructure
 
-# 2. Upgrade CDK
-npm uninstall -g aws-cdk
-rm -rf ~/.nvm/versions/node/v16.20.0/bin/cdk
-npm install -g aws-cdk
-cdk --version
+# 2. Upgrade CDK - (2023-07-17) 아래는 Cloud9 설정 과정에서 이미 수행하였으므로 더 이상 수행하지 않아도 됨
+#npm uninstall -g aws-cdk
+#rm -rf ~/.nvm/versions/node/v16.20.0/bin/cdk
+#npm install -g aws-cdk
+#cdk --version
 
 
 # 3. npm install package dependencies
@@ -41,8 +41,9 @@ npm install
 # 4. AWS CDK Bootstrap
 cdk bootstrap
 
-# 4. CDK synthesize & deploy
-cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never
+# 4. CDK synthesize & deploy for Day 1
+#cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never
+npm run day1
 ```
 
 배포가 진행되는 동안에 우리가 무엇을 배포하고 있는지 잠깐 살펴보도록 하겠습니다.<br>
