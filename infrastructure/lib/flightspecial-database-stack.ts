@@ -80,6 +80,19 @@ export class FlightSpecialDatabaseStack extends Stack {
             }
         );
 
+        /*
+         * Security group for DMS task.
+         */
+        const dmsReplicationInstanceSecurityGroup = new aws_ec2.SecurityGroup(
+            this,
+            `${id}-Database-Replication-Instance-SecurityGroup`,
+            {
+                vpc,
+                allowAllOutbound: true,
+                description: 'Security group for a DMS replication instance',
+            }
+        );
+
         /**
          * Outputs
          */
