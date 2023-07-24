@@ -84,7 +84,7 @@ aws acm-pca import-certificate-authority-certificate \
 
 ```bash
 # 1. IaC 디렉토리로 이동
-cd ~/environment/m2m-travelbuddy/infrastructure
+cd ~/environment/m2m-travelbuddy/infrastructure-cdk
 
 # 2. Upgrade CDK - (2023-07-17) 아래는 Cloud9 설정 과정에서 이미 수행하였으므로 더 이상 수행하지 않아도 됨
 #npm uninstall -g aws-cdk

@@ -103,11 +103,10 @@ Cloud9 설정에 필요한 사항을 통합하여 구성한 쉘 스크립트 파
    * AWS SSM 세션 매니저 플러그인 설치
    * AWS Cloud9 CLI 설치
    * jq 설치하기
+   * yq 설치하기
    * bash-completion 설치하기
 5. Cloud9 추가 설정하기
 6. 디스크 증설
-
-
 
 ```bash
 cd ~/environment/

@@ -69,7 +69,12 @@ npm install -g c9
 echo "5.3. Installing jq..."
 sudo yum install -y jq
 
-echo "5.4. Installing bash-completion..."
+echo "5.4. Installing yq..."
+sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+sudo chmod a+x /usr/local/bin/yq
+yq --version
+
+echo "5.5. Installing bash-completion..."
 sudo yum install -y bash-completion
 
 ## 6. Addition Cloud9 configurations.

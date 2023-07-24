@@ -27,7 +27,7 @@ downloads/
 eggs/
 .eggs/
 lib/
-!infrastructure/lib
+!infrastructure-cdk/lib
 lib64/
 parts/
 sdist/
@@ -340,3 +340,9 @@ fabric.properties
 
 cdk.context.json
 cdk-outputs*.json
+
+*.tfstate
+*.tfstate.backup
+*.tfstate.lock.info
+.terraform.lock.hcl
+.terraform/

@@ -82,7 +82,7 @@ c9 open applications/TravelBuddy/build/src/main/java/devlounge/spring/RESTContro
 
 ```bash
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build
-vi Dockerfile
+c9 open Dockerfile
 ```
 
 ```Dockerfile
@@ -147,7 +147,7 @@ ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 �
 우리는 이제 로컬 (Cloud9)에서 소스를 빌드하고 빌드 결과물을 담은 컨테이너 이미지를 생성한 후 이를 ECR 리포지터리에 푸시하는 것까지 완료하였습니다.<br>
 이제 이 과정을 CodeBuild의 Build Spec에 적용하여 소스 코드가 CodeCommit Repository에 푸시되면 자동으로 ECR 리포지터리에 전돨되도록 해보겠습니다.
 
-### 1. Build Spec (buildspec.yml) 파일 작성<br>
+### ~~1. Build Spec (buildspec.yml) 파일 작성~~<br>
 - 빌드 및 전달 파이프라인에서 사용하는 빌드 서버 인스턴스 (CodeBuild)는 내부적으로 Build Spec이라는 규약을 사용하여 빌드 과정을 구성할 수 있습니다.
 - 궁금하신 분들은 CodeBuild에서 이를 확인할 수 있으며, CDK 소스에서도 마찬가지 사항을 발견하실 수 있을 것입니다.
 - 우리는 "buildspec.yml"을 사용하도록 구성하였으므로 이 파일을 앞서 살펴보았던 Multi-stage 전략을 사용, 빌드 및 실행 컨테이너 이미지를 분리하여 생성하고 실행 컨테이너 이미지만을 ECR 리포지터리로 Push하는 것으로 바꾸어 보도록 하겠습니다.
