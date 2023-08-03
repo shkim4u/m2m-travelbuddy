@@ -342,7 +342,12 @@ cdk.context.json
 cdk-outputs*.json
 
 *.tfstate
+*.tfstate.*.backup
 *.tfstate.backup
 *.tfstate.lock.info
 .terraform.lock.hcl
 .terraform/
+
+.helm
+infrastructure-cdk/ca.csr
+infrastructure-cdk/cert.pem

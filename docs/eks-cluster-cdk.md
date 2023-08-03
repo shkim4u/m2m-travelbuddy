@@ -108,7 +108,7 @@ npm run day1
 배포가 진행되는 동안에 우리가 무엇을 배포하고 있는지 잠깐 살펴보도록 하겠습니다.<br>
 아래 그림은 모더나이제이션의 가장 초기 단계에서 예상되는 블루프린트 아키텍처입니다.<br>
 그림에 나타난 모든 구성 요소가 생성되지는 않지만 VPC, EKS 등의 핵심 자원과 파이프라인이 생성될 것입니다.<br>
-![블루피른트 아키텍처](./assets/M2M-Replatform-Architecture.png)
+![블루프린트 아키텍처](./assets/M2M-Replatform-Architecture.png)
 
 배포가 성공적으로 완료되면 아래와 같이 표시됩니다.<br>
 ![EKS Cluster Deployed](./assets/eks-cluster-deployed-with-cdk.png)

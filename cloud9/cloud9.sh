@@ -1,5 +1,42 @@
 #!/bin/bash
 
+# [2023-08-03] Cloud9 초기 설정 추가
+# 1. AdministratorAccess 권한을 가진 Role 생성
+# 2. Instance Profile 생성
+# 3. Instance Profile을 Cloud9 EC2 인스턴스와 연결
+cd ~/environment
+cat > cloud9-admin-role-trust-policy.json <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+
+# Role 생성, AdministratorAccess 권한 부여
+aws iam create-role --role-name cloud9-admin --assume-role-policy-document file://cloud9-admin-role-trust-policy.json
+aws iam attach-role-policy --role-name cloud9-admin --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+# 인스턴스 프로파일 생성
+aws iam create-instance-profile --instance-profile-name cloud9-admin-instance-profile
+aws iam add-role-to-instance-profile --role-name cloud9-admin --instance-profile-name cloud9-admin-instance-profile
+
+# Cloud9 EC2 인스턴스에 인스턴스 프로파일 부착 (Attach)
+export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values=*cloud9-workspace* --query "Reservations[*].Instances[*].InstanceId" --output text)
+echo $EC2_INSTANCE_ID
+aws ec2 associate-iam-instance-profile --iam-instance-profile Name=cloud9-admin-instance-profile --instance-id $EC2_INSTANCE_ID
+
+# 마지막으로 Cloud9 Managed Credentials 비활성화 -> 위에서 생성한 Instance Profile 사용
+aws cloud9 update-environment --environment-id ${C9_PID} --managed-credentials-action DISABLE
+
 # 1. IDE IAM 설정 확인
 echo "1. Checking Cloud9 IAM role..."
 rm -vf ${HOME}/.aws/credentials
