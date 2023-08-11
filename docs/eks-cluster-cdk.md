@@ -35,6 +35,10 @@ cd ~/environment/m2m-travelbuddy/prepare/acm
 # 1. Create Private Certificate Authority.
 export CA_ARN=`aws acm-pca create-certificate-authority --certificate-authority-configuration file://ca-config.txt --revocation-configuration file://ocsp-config.txt --certificate-authority-type "ROOT" --idempotency-token 01234567 --tags Key=Name,Value=AwsProservePCA | jq --raw-output .CertificateAuthorityArn`
 echo $CA_ARN
+
+# (Optional) For Terraform
+export TF_VAR_ca_arn=${CA_ARN}
+echo $TF_VAR_ca_arn
 ```
 
 위와 같이 수행하면 ACM에 사설 CA가 생성되는데 강사와 함께 ACM 콘솔로 이동하여 Private CA를 한번 살펴봅니다.<br>
@@ -71,7 +75,7 @@ aws acm-pca import-certificate-authority-certificate \
      --certificate fileb://cert.pem     
 
 # 8. 사설 CA의 상태를 살펴봅니다. ACTIVE 상태임을 확인합니다.
- aws acm-pca describe-certificate-authority \
+aws acm-pca describe-certificate-authority \
 	--certificate-authority-arn ${CA_ARN} \
 	--output json
 ```

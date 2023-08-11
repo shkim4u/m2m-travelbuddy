@@ -1,0 +1,13 @@
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: aws-node-template
+spec:
+  amiFamily: AL2
+  subnetSelector:
+    karpenter.sh/discovery/$cluster_name}: "*"
+  securityGroupSelector:
+    karpenter.sh/discovery/${cluster_name}: "owned"
+    Name: ${cluster_name}-node
+  tags:
+    karpenter.sh/discovery: "${cluster_name}"

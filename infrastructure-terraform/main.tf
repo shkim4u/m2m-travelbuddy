@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
 module "network" {
   source = "./modules/network"
 }
@@ -23,14 +19,5 @@ module "eks" {
   region = var.region
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnets
-}
-
-module "eks_addon" {
-  source = "./modules/eks-addon"
-
-#  depends_on = [module.eks]
-
-  eks_cluster_name = module.eks.eks_cluster_name
-  eks_cluster_endpoint = module.eks.eks_cluster_endpoint
-  eks_cluster_certificate_authority_data = module.eks.eks_cluster_certificate_authority_data
+  certificate_authority_arn = var.ca_arn
 }

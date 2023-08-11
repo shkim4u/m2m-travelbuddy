@@ -150,6 +150,7 @@ export class EksAddonStack extends Stack {
                 release: "argo-rollouts",
                 namespace: "argo-rollouts",
                 createNamespace: true,
+                // https://artifacthub.io/packages/helm/argo/argo-rollouts
                 values: {
                     installCRDs: true,
                     dashboard: {
@@ -166,9 +167,9 @@ export class EksAddonStack extends Stack {
                                 // Ingress gorup setting.
                                 // "alb.ingress.kubernetes.io/group.name": "argo-rollouts-dashboard",
                                 "alb.ingress.kubernetes.io/group.name": "argo",
-                                "alb.ingress.kubernetes.io/group.order": "2",
-                                paths: ["/rollouts"]
-                            }
+                                "alb.ingress.kubernetes.io/group.order": "2"
+                            },
+                            paths: ["/rollouts"]
                         }
                     },
                 }
@@ -611,7 +612,7 @@ export class EksAddonStack extends Stack {
                                     ],
                                     resources: {
                                         requests: {
-                                            memory: "256Mi",
+                                            memory: "128Mi",
                                             cpu: "250m",
                                         },
                                         limits: {

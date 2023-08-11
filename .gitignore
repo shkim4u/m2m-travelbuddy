@@ -351,3 +351,8 @@ cdk-outputs*.json
 .helm
 infrastructure-cdk/ca.csr
 infrastructure-cdk/cert.pem
+infrastructure-terraform/ca.csr
+infrastructure-terraform/cert.pem
+infrastructure-terraform/tfplan
+infrastructure-terraform-backup
+terraform.log

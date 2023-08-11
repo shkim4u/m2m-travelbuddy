@@ -1,0 +1,37 @@
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: gpu
+spec:
+  labels:
+    cluster-name: ${cluster_name}
+    workload-type/gpu: "true"
+    billing: "aws-proserve"
+  requirements:
+    - key: "kubernetes.io/arch"
+      operator: In
+      values: ["amd64"]
+    - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
+      operator: In
+      values: ["on-demand"]
+    # A provisioner can be set up to only provision nodes on particular processor types.
+    # The following example sets a taint that only allows pods with tolerations for Nvidia GPUs to be scheduled:
+    # In order for a pod to run on a node defined in this provisioner, it must tolerate nvidia.com/gpu in its pod spec.
+    - key: node.kubernetes.io/instance-type
+      operator: In
+      values: ["p3.8xlarge", "p3.16xlarge"]
+  taints:
+    - key: workload-type/gpu
+      value: "true"
+      effect: NoSchedule
+  limits:
+    resources:
+      cpu: 1k
+      mem: 1000Gi
+#  consolidation:
+#    enabled: true
+  providerRef:
+    name: aws-node-template
+  # expected exactly one, got both: spec.consolidation.enabled, spec.ttlSecondsAfterEmpty
+  ttlSecondsAfterEmpty: 30
+  ttlSecondsUntilExpired: 7200

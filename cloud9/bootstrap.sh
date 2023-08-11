@@ -2,6 +2,7 @@
 
 # 우선 Workshop Studio 콘솔에서 "Get AWS CLI credentials"를 통해 AWS Credentials 환경 변수를 설정한 후 실행할 것.
 # 그리고 create-cloud9-environment.sh 스크립트를 먼저 실행한 후 수행할 것.
+# Reference: https://docs.aws.amazon.com/ko_kr/cloud9/latest/user-guide/credentials.html
 #cd ~/environment
 cat > cloud9-admin-role-trust-policy.json <<EOF
 {
