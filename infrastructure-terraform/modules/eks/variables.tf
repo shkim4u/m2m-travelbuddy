@@ -13,3 +13,5 @@ variable "vpc_id" {}
 variable "private_subnet_ids" {}
 
 variable "certificate_authority_arn" {}
+
+variable "grafana_admin_password" {}

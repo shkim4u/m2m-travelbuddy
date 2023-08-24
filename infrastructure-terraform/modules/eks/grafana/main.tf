@@ -6,6 +6,7 @@ resource "kubernetes_secret" "grafana" {
 
   data = {
     admin-user     = "admin"
+    admin-password = var.admin_password
   }
 }
 

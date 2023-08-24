@@ -358,6 +358,7 @@ module "prometheus" {
 module "grafana" {
   source = "./grafana"
   certificate_arn = module.aws_acm_certificate.certificate_arn
+  admin_password = var.grafana_admin_password
   depends_on = [module.prometheus]
 }
 

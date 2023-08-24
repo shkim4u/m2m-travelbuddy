@@ -16,3 +16,7 @@ variable "region" {
 variable "ca_arn" {
   description = "ARN of private certificate authority to create server certificate with"
 }
+
+variable "grafana_admin_password" {
+  description = "Admin password for Grafana"
+}

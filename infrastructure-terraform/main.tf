@@ -20,6 +20,7 @@ module "eks" {
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnets
   certificate_authority_arn = var.ca_arn
+  grafana_admin_password = var.grafana_admin_password
 }
 
 module "cicd" {
