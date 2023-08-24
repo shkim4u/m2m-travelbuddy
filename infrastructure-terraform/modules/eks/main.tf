@@ -88,6 +88,8 @@ module "eks" {
     disk_size = 100
     iam_role_additional_policies = {
       AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      AmazonElasticFileSystemFullAccess = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+      CloudWatchAgentServerPolicy = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
     }
   }
   eks_managed_node_groups = {
@@ -147,6 +149,17 @@ module "eks" {
 
   # Configure node security group tags for Karpenter later.
   node_security_group_tags = {}
+
+  # Logging.
+  cluster_enabled_log_types = [
+    "audit",
+    "api",
+    "authenticator",
+    "controllerManager",
+    "scheduler"
+  ]
+
+  dataplane_wait_duration = "180s"
 }
 
 resource "null_resource" "kubeconfig" {
@@ -229,6 +242,15 @@ module "cert_manager" {
 }
 
 /**
+ * VPC CNI Metrics Helper
+ */
+module "vpc_cni_metrics_helper" {
+  source = "./vpc-cni-metrics-helper"
+  cluster_name = var.cluster_name
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
+}
+
+/**
  * AWS load balancer controller.
  * Alt 2: Set up AWS load balancer controller from scratch.
  */
@@ -241,7 +263,7 @@ module "aws_load_balancer_controller" {
   aws_region = var.region
 
   # Safe data retrieval for EKS cluster.
-  depends_upon = [module.eks.cluster_arn, module.cert_manager.id, module.karpenter.id]
+  depends_upon = [module.eks.cluster_arn, module.cert_manager.id, module.karpenter.id, module.metrics_server.id]
 }
 
 /**
@@ -307,10 +329,18 @@ module "istio" {
 }
 
 /**
- * AWS EBS CSI Driver for Prometheus.
+ * AWS EBS CSI driver for Prometheus.
  */
 module "aws_ebs_csi_driver" {
   source = "./aws-ebs-csi-driver"
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
+}
+
+/**
+ * AWS EFS CIS driver for others especially in need for cross-zone access.
+ */
+module "aws_efs_csi_driver" {
+  source = "./aws-efs-csi-driver"
   irsa_oidc_provider_arn = module.eks.oidc_provider_arn
 }
 
@@ -319,7 +349,16 @@ module "aws_ebs_csi_driver" {
  */
 module "prometheus" {
   source = "./prometheus"
-  depends_on = [module.metrics_server, module.aws_ebs_csi_driver]
+  depends_on = [module.metrics_server, module.aws_ebs_csi_driver, module.aws_load_balancer_controller]
+}
+
+/**
+ * Grafana.
+ */
+module "grafana" {
+  source = "./grafana"
+  certificate_arn = module.aws_acm_certificate.certificate_arn
+  depends_on = [module.prometheus]
 }
 
 /**

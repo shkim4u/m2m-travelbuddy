@@ -9,7 +9,7 @@ module "aws_ebs_csi_irsa" {
   oidc_providers = {
     main = {
       provider_arn               = var.irsa_oidc_provider_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+      namespace_service_accounts = ["kube-system:${var.service_account_name}"]
     }
   }
 
@@ -20,7 +20,7 @@ module "aws_ebs_csi_irsa" {
 
 resource "kubernetes_service_account" "ebs_csi_controller_sa" {
   metadata {
-    name = "ebs-csi-controller-sa"
+    name = var.service_account_name
     namespace = "kube-system"
     annotations = {
       "eks.amazonaws.com/role-arn" = module.aws_ebs_csi_irsa.iam_role_arn

@@ -21,3 +21,14 @@ module "eks" {
   private_subnet_ids = module.network.private_subnets
   certificate_authority_arn = var.ca_arn
 }
+
+module "cicd" {
+  source = "./modules/cicd"
+
+  for_each = {
+    "pipeline1" = "travelbuddy"
+    "pipeline2" = "flightspecials"
+  }
+
+  name = each.value
+}

@@ -8,4 +8,6 @@ resource "helm_release" "prometheus" {
     name = "ingress.enabled"
     value = true
   }
+
+  timeout = 600
 }

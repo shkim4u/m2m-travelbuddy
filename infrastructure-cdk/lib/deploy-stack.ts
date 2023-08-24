@@ -50,7 +50,8 @@ export class DeployStack extends NestedStack {
 
     const region: string = Stack.of(this).region;
     const account: string = Stack.of(this).account;
-    let bucketName = `${id}-deploy-${region}-${account}`.substr(0, 63).toLowerCase();
+    // let bucketName = `${id}-deploy-${region}-${account}`.substr(0, 63).toLowerCase();
+    let bucketName = `deploy-${account}-${region}`.substr(0, 63).toLowerCase();
     const deployCodebuildBucket = new aws_s3.Bucket(
       this,
       `${id}-Bucket`,

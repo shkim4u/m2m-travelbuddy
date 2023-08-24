@@ -66,3 +66,8 @@ output "eks_update_kubeconfig_command" {
 #  description = "(EKS) EKS admin role ARN"
 #  value = module.eks.eks_cluster_admin_role_arn
 #}
+
+output "eks_ca_arn" {
+  description = "(EKS) Private CA ARN"
+  value = module.eks.ca_arn
+}

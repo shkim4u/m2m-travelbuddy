@@ -96,7 +96,8 @@ export class BuildDeliveryStack extends Stack {
 
     const region: string = Stack.of(this).region;
     const account: string = Stack.of(this).account;
-    let bucketName = `${id}-${region}-${account}`.substr(0, 63).toLowerCase();
+    // let bucketName = `${id}-${region}-${account}`.substr(0, 63).toLowerCase();
+    let bucketName = `build-${account}-${region}`.substr(0, 63).toLowerCase();
     const buildAndDeliveryCodebuildBucket = new aws_s3.Bucket(
       this,
       `${id}-Bucket`, {

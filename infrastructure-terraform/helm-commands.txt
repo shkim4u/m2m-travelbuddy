@@ -1,0 +1,20 @@
+Private Certificate ARN
+export TF_VAR_ca_arn=arn:aws:acm-pca:ap-northeast-2:494870467106:certificate-authority/d1fe2b0b-f5fe-4a18-ae5e-6a7411520290
+
+helm repo add datree-webhook https://datreeio.github.io/admission-webhook-datree
+helm repo update
+helm install -n datree datree-webhook datree-webhook/datree-admission-webhook --debug \
+--create-namespace \
+--set datree.token=0a6ede1b-3687-463b-ad89-24575982ab79 \
+--set datree.clusterName=$(kubectl config current-context)
+
+
+
+helm install grafana grafana/grafana –n grafana –set persistence.enabled=true –set adminPassword='eksadmin' –set datasources."datasources\.yaml".apiVersion=1 –set datasources."datasources\.yaml".datasources[0].name=Prometheus –set datasources."datasources\.yaml".datasources[0].type=prometheus –set datasources."datasources\.yaml".datasources[0].url=http://prometheus-server.istio-system.svc.cluster.local –set datasources."datasources\.yaml".datasources[0].access=proxy –set datasources."datasources\.yaml".datasources[0].isDefault=true 
+
+Grafana Console
+k8s-grafana-bbea699176-569863433.ap-northeast-2.elb.amazonaws.com
+
+Grafana Admin Password
+kubectl get secret --namespace grafana grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+admin/9vT3YnhpqEuMVLPgVXjQuq4jopAvAtEJjnZjUlYe
