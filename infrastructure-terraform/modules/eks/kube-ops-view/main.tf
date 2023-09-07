@@ -11,7 +11,7 @@
  * Commands to install:
  * 1. helm repo add christianknell https://christianknell.github.io/helm-charts
  * 2. helm repo update
- * 3. helm install my-release christianknell/kube-ops-view
+ * 3. helm install kube-ops-view christianknell/kube-ops-view
  *
  * View Kube Ops View
  * - http://localhost:8080/#scale=3

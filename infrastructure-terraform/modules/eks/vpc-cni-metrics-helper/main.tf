@@ -54,4 +54,6 @@ resource "helm_release" "cni_metrics_helper" {
     service_account_name = var.service_account_name,
     service_account_role_arn = module.vpc_cni_metrics_helper_irsa.iam_role_arn
   })]
+
+  timeout = 1800
 }

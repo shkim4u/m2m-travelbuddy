@@ -25,4 +25,6 @@ resource "helm_release" "cert_manager" {
 
 #  depends_on = [null_resource.depends_upon, time_sleep.wait_2_minutes]
   depends_on = [null_resource.depends_upon]
+
+  timeout = 1800
 }

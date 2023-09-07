@@ -27,9 +27,43 @@ module "cicd" {
   source = "./modules/cicd"
 
   for_each = {
-    "pipeline1" = "travelbuddy"
-    "pipeline2" = "flightspecials"
+    "cicd-travelbuddy" = "travelbuddy"
+    "cicd-flightspecials" = "flightspecials"
   }
 
   name = each.value
+  eks_cluster_admin_role_arn = module.eks.cluster_admin_role_arn
+  eks_cluster_name = module.eks.cluster_name
+}
+
+###
+### SSM Parameter Store for TravelBuddy container image tag or others.
+###
+module "ssm" {
+  source = "./modules/ssm"
+}
+
+###
+### M2M-RdsLegacyStack은 <Project Root>/prepare/rds-fixed-sg-cidr.template 파일을 사용하여 CloudFormation으로 생성.
+###
+
+
+###
+### RDS database for microservices (incl. FlightSpecials)
+###
+module "rds" {
+  source = "./modules/rds"
+  vpc_id = module.network.vpc_id
+  vpc_cidr_block = module.network.vpc_cidr_block
+  subnet_ids = module.network.private_subnets
+}
+
+###
+### MSK cluster.
+###
+module "msk" {
+  source = "./modules/msk"
+  vpc_id = module.network.vpc_id
+  vpc_cidr_block = module.network.vpc_cidr_block
+  subnet_ids = module.network.private_subnets
 }

@@ -1,7 +1,7 @@
 ## CodeCommit repository.
-resource "aws_codecommit_repository" "application_source" {
-  repository_name = "${var.name}-application"
-  description = "Application source code repository for ${var.name}"
+resource "aws_codecommit_repository" "configuration_source" {
+  repository_name = "${var.name}-configration"
+  description = "Configuration source code repository for ${var.name}"
 }
 
 ###
@@ -9,24 +9,24 @@ resource "aws_codecommit_repository" "application_source" {
 ###
 
 ## 1. S3 bucket.
-resource "aws_s3_bucket" "build" {
-  bucket = "${var.name}-${local.phase}-build-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+resource "aws_s3_bucket" "deploy" {
+  bucket = "${var.name}-${local.phase}-deploy-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
   force_destroy = true
 }
 
 ## 2. IAM role and policies.
-data "aws_iam_policy_document" "build_role_trust" {
+data "aws_iam_policy_document" "deploy_role_trust" {
   statement {
     effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = ["codebuild.amazonaws.com"]
     }
     actions = ["sts:AssumeRole"]
   }
 }
 
-data "aws_iam_policy_document" "build_role_policy" {
+data "aws_iam_policy_document" "deploy_role_policy" {
   statement {
     effect = "Allow"
     actions = ["cloudformation:*", "iam:*", "ecr:GetAuthorizationToken"]
@@ -42,35 +42,35 @@ data "aws_iam_policy_document" "build_role_policy" {
   statement {
     effect = "Allow"
     actions = [
-#      "s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"
+      #      "s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"
       "s3:Abort*",
       "s3:DeleteObject*",
       "s3:GetBucket*",
       "s3:GetObject*",
       "s3:List*",
       "s3:PutObject*",
-#      "s3:PutObjectLegalHold",
-#      "s3:PutObjectRetention",
-#      "s3:PutObjectTagging",
-#      "s3:PutObjectVersionTagging"
+      #      "s3:PutObjectLegalHold",
+      #      "s3:PutObjectRetention",
+      #      "s3:PutObjectTagging",
+      #      "s3:PutObjectVersionTagging"
     ]
     resources = [
-      aws_s3_bucket.build.arn,
-      "${aws_s3_bucket.build.arn}/*",
+      aws_s3_bucket.deploy.arn,
+      "${aws_s3_bucket.deploy.arn}/*",
       aws_s3_bucket.pipeline_artifact.arn,
       "${aws_s3_bucket.pipeline_artifact.arn}/*"
     ]
   }
 
-#  statement {
-#    effect = "Allow"
-#    actions = [
-#      "ecr:*"
-#    ]
-#    resources = [
-#      "*"
-#    ]
-#  }
+  #  statement {
+  #    effect = "Allow"
+  #    actions = [
+  #      "ecr:*"
+  #    ]
+  #    resources = [
+  #      "*"
+  #    ]
+  #  }
 
   statement {
     effect = "Allow"
@@ -92,35 +92,37 @@ data "aws_iam_policy_document" "build_role_policy" {
   }
 }
 
-resource "aws_iam_role" "build" {
-  name = "${var.name}-${local.phase}-build-role"
-  assume_role_policy = data.aws_iam_policy_document.build_role_trust.json
+resource "aws_iam_role" "deploy" {
+  name = "${var.name}-${local.phase}-deploy-role"
+  assume_role_policy = data.aws_iam_policy_document.deploy_role_trust.json
 }
 
-resource "aws_iam_role_policy" "build" {
-  name = "${var.name}-${local.phase}-build-policy"
-  role = aws_iam_role.build.id
-  policy = data.aws_iam_policy_document.build_role_policy.json
+resource "aws_iam_role_policy" "deploy" {
+  name = "${var.name}-${local.phase}-deploy-policy"
+  role = aws_iam_role.deploy.id
+  policy = data.aws_iam_policy_document.deploy_role_policy.json
 }
 
-resource "aws_iam_role_policy_attachment" "build" {
+## Allow deploy CodeBuild project to have AdministratorAccess.
+## Restrict with least privilege when ready or needed.
+resource "aws_iam_role_policy_attachment" "deploy" {
   for_each = {
     for k, v in {
-      AWSLambda_FullAccess = "${local.iam_role_policy_prefix}/AWSLambda_FullAccess",
-      AmazonAPIGatewayAdministrator = "${local.iam_role_policy_prefix}/AmazonAPIGatewayAdministrator",
-      AmazonSSMFullAccess = "${local.iam_role_policy_prefix}/AmazonSSMFullAccess",
-      AWSCodeCommitPowerUser = "${local.iam_role_policy_prefix}/AWSCodeCommitPowerUser",
+      AdministratorAccess = "${local.iam_role_policy_prefix}/AdministratorAccess"
+#      AWSLambda_FullAccess = "${local.iam_role_policy_prefix}/AWSLambda_FullAccess",
+#      AmazonAPIGatewayAdministrator = "${local.iam_role_policy_prefix}/AmazonAPIGatewayAdministrator",
+#      AmazonSSMFullAccess = "${local.iam_role_policy_prefix}/AmazonSSMFullAccess",
+#      AWSCodeCommitPowerUser = "${local.iam_role_policy_prefix}/AWSCodeCommitPowerUser",
     }: k => v if true
   }
-
   policy_arn = each.value
-  role = aws_iam_role.build.name
+  role = aws_iam_role.deploy.name
 }
 
 ## 3. CodeBuild.
-resource "aws_codebuild_project" "build" {
-  name = "${var.name}-${local.phase}-build"
-  service_role = aws_iam_role.build.arn
+resource "aws_codebuild_project" "deploy" {
+  name = "${var.name}-${local.phase}-deploy"
+  service_role = aws_iam_role.deploy.arn
 
   artifacts {
     type = "CODEPIPELINE"
@@ -137,14 +139,22 @@ resource "aws_codebuild_project" "build" {
     type = "LINUX_CONTAINER"
     privileged_mode = true
     environment_variable {
+      name = "CLUSTER_NAME"
+      value = var.eks_cluster_name
+    }
+    environment_variable {
       name = "ECR_REPO_URI"
       value = var.ecr_repository_url
+    }
+    environment_variable {
+      name = "ASSUME_ROLE_ARN"
+      value = var.eks_cluster_admin_role_arn
     }
   }
 
   source {
     type = "CODEPIPELINE"
-    buildspec = "buildspec.yml"
+    buildspec = "deployspec.yml"
   }
 
   description = "Build project for ${var.name}-${local.phase}"
@@ -161,28 +171,23 @@ resource "aws_s3_bucket" "pipeline_artifact" {
 
 ###
 ### Begin of CodePipeline role and related permission.
-###
+##
 data "aws_iam_policy_document" "pipeline_role_trust" {
   statement {
     effect = "Allow"
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = ["codepipeline.amazonaws.com"]
     }
     actions = ["sts:AssumeRole"]
   }
 }
 
-#resource "aws_s3_bucket_acl" "build_delivery_pipeline_artifact_acl" {
-#  bucket = aws_s3_bucket.build_delivery_pipeline_artifact.id
-#  acl    = "private"
-#}
-
 # References
 # - https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codepipeline
 data "aws_iam_policy_document" "pipeline_role_policy" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = [
       "s3:Abort*",
       "s3:DeleteObject*",
@@ -201,30 +206,26 @@ data "aws_iam_policy_document" "pipeline_role_policy" {
       "${aws_s3_bucket.pipeline_artifact.arn}/*"
     ]
   }
-
   statement {
     effect = "Allow"
     actions = [
-        "codecommit:GetBranch",
-        "codecommit:GetCommit",
-        "codecommit:UploadArchive",
-        "codecommit:GetUploadArchiveStatus",
-        "codecommit:CancelUploadArchive"
+      "codecommit:GetBranch",
+      "codecommit:GetCommit",
+      "codecommit:UploadArchive",
+      "codecommit:GetUploadArchiveStatus",
+      "codecommit:CancelUploadArchive"
     ]
-
     resources = [
-      aws_codecommit_repository.application_source.arn
+      aws_codecommit_repository.configuration_source.arn
     ]
   }
 
   statement {
     effect = "Allow"
-
     actions = [
       "codebuild:BatchGetBuilds",
       "codebuild:StartBuild"
     ]
-
     resources = ["*"]
   }
 }
@@ -235,8 +236,8 @@ resource "aws_iam_role" "pipeline" {
 }
 
 resource "aws_iam_role_policy" "pipeline" {
-  name   = "${var.name}-${local.phase}-pipeline-policy"
-  role   = aws_iam_role.pipeline.id
+  name = "${var.name}-${local.phase}-pipeline-policy"
+  role = aws_iam_role.pipeline.id
   policy = data.aws_iam_policy_document.pipeline_role_policy.json
 }
 ###
@@ -250,45 +251,55 @@ resource "aws_codepipeline" "pipeline" {
   artifact_store {
     location = aws_s3_bucket.pipeline_artifact.bucket
     type     = "S3"
-
-#    encryption_key {
-#      id   = data.aws_kms_alias.build_delivery_pipeline_artifact.arn
-#      type = "KMS"
-#    }
   }
 
-  # CodeCommit action: https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodeCommit.html
   stage {
     name = "Source_Stage"
+
+    # CodeCommit action: https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodeCommit.html
     action {
-      name = "Pull_Source_Code_Action"
+      name     = "Pull_Configuration_Source_Action"
       category = "Source"
-      owner = "AWS"
+      owner    = "AWS"
       provider = "CodeCommit"
-      version = "1"
-      output_artifacts = ["SourceOutput"]
+      version  = "1"
+      output_artifacts = ["ConfigurationSourceOutput"]
       configuration = {
-        RepositoryName = aws_codecommit_repository.application_source.repository_name
+        RepositoryName = aws_codecommit_repository.configuration_source.repository_name
         BranchName = "main"
+      }
+    }
+
+    # ECR action: https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-ECR.html
+    action {
+      name     = "Pull_Image_Action"
+      category = "Source"
+      owner    = "AWS"
+      provider = "ECR"
+      version  = "1"
+      output_artifacts = ["EcrSourceOutput"]
+      configuration = {
+        RepositoryName = var.ecr_repository_name
+        ImageTag = "latest"
       }
     }
   }
 
   stage {
-    name = "Build_And_Delivery_Stage"
+    name = "Deploy_Stage"
     action {
-      name             = "Build_And_Delivery_Action"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      version          = "1"
+      name     = "Deploy_Action"
+      category = "Build"
+      owner    = "AWS"
+      provider = "CodeBuild"
+      version  = "1"
 
-      input_artifacts  = ["SourceOutput"]
-      output_artifacts = ["BuildOutput"]
+      input_artifacts = ["ConfigurationSourceOutput", "EcrSourceOutput"]
+      output_artifacts = ["DeployOutput"]
       run_order = 1
 
       configuration = {
-        ProjectName = aws_codebuild_project.build.id
+        ProjectName = aws_codebuild_project.deploy.id
       }
     }
   }
@@ -317,7 +328,7 @@ EOF
 }
 
 resource "aws_iam_policy" "pipeline_trigger" {
-  description = "${var.name} - CodePipeline (CI) Trigger Execution Policy"
+  description = "${var.name} - CodePipeline (CD) Trigger Execution Policy"
   policy      = <<EOF
 {
   "Version": "2012-10-17",

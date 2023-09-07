@@ -1,14 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import {
-  aws_codebuild,
-  aws_codecommit,
-  aws_codepipeline, aws_codepipeline_actions,
-  aws_ecr,
-  aws_eks,
-  aws_iam,
-  aws_s3,
-  Stack,
-  StackProps
+    aws_codebuild,
+    aws_codecommit,
+    aws_codepipeline, aws_codepipeline_actions,
+    aws_ecr,
+    aws_eks,
+    aws_iam,
+    aws_s3, Names,
+    Stack,
+    StackProps
 } from "aws-cdk-lib";
 import {Construct} from "constructs";
 import {DeployStack} from "./deploy-stack";
@@ -97,7 +97,7 @@ export class BuildDeliveryStack extends Stack {
     const region: string = Stack.of(this).region;
     const account: string = Stack.of(this).account;
     // let bucketName = `${id}-${region}-${account}`.substr(0, 63).toLowerCase();
-    let bucketName = `build-${account}-${region}`.substr(0, 63).toLowerCase();
+    let bucketName = `build-${account}-${region}-${id}`.substr(0, 63).toLowerCase();
     const buildAndDeliveryCodebuildBucket = new aws_s3.Bucket(
       this,
       `${id}-Bucket`, {

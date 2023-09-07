@@ -19,4 +19,5 @@ variable "ca_arn" {
 
 variable "grafana_admin_password" {
   description = "Admin password for Grafana"
+  default = "P@$$w0rd00#1"
 }

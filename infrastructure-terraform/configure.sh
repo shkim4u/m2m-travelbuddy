@@ -1,11 +1,32 @@
 #!/bin/bash
 
-terraform state rm $(terraform state list)
+if [  $# -le 0 ]
+then
+    echo "Usage: $0 <Terraform Workspace>"
+    return 1
+fi
 
-rm -rf .terraform.lock.hcl
-rm -rf terraform.tfstate*
-rm -rf tfplan
-rm -rf .terraform
+# Caution!: Clean up the previous terraform state.
+#terraform state rm $(terraform state list)
+#rm -rf .terraform.lock.hcl
+#rm -rf terraform.tfstate*
+#rm -rf tfplan
+#rm -rf .terraform
+
+# First try to select terraform workspace.
+terraform workspace select $1
+if [ $? -eq 0 ]
+then
+    echo "Workspace <$1> exists, which to be deleted for freshness."
+    terraform workspace delete $1
+fi
+
+#echo "Seems to be a fresh terraform workspace: <$1>. Creating a new one..."
+echo "Creating a new fresh workspace <$1>..."
+terraform workspace new $1
+terraform workspace select $1
+
+echo "Terraform workspace <$1> selected"
 
 ###
 ### Some other things to initialize from here.

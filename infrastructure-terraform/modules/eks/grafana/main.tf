@@ -1,3 +1,12 @@
+resource "kubernetes_namespace" "grafana" {
+  metadata {
+    name = "grafana"
+    labels = {
+      purpose = "observability"
+    }
+  }
+}
+
 resource "kubernetes_secret" "grafana" {
   metadata {
     name      = "grafana"
@@ -8,6 +17,8 @@ resource "kubernetes_secret" "grafana" {
     admin-user     = "admin"
     admin-password = var.admin_password
   }
+
+  depends_on = [kubernetes_namespace.grafana]
 }
 
 # Grafana dashboard examples:

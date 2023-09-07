@@ -52,7 +52,6 @@ export class FlightSpecialDatabaseStack extends Stack {
             'Allow all traffic from inside VPC'
         );
 
-
         this.databaseInstance = new DatabaseInstance(
             this,
             projectEnvSpecificName('postgres-db'),

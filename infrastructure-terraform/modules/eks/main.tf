@@ -390,7 +390,23 @@ module "game2048" {
 module "awscli" {
   source = "./awscli"
   depends_on = [module.eks]
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
 }
+
+module "cronjob_awscli" {
+  source = "./cronjob-awscli"
+  depends_on = [module.eks]
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
+}
+
+/**
+ * ACK (AWS Controller for Kubernetes)
+ */
+module "ack" {
+  source = "./ack"
+  depends_on = [module.eks]
+}
+
 
 /**
  * [2023-08-11]

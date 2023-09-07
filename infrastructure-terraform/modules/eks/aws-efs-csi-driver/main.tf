@@ -25,6 +25,10 @@ resource "kubernetes_service_account" "efs_csi_controller_sa" {
       "eks.amazonaws.com/role-arn" = module.aws_efs_csi_irsa.iam_role_arn
     }
   }
+
+  timeouts {
+    create = "30m"
+  }
 }
 
 resource "helm_release" "efs_csi_driver" {

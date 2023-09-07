@@ -41,9 +41,9 @@ resource "helm_release" "karpenter" {
   # - https://gallery.ecr.aws/karpenter/karpenter
   repository_username = data.aws_ecrpublic_authorization_token.token.user_name
   repository_password = data.aws_ecrpublic_authorization_token.token.password
-  lifecycle {
-    ignore_changes = [ repository_password ]
-  }
+#  lifecycle {
+#    ignore_changes = [ repository_password ]
+#  }
 
   set {
     name = "settings.aws.clusterName"
@@ -69,6 +69,8 @@ resource "helm_release" "karpenter" {
     name = "settings.aws.interruptionQueueName"
     value = module.karpenter.queue_name
   }
+
+  timeout = 1800
 }
 
 resource "kubectl_manifest" "providers" {

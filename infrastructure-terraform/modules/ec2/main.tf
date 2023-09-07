@@ -23,4 +23,7 @@ module "ec2_instance" {
   vpc_security_group_ids = ["${aws_security_group.rds_bastion.id}"]
   instance_type = "m5.4xlarge"
   ami = data.aws_ami.amazon-linux-2.id
+  tags = {
+    "Patch Group" = "AccountGuardian-PatchGroup-DO-NOT-DELETE"
+  }
 }
