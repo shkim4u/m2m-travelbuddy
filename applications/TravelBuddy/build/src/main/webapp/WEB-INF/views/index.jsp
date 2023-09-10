@@ -13,7 +13,7 @@
 <meta name="description" content="DevAx - Monoliths to Microservices">
 <meta name="author" content="Adam Larter, Developer Solutions Architect, Melbourne Australia">
 <link rel="icon" href="resources/images/favicon.ico">
-					   
+
 <spring:url value="/resources/css/carousel.css" var="carouselCss" />
 <spring:url value="/resources/css/style.css" var="styleCss" />
 <spring:url value="/resources/css/bootstrap.min.css" var="bootstrapCss" />
@@ -167,7 +167,6 @@
 								<td width=200>
 								<span class="flighttime pull-right" data-expiry="${item.expiryDate}"></span></td>
 							</tr>
-
 						</table>
 					</div>
 				</c:forEach>
@@ -191,7 +190,7 @@
 
 						</table>
 					</div>
-				</c:forEach>			
+				</c:forEach>
 			</div>
 
 		</div>
@@ -302,7 +301,7 @@
 			</div>
 			<div class="col-md-5">
 				<img class="featurette-image img-responsive center-block"
-					src="resources/images/IMG_0485.JPG"> 
+					src="resources/images/IMG_0485.JPG">
 			</div>
 		</div>
 
@@ -334,7 +333,7 @@
 		src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 	<script src="${bootstrapJs}"></script>
-	
+
 	<script src="resources/js/index.js"></script>
 
 </body>

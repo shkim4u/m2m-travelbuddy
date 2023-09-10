@@ -154,7 +154,7 @@ resource "aws_codebuild_project" "deploy" {
 
   source {
     type = "CODEPIPELINE"
-    buildspec = "deployspec.yml"
+    buildspec = "deployspec.yaml"  # CDK: deployspec.yml, Terraform: deployspec.yaml
   }
 
   description = "Build project for ${var.name}-${local.phase}"
