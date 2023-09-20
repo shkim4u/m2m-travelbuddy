@@ -13,9 +13,9 @@ RUN mvn -f pom.xml clean package
 # 하지만 아래 소스 이미지가 최선일까요?
 FROM tomcat:9-jdk11
 
-# COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/travelbuddy.war
-# Make the "/travelbuddy/" path to root "/".
-COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/ROOT.war
+COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/travelbuddy.war
+# (Optional) Make the "/travelbuddy/" path to root "/" with root healthcheck.
+#COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/ROOT.war
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]
