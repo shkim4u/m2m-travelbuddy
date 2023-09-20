@@ -71,3 +71,11 @@ output "eks_ca_arn" {
   description = "(EKS) Private CA ARN"
   value = module.eks.ca_arn
 }
+
+###
+### Frontend.
+###
+output "frontend_cloudfront_domain_name" {
+  description = "(Frontend) CloudFront Domain Name"
+  value = module.frontend.frontend_cloudfront_domain_name
+}

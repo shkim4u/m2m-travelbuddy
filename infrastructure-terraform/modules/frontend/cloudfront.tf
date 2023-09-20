@@ -32,7 +32,12 @@ resource "aws_cloudfront_distribution" "travelbuddy_frontend" {
       }
     }
     target_origin_id = aws_s3_bucket.travelbuddy_frontend.id
-    viewer_protocol_policy = "redirect-to-https"
+
+    # Viewer protocol policy.
+    # Refer to: https://wellsw.tistory.com/34
+#    viewer_protocol_policy = "https-only"
+#    viewer_protocol_policy = "redirect-to-https"
+    viewer_protocol_policy = "allow-all"
   }
 
   price_class = "PriceClass_All"
