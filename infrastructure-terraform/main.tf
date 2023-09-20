@@ -33,6 +33,7 @@ module "cicd" {
 
   name = each.value
   eks_cluster_admin_role_arn = module.eks.cluster_admin_role_arn
+  eks_cluster_deploy_role_arn = module.eks.cluster_deploy_role_arn
   eks_cluster_name = module.eks.cluster_name
 }
 
@@ -66,4 +67,11 @@ module "msk" {
   vpc_id = module.network.vpc_id
   vpc_cidr_block = module.network.vpc_cidr_block
   subnet_ids = module.network.private_subnets
+}
+
+###
+### [2023-09-20] Frontend resources - S3 bucket, bucket policy, CloudFront distribution, etc.
+###
+module "frontend" {
+  source = "./modules/frontend"
 }

@@ -71,7 +71,8 @@ body {
   text-align: center;
 }
 .marketing h2 {
-  font-weight: normal;
+  /*font-weight: normal;*/
+  font-weight: bold;
 }
 .marketing .col-lg-4 p {
   margin-right: 10px;

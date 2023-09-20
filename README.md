@@ -68,11 +68,15 @@
 
 ### 실습 2: Database 구성
 
-- 클라우드 환경에 [데이터베이스를 구성](./docs/database.md)합니다.
+- 클라우드 환경에 데이터베이슬 구성합니다.
+  - [데이터베이스 구성 (자원이 CDK로 생성된 경우)](./docs/database.md)
+  - [데이터베이스 구성 (자원이 Terraform으로 생성된 경우)](./docs/database-terraform.md)
 
 ### 실습 3: TravelBuddy 애플리케이션을 EKS에 배포
 
-- 컨테이너화 한 TravelBuddy 애플리케이션을 [EKS에 배포](./docs/deploy.md)합니다.
+- 컨테이너화 한 TravelBuddy 애플리케이션을 쿠버네테스 환경에 배포합니다.
+  -  [EKS에 배포 (CDK로 자원을 생성한 경우)](./docs/deploy.md)
+  -  [EKS에 배포 (Terraform으로 자원을 생성한 경우)](./docs/deploy-terraform.md)
 
 ## Monolith란?
 

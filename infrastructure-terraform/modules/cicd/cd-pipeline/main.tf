@@ -1,6 +1,6 @@
 ## CodeCommit repository.
 resource "aws_codecommit_repository" "configuration_source" {
-  repository_name = "${var.name}-configration"
+  repository_name = "${var.name}-configuration"
   description = "Configuration source code repository for ${var.name}"
 }
 
@@ -148,7 +148,7 @@ resource "aws_codebuild_project" "deploy" {
     }
     environment_variable {
       name = "ASSUME_ROLE_ARN"
-      value = var.eks_cluster_admin_role_arn
+      value = var.eks_cluster_deploy_role_arn
     }
   }
 
@@ -228,6 +228,12 @@ data "aws_iam_policy_document" "pipeline_role_policy" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    effect = "Allow"
+    actions = ["ecr:*"]
+    resources = [var.ecr_repository_arn]
+  }
 }
 
 resource "aws_iam_role" "pipeline" {
@@ -281,6 +287,7 @@ resource "aws_codepipeline" "pipeline" {
       configuration = {
         RepositoryName = var.ecr_repository_name
         ImageTag = "latest"
+#        PollForSourceChanges = true
       }
     }
   }
@@ -300,6 +307,7 @@ resource "aws_codepipeline" "pipeline" {
 
       configuration = {
         ProjectName = aws_codebuild_project.deploy.id
+        PrimarySource = "ConfigurationSourceOutput"
       }
     }
   }
@@ -349,3 +357,93 @@ resource "aws_iam_role_policy_attachment" "pipeline_trigger_attach" {
   role       = aws_iam_role.pipeline_trigger.name
   policy_arn = aws_iam_policy.pipeline_trigger.arn
 }
+
+###
+### Begin of ECR Source Action Event.
+### Refer: https://github.com/hashicorp/terraform-provider-aws/issues/7012
+###
+resource "aws_cloudwatch_event_rule" "image_push" {
+  name = "${var.name}-${local.phase}-ecr-image-push"
+  role_arn = aws_iam_role.cwe_role.arn
+
+  event_pattern = <<EOF
+{
+  "source": [
+    "aws.ecr"
+  ],
+  "detail": {
+    "action-type": [
+      "PUSH"
+    ],
+    "image-tag": [
+      "latest"
+    ],
+    "repository-name": [
+      "${var.ecr_repository_name}"
+    ],
+    "result": [
+      "SUCCESS"
+    ]
+  },
+  "detail-type": [
+    "ECR Image Action"
+  ]
+}
+EOF
+}
+
+resource "aws_cloudwatch_event_target" "codepipeline" {
+  rule = aws_cloudwatch_event_rule.image_push.name
+  target_id = "${var.ecr_repository_name}-Image-Push-Codepipeline"
+  arn = aws_codepipeline.pipeline.arn
+  role_arn  = aws_iam_role.cwe_role.arn
+}
+
+resource "aws_iam_role" "cwe_role" {
+  name = "${var.name}-${local.phase}-cwe-role"
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": ["events.amazonaws.com"]
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_policy" "cwe_policy" {
+  name = "${var.name}-${local.phase}-cwe-policy"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+        "Effect": "Allow",
+        "Action": [
+            "codepipeline:StartPipelineExecution"
+        ],
+        "Resource": [
+            "${aws_codepipeline.pipeline.arn}"
+        ]
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_policy_attachment" "cws_policy_attachment" {
+  name = "${var.name}-${local.phase}-cwe-policy"
+  roles = [aws_iam_role.cwe_role.name]
+  policy_arn = aws_iam_policy.cwe_policy.arn
+}
+###
+### End of ECR Source Action Event
+###

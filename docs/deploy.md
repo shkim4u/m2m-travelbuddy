@@ -38,6 +38,8 @@ docker ps
 # 만일 docker를 실행했을 때 권한 오류가 발생하면 docker 그룹으로 Change 하거나 인스턴스를 재부팅해봅니다.
 newgrp docker
 #sudo reboot
+
+docker ps
 ```
 
 참고: [Amazon Linux 2에 Docker 설치](https://docs.aws.amazon.com/ko_kr/AmazonECS/latest/developerguide/create-container-image.html#create-container-image-install-docker)
@@ -100,7 +102,7 @@ docker logs <컨테이너 이름>
 ```bash
 # 페이지 요청
 # (참고) 마지막에 꼭 "/"를 붙여주어야 합니다.
-curl localhost:8080/travelbuddy/
+curl localhost:8080/
 
 # html 페이지 응답 확인 (웹브라우저로도 확인 가능)
 # <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.# w3.org/TR/html4/loose.dtd">
@@ -180,7 +182,7 @@ git push --set-upstream origin main
 잠시 후 배포가 완료되면 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
-echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/travelbuddy/
+echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/
 ```
 ![TravelBuddy Landing Page](./assets/travelbuddy-landing-page.png)
 

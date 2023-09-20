@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,7 +31,7 @@ public class RESTController {
 	public void setFlightSpecialService(FlightSpecialService svc){
 		this.flightSpecialService = svc;
 	}
-	
+
 	@Autowired(required=true)
 	@Qualifier(value="hotelSpecialService")
 	public void setHoteSpecialService(HotelSpecialService svc){
@@ -42,8 +43,9 @@ public class RESTController {
 	// ------------------------
 	@RequestMapping(path="/flightspecials", method = RequestMethod.GET)
 	@ResponseBody
+	@CrossOrigin("*")
 	public List<FlightSpecial> flightspecials() {
-		
+
 		List<FlightSpecial> result = null;
 		try {
 			Subsegment subsegment = AWSXRay.beginSubsegment(this.getClass().getName() + "::flightspecials");
@@ -51,19 +53,20 @@ public class RESTController {
 			subsegment.putMetadata("flightspecials", result);
 		}
 		catch (Exception ex) {
-			
-		} 
+
+		}
 		finally {
 			AWSXRay.endSubsegment();
 		}
-		
+
 		return result;
 	}
 
 	@RequestMapping(path="/hotelspecials", method = RequestMethod.GET)
 	@ResponseBody
+	@CrossOrigin("*")
 	public List<HotelSpecial> hotelspecials() {
-		
+
 		List<HotelSpecial> result = null;
 		try {
 			Subsegment subsegment = AWSXRay.beginSubsegment(this.getClass().getName() + "::hotelspecials");
@@ -71,12 +74,12 @@ public class RESTController {
 			subsegment.putMetadata("hotelspecials", result);
 		}
 		catch (Exception ex) {
-			
-		} 
+
+		}
 		finally {
 			AWSXRay.endSubsegment();
 		}
 		return result;
 	}
-} 
+}
 

@@ -3,14 +3,25 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import Root from "./Root";
+import * as Config from './config.json'
+
+interface Dictionary<T> {[key: string]: T;}
+const env: Dictionary<string> = Object.values(Config)[0];
+
+console.log(`env: ${env}`);
+
+export const AppConfig = {
+    api_endpoint_url_prefix: env.api_endpoint_url_prefix,
+    flightspecials_api_endpoint_url: env.flightspecials_api_endpoint_url,
+}
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <Root />
-  </React.StrictMode>
+  // </React.StrictMode>
 );
 
 // If you want to start measuring performance in your app, pass a function

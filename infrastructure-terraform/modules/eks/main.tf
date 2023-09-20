@@ -42,6 +42,50 @@ resource "aws_iam_role" "cluster_admin" {
 }
 
 /**
+ * EKS deploy role supposed to be used in deploy pipeline.
+ */
+resource "aws_iam_role" "cluster_deploy" {
+  name = "${var.cluster_name}-DeployRole"
+  path = "/"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Effect    = "Allow"
+        Sid       = ""
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        }
+      },
+    ]
+  })
+
+  # This is IAM Policy with Full Access to EKS Configuration
+  inline_policy {
+    name = "AdministratorAccess"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action   = [
+            "*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+      ]
+    })
+  }
+
+  tags = {
+    description = "Role for deployment pipeline toward EKS cluster. Restrict to least-privileged when ready."
+  }
+}
+
+
+/**
  * Service-linked role (SLR) for EKS node group and Karpenter.
  * This is to remediate possible error like below that happens from time to time.
  * - AccessDenied: Amazon EKS Nodegroups was unable to assume the service-linked role in your account
@@ -79,6 +123,11 @@ module "eks" {
       rolearn  = aws_iam_role.cluster_admin.arn
       username = aws_iam_role.cluster_admin.name
       groups   = ["system:masters"]
+    },
+    {
+      rolearn = aws_iam_role.cluster_deploy.arn
+      username = aws_iam_role.cluster_deploy.name
+      groups = ["system:masters"]
     }
   ]
 

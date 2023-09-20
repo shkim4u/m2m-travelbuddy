@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
 <meta name="description" content="DevAx - Monoliths to Microservices">
-<meta name="author" content="Adam Larter, Developer Solutions Architect, Melbourne Australia">
+<meta name="author" content="Sanghyoun Kim, Senior Cloud Architect, Seoul Korea">
 <link rel="icon" href="resources/images/favicon.ico">
 
 <spring:url value="/resources/css/carousel.css" var="carouselCss" />

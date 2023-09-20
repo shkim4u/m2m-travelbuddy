@@ -12,10 +12,10 @@ TravelBuddy 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제�
 - ECR에 이미지 푸시하기
 
 ## 준비하기
-1. (옵션) 먼저 어플리케이션의 소스 리포지터리를 확인합니다. 이 리포지터리에 소스 코드가 푸시되면 빌드 및 전달 파이프라인이 트리거되어 소스 코드를 빌드하고 이로부터 컨테이너 이미지를 생성합니다. 그리고 생성된 컨테이너 이미지를 ECR 리포지터리에 푸시합니다.
-   1. CodeCommit > "travelbuddy-application"
+1. ~~(옵션) 먼저 어플리케이션의 소스 리포지터리를 확인합니다. 이 리포지터리에 소스 코드가 푸시되면 빌드 및 전달 파이프라인이 트리거되어 소스 코드를 빌드하고 이로부터 컨테이너 이미지를 생성합니다. 그리고 생성된 컨테이너 이미지를 ECR 리포지터리에 푸시합니다.~~
+   1. ~~CodeCommit > "travelbuddy-application"~~
    ![빌드 CodeCommit 리포지터리](./assets/build-codecommit-repository-terraform.png)
-   2. 위 그림과 같이 "HTTPS 복제"를 클릭하여 Git 리포지터리 주소를 클립보드에 복사합니다.
+   2. ~~위 그림과 같이 "HTTPS 복제"를 클릭하여 Git 리포지터리 주소를 클립보드에 복사합니다.~~
 2. TravelBuddy 소스 코드를 CodeCommit 리포지터리에 연결
    1. ~~(참고) 우리는 이미 실습 가이드 및 소스 코드 전체를 가진 Git Repository 내에서 작업하고 있으므로 아래와 같이 서브 디렉토리 (어플리케이션 소스 코드)를 또 다른 Git Repository로 연결하면 Git 관리에 다소 혼란이 생길 수 있습니다. 하지만 전체 Git 경로는 추가적인 Git 관리 작업이 없음을 가정하고 이렇게 수행하도록 합니다.~~
    2. (참고) 지난 차수에서의 경험을 바탕으로 Git Clone받은 전체 경로의 Git 정보를 깔끔하게 초기화하기 위한 단계를 아래와 같이 진행하도록 하겠습니다. 
@@ -32,7 +32,7 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build/
 git init
 git branch -M main
 
-export BUILD_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name M2M-BuildAndDeliveryStack-SourceRepository --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
+export BUILD_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name travelbuddy-application --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
 echo $BUILD_CODECOMMIT_URL
 
 git remote add origin $BUILD_CODECOMMIT_URL
@@ -48,11 +48,11 @@ git push --set-upstream origin main
 ```
 
 3. CodeCommit 리포지터리에 소스 코드가 푸시되었음을 확인합니다.<br>
-![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed.png)
+![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed-terraform.png)
 
 4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않은 등의 이유로 파이프라인은 실패하였을 수 있습니다.
-![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed.png)<br>
-![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason.png)
+![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed-terraform.png)<br>
+![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason-terraform.png)
 
 우리는 여기서 잠깐 멈추고 프로젝트를 살펴봄으로써 빌드 파이프라인에서 필요로 하는 Build Spec을 어떻게 구성할지 단서를 얻도록 하겠습니다.   
 
@@ -134,12 +134,12 @@ Dockerfile 예시를 확인하기 전에 직접 Dockerfile을 작성하여 컨�
 ## ECR (Elastic Container Registry)에 이미지 푸시 테스트
 ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 합니다. 하지만 앞서 EKS 클러스터를 CDK로 생성하는 과정에서 ECR 리포지터리도 함께 생성되었으므로 따로 생성할 필요는 없습니다.<br>
 생성된 ECR 리포지터리는 다음에서 확인할 수 있습니다.<br>
-```Amazon ECR > Repositories > m2m-buildanddeliverystack-repository```
-![TravelBuddy ECR Repository](./assets/travelbuddy-ecr-repository.png)
+```Amazon ECR > Repositories > travelbuddy```
+![TravelBuddy ECR Repository](./assets/travelbuddy-ecr-repository-terraform.png)
 
 해당 리포지터리에서 클릭한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드대로 Cloud9 터미널에 입력해서 TravelBuddy 이미지를 ECR에 푸시해 봅니다.<br>
-![ECR Repository Push Command](./assets/travelbuddy-ecr-repository-push-commands.png)
-![ecrcmd.png](./assets/travelbuddy-container-image-in-ecr-repository.png)
+![ECR Repository Push Command](./assets/travelbuddy-ecr-repository-push-commands-terraform.png)
+![ecrcmd.png](./assets/travelbuddy-container-image-in-ecr-repository-terraform.png)
 
 ---
 ## 빌드 및 전달 (Build and Delivery) 파이프라인에 적용
@@ -148,19 +148,20 @@ ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 �
 이제 이 과정을 CodeBuild의 Build Spec에 적용하여 소스 코드가 CodeCommit Repository에 푸시되면 자동으로 ECR 리포지터리에 전돨되도록 해보겠습니다.
 
 ### ~~1. Build Spec (buildspec.yml) 파일 작성~~<br>
-- 빌드 및 전달 파이프라인에서 사용하는 빌드 서버 인스턴스 (CodeBuild)는 내부적으로 Build Spec이라는 규약을 사용하여 빌드 과정을 구성할 수 있습니다.
-- 궁금하신 분들은 CodeBuild에서 이를 확인할 수 있으며, CDK 소스에서도 마찬가지 사항을 발견하실 수 있을 것입니다.
-- 우리는 "buildspec.yml"을 사용하도록 구성하였으므로 이 파일을 앞서 살펴보았던 Multi-stage 전략을 사용, 빌드 및 실행 컨테이너 이미지를 분리하여 생성하고 실행 컨테이너 이미지만을 ECR 리포지터리로 Push하는 것으로 바꾸어 보도록 하겠습니다.
+- <u>***이 과정은 워크샵 소스 코드에 반영되어 있으므로 수행할 필요가 없습니다.***</u> 
+- ~~빌드 및 전달 파이프라인에서 사용하는 빌드 서버 인스턴스 (CodeBuild)는 내부적으로 Build Spec이라는 규약을 사용하여 빌드 과정을 구성할 수 있습니다.~~
+- ~~궁금하신 분들은 CodeBuild에서 이를 확인할 수 있으며, Terraform 소스에서도 마찬가지 사항을 발견하실 수 있을 것입니다.~~
+- ~~우리는 "buildspec.yaml"을 사용하도록 구성하였으므로 이 파일을 앞서 살펴보았던 Multi-stage 전략을 사용, 빌드 및 실행 컨테이너 이미지를 분리하여 생성하고 실행 컨테이너 이미지만을 ECR 리포지터리로 Push하는 것으로 바꾸어 보도록 하겠습니다.~~
 
 ```bash
 # 1. 소스 경로로 이동
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build
 
 # 2. 기존의 buildspec.yml 파일 백업
-mv buildspec.yml buildspec-backup.yml
+mv buildspec.yaml buildspec-backup.yaml
 
 # 3. Multi-stage 컨테이너 빌드 절차를 가지는 새로운 buildspec.yml 파일 작성
-cat > buildspec.yml <<\EOF
+cat > buildspec.yaml <<\EOF
 version: 0.2
 env:
   shell: bash
@@ -218,13 +219,13 @@ EOF
 1. 다음과 같이 어플리케이션 소스를 푸시하면 빌드 및 전달 파이프라인이 시작됩니다.
 ```bash
 git add .
-git commit -am "[Modified] buildspec.yml to build source and deliver to ECR repository." && git push
+git commit -am "[Modified] buildspec.yaml to build source and deliver to ECR repository." && git push
 ```
 2. 빌드 및 전달 파이프라인 시작<br>
-![빌드 및 전달 파이프라인 시작](./assets/build-delivery-pipeline-triggered.png)
+![빌드 및 전달 파이프라인 시작](./assets/build-delivery-pipeline-triggered-terraform.png)
 
 3. 컨테이너 이미지가 정상적으로 ECR 리포지터리에 푸시됨<br>
-   ![ECR 컨테이너 이미지](./assets/build-delivery-pipeline-container-image-in-ecr-repository.png)
+   ![ECR 컨테이너 이미지](./assets/build-delivery-pipeline-container-image-in-ecr-repository-terraform.png)
 
 ---
 

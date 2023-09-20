@@ -5,9 +5,14 @@ output "cluster_name" {
 
 output "cluster_admin_role_arn" {
   description = "EKS cluster admin role ARN"
-#  value = module.eks.cluster_iam_role_arn
   value = aws_iam_role.cluster_admin.arn
 }
+
+output "cluster_deploy_role_arn" {
+  description = "EKS cluster deploy role ARN"
+  value = aws_iam_role.cluster_deploy.arn
+}
+
 
 output "update_kubeconfig_command" {
   description = "Command to update ~/.kube/config file"

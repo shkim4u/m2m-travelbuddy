@@ -18,4 +18,5 @@ module "cd_pipeline" {
   ecr_repository_name = module.ecr.repository_name
   eks_cluster_name = var.eks_cluster_name
   eks_cluster_admin_role_arn = var.eks_cluster_admin_role_arn
+  eks_cluster_deploy_role_arn = var.eks_cluster_deploy_role_arn
 }
