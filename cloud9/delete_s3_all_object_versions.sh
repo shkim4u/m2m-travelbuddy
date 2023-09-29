@@ -8,29 +8,25 @@ echo "Removing all versions from $bucket"
 
 versions=`aws s3api list-object-versions --bucket $bucket |jq '.Versions'`
 markers=`aws s3api list-object-versions --bucket $bucket |jq '.DeleteMarkers'`
-let count=`echo $versions |jq 'length'`-1
 
-if [ $count -gt -1 ]; then
-        echo "removing files"
-        for i in $(seq 0 $count); do
-                key=`echo $versions | jq .[$i].Key |sed -e 's/\"//g'`
-                versionId=`echo $versions | jq .[$i].VersionId |sed -e 's/\"//g'`
-                cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
-                echo $cmd
-                $cmd
-        done
-fi
+echo "removing files"
+for version in $(echo "${versions}" | jq -r '.[] | @base64'); do
+    version=$(echo ${version} | base64 --decode)
 
-let count=`echo $markers |jq 'length'`-1
+    key=`echo $version | jq -r .Key`
+    versionId=`echo $version | jq -r .VersionId `
+    cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
+    echo $cmd
+    $cmd
+done
 
-if [ $count -gt -1 ]; then
-        echo "removing delete markers"
+echo "removing delete markers"
+for marker in $(echo "${markers}" | jq -r '.[] | @base64'); do
+    marker=$(echo ${marker} | base64 --decode)
 
-        for i in $(seq 0 $count); do
-                key=`echo $markers | jq .[$i].Key |sed -e 's/\"//g'`
-                versionId=`echo $markers | jq .[$i].VersionId |sed -e 's/\"//g'`
-                cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
-                echo $cmd
-                $cmd
-        done
-fi
+    key=`echo $marker | jq -r .Key`
+    versionId=`echo $marker | jq -r .VersionId `
+    cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
+    echo $cmd
+    $cmd
+done
