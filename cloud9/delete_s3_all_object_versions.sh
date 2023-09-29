@@ -1,5 +1,6 @@
 #!/bin/bash
 # References:
+# - https://github.com/aws/aws-cli/issues/651
 # - https://gist.github.com/weavenet/f40b09847ac17dd99d16
 # - https://stackoverflow.com/questions/29809105/how-do-i-delete-a-versioned-bucket-in-aws-s3-using-the-cli
 
