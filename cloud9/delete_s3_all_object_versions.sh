@@ -1,4 +1,5 @@
 #!/bin/bash
+# References: https://gist.github.com/weavenet/f40b09847ac17dd99d16
 
 bucket=$1
 
