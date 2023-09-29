@@ -18,29 +18,29 @@
 	</properties>
 	<dependencies>
 		<!--  Logging -->
-		<dependency> 
-		    <groupId>org.apache.logging.log4j</groupId> 
-		    <artifactId>log4j-api</artifactId> 
-		    <version>${log4j.version}</version> 
-		</dependency> 
-		<dependency> 
-		    <groupId>org.apache.logging.log4j</groupId> 
-		    <artifactId>log4j-core</artifactId> 
-		    <version>${log4j.version}</version> 
-		    </dependency> 
-		<dependency> 
-		    <groupId>org.apache.logging.log4j</groupId> 
-		    <artifactId>log4j-slf4j-impl</artifactId> 
-		    <version>${log4j.version}</version> 
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-api</artifactId>
+		    <version>${log4j.version}</version>
 		</dependency>
-		
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-core</artifactId>
+		    <version>${log4j.version}</version>
+		    </dependency>
+		<dependency>
+		    <groupId>org.apache.logging.log4j</groupId>
+		    <artifactId>log4j-slf4j-impl</artifactId>
+		    <version>${log4j.version}</version>
+		</dependency>
+
 		<!--  QR Code Generation -->
 		<dependency>
 			<groupId>net.glxn.qrgen</groupId>
 			<artifactId>javase</artifactId>
 			<version>2.0</version>
 		</dependency>
-		
+
 		<!-- Spring -->
 		<!-- https://mvnrepository.com/artifact/org.springframework/spring-core -->
 		<dependency>
@@ -72,9 +72,9 @@
 		    <artifactId>spring-tx</artifactId>
 		    <version>${org.springframework-version}</version>
 		</dependency>
-		
-				
-		
+
+
+
 		<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 		<dependency>
 		    <groupId>mysql</groupId>
@@ -130,7 +130,7 @@
 		    <version>2.3.3</version>
 		    <scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>javax.servlet</groupId>
 		    <artifactId>jstl</artifactId>
@@ -140,7 +140,7 @@
 		    <groupId>org.glassfish.web</groupId>
 		    <artifactId>jakarta.servlet.jsp.jstl</artifactId>
 		    <version>1.2.6</version>
-		</dependency>		
+		</dependency>
 
 		<!-- Jackson JSON Mapper -->
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
@@ -188,8 +188,12 @@
 		    <artifactId>aws-xray-recorder-sdk-sql-mysql</artifactId>
 		    <version>${aws.xray-version}</version>
 		</dependency>
-				
 
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.boot</groupId>-->
+<!--			<artifactId>spring-boot-starter-actuator</artifactId>-->
+<!--			<version>2.7.14</version>-->
+<!--		</dependency>-->
 	</dependencies>
 
 	<build>

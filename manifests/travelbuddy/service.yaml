@@ -4,7 +4,7 @@ kind: Service
 metadata:
   name: travelbuddy-service
   annotations:
-    alb.ingress.kubernetes.io/healthcheck-path: "/travelbuddy/"
+    alb.ingress.kubernetes.io/healthcheck-path: "/travelbuddy/health"
 spec:
   selector:
     app: travelbuddy

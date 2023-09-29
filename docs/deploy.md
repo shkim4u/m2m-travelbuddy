@@ -85,7 +85,7 @@ echo $AWS_REGION
 ```bash
 # 환경변수를 주입하여 컨테이너 실행
 docker run --rm \
-  -e JDBC_CONNECTION_STRING="jdbc:mysql://${RDS_ENDPOINT}:3306/travelbuddy?useSSL=false" \
+  -e JDBC_CONNECTION_STRING="jdbc:mysql://${RDS_ENDPOINT}:3306/travelbuddy?useSSL=false&autoReconnect=true" \
   -e JDBC_UID=root \
   -e JDBC_PWD=labpassword \
   -dp 8080:8080 ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/m2m-buildanddeliverystack-repository:latest

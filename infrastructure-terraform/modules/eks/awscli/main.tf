@@ -85,10 +85,10 @@ resource "kubernetes_service_account" "awscli_irsa" {
     name = var.service_account_name
     namespace = "default"
     annotations = {
-      #      "eks.amazonaws.com/role-arn" = module.cronjob_awscli_irsa.iam_role_arn
       # [2023-08-27] Testing for cross-account IRSA.
       # Kubernetes OIDC provider should be registered to the target account, eg. Audit account in control tower.
-      "eks.amazonaws.com/role-arn" = "arn:aws:iam::861063945558:role/CronJob-AWSCLI-IRSA-Role"
+#      "eks.amazonaws.com/role-arn" = "arn:aws:iam::861063945558:role/CronJob-AWSCLI-IRSA-Role"
+      "eks.amazonaws.com/role-arn" = module.awscli_irsa.iam_role_arn
     }
   }
 

@@ -4,11 +4,9 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Segment;
@@ -23,6 +21,7 @@ import devlounge.spring.service.HotelSpecialService;
 @Controller
 public class RESTController {
 
+	private static final ResponseEntity<String> HEALTH_RESPONSE = ResponseEntity.ok().body("OK");
 	private FlightSpecialService flightSpecialService;
 	private HotelSpecialService  hotelSpecialService;
 
@@ -80,6 +79,12 @@ public class RESTController {
 			AWSXRay.endSubsegment();
 		}
 		return result;
+	}
+
+	@RequestMapping("/health")
+	@GetMapping
+	public ResponseEntity<String> health() {
+		return HEALTH_RESPONSE;
 	}
 }
 

@@ -472,3 +472,10 @@ module "ack" {
 #1. https://academy.tetrate.io/
 #7. Datree: Manifest 검증
 #8. Kasten: 백업 및 복구 (cf. Velero)
+
+/**
+ * Kubehelper
+ */
+module "kubehelper" {
+  source = "./kubehelper"
+}

@@ -22,7 +22,7 @@ spec:
           - containerPort: 8080
         env:
         - name: JDBC_CONNECTION_STRING
-          value: "jdbc:mysql://travelbuddyrds-dbinstance-d6nozovfnjup.cpcqnyioatys.ap-northeast-1.rds.amazonaws.com:3306/travelbuddy?useSSL=false"
+          value: "jdbc:mysql://travelbuddyrds-dbinstance-d6nozovfnjup.cpcqnyioatys.ap-northeast-1.rds.amazonaws.com:3306/travelbuddy?useSSL=false&autoReconnect=true"
         - name: JDBC_UID
           value: "root"
         - name: JDBC_PWD

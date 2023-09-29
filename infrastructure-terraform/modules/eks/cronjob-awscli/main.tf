@@ -88,10 +88,10 @@ resource "kubernetes_service_account" "cronjob_awscli_irsa" {
     name = var.service_account_name
     namespace = local.namespace
     annotations = {
-#      "eks.amazonaws.com/role-arn" = module.cronjob_awscli_irsa.iam_role_arn
+      "eks.amazonaws.com/role-arn" = module.cronjob_awscli_irsa.iam_role_arn
       # [2023-08-27] Testing for cross-account IRSA.
       # Kubernetes OIDC provider should be registered to the target account, eg. Audit account in control tower.
-      "eks.amazonaws.com/role-arn" = "arn:aws:iam::861063945558:role/CronJob-AWSCLI-IRSA-Role"
+#      "eks.amazonaws.com/role-arn" = "arn:aws:iam::861063945558:role/CronJob-AWSCLI-IRSA-Role"
     }
   }
 
@@ -132,7 +132,8 @@ resource "kubernetes_cron_job_v1" "awscli_irsa" {
               name = local.name
 #              command = ["aws", "sts", "get-caller-identity"]
               command = ["/bin/bash", "-c"]
-              args = ["aws sts get-caller-identity && aws lambda invoke --function-name domain-protection-accounts-lambda-function response.json && cat response.json"]
+#              args = ["aws sts get-caller-identity && aws lambda invoke --function-name domain-protection-accounts-lambda-function response.json && cat response.json"]
+              args = ["aws sts get-caller-identity"]
             }
           }
         }
