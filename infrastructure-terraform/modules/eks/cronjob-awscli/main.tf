@@ -13,7 +13,7 @@ resource "kubernetes_namespace" "batch" {
 resource "kubernetes_cron_job_v1" "awscli" {
   metadata {
     name = local.name
-    namespace = kubernetes_namespace.batch.metadata.name
+    namespace = kubernetes_namespace.batch.metadata[0].name
     labels = {
       app = local.name
     }
