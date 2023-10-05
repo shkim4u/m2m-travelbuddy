@@ -83,21 +83,22 @@ module "ack_lambda_controller_irsa" {
   }
 }
 
-resource "kubernetes_service_account" "ack_lambda_controller_irsa" {
-  metadata {
-    name = var.service_account_name
-    namespace = kubernetes_namespace.ack.metadata[0].name
-    annotations = {
-      "eks.amazonaws.com/role-arn" = module.ack_lambda_controller_irsa.iam_role_arn
-    }
-  }
-
-  timeouts {
-    create = "30m"
-  }
-
-#  depends_on = [kubernetes_namespace.batch]
-}
+# 서비스 어카운트는 lambda/values.yaml에 정의되어 있으므로 이를 통해 만들어짐
+#resource "kubernetes_service_account" "ack_lambda_controller_irsa" {
+#  metadata {
+#    name = var.service_account_name
+#    namespace = kubernetes_namespace.ack.metadata[0].name
+#    annotations = {
+#      "eks.amazonaws.com/role-arn" = module.ack_lambda_controller_irsa.iam_role_arn
+#    }
+#  }
+#
+#  timeouts {
+#    create = "30m"
+#  }
+#
+##  depends_on = [kubernetes_namespace.batch]
+#}
 
 module "ack_lambda" {
   source = "./lambda"
