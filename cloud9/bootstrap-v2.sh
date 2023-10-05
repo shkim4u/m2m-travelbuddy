@@ -11,6 +11,9 @@ echo $CLOUD9_SSM_ACCESS_ROLE_POLICY_DOCUMENT
 aws iam create-role --role-name AWSCloud9SSMAccessRole --path "/service-role/" --assume-role-policy-document "${CLOUD9_SSM_ACCESS_ROLE_POLICY_DOCUMENT}"
 aws iam attach-role-policy --role-name AWSCloud9SSMAccessRole --policy-arn arn:aws:iam::aws:policy/AWSCloud9SSMInstanceProfile
 
+# AWSCloud9SSMInstanceProfile 인스턴스 프로파일 생성
+aws iam create-instance-profile --instance-profile-name AWSCloud9SSMInstanceProfile --path "/cloud9/"
+aws iam add-role-to-instance-profile --role-name AWSCloud9SSMAccessRole --instance-profile-name AWSCloud9SSMInstanceProfile
 
 # 기본 VPC 조회
 export VPC_ID=`aws ec2 describe-vpcs --query "Vpcs[?isDefault==true].VpcId" --output text`
@@ -34,9 +37,15 @@ echo $CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT
 aws iam create-role --role-name cloud9-admin --assume-role-policy-document "${CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT}"
 aws iam attach-role-policy --role-name cloud9-admin --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 
-# 인스턴스 프로파일 생성
+# Cloud9 인스턴스 프로파일 생성
 aws iam create-instance-profile --instance-profile-name cloud9-admin-instance-profile
 aws iam add-role-to-instance-profile --role-name cloud9-admin --instance-profile-name cloud9-admin-instance-profile
+
+# Cloud9 EC2의 기본 인스턴스 프로파일 Detach.
+# 참고: https://repost.aws/knowledge-center/attach-replace-ec2-instance-profile
+export CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID=`aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${EC2_INSTANCE_ID} --query "IamInstanceProfileAssociations[0].AssociationId" --output text`
+echo $CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID
+aws ec2 disassociate-iam-instance-profile --association-id ${CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID}
 
 # Cloud9 EC2 인스턴스에 인스턴스 프로파일 부착 (Attach)
 export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
@@ -44,4 +53,9 @@ echo $EC2_INSTANCE_ID
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=cloud9-admin-instance-profile --instance-id $EC2_INSTANCE_ID
 
 # 마지막으로 Cloud9 Managed Credentials 비활성화 -> 위에서 생성한 Instance Profile 사용
-#aws cloud9 update-environment --environment-id ${C9_PID} --managed-credentials-action DISABLE
+export C9_PID=`aws cloud9 list-environments --query "environmentIds[0]" --output text`
+aws cloud9 update-environment --environment-id ${C9_PID} --managed-credentials-action DISABLE
+
+###
+
+# TODO: Create an IAM user and export credentials to event-engine-1 profile.
