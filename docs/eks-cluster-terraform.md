@@ -1,15 +1,15 @@
-# EKS Cluster 생성 (CDK 사용)
+# EKS Cluster 생성 (테라폼 사용)
 
 ## Agenda
 
-- AWS CDK를 사용하여 EKS 클러스터 생성하기
+- 테라폼을 사용하여 EKS 클러스터 생성하기
 - (Optional) 콘솔 권한 추가하기
 - 현재의 아키텍처 리뷰
 
 ## AWS CDK를 사용하여 EKS 클러스터 생성하기
 우리는 이미 앞선 과정에서 테라폼 (Terraform)을 사용하여 Amazon EKS를 생성하는 과정을 배웠습니다.<br>
-이번에는 AWS CDK를 사용하여 EKS를 생성해 봄으로서 각 IaC 도구가 가지는 특성을 직접 파악해 보고자 합니다.<br>
-- AWS CDK의 장점 
+이번에는 앞서 배운 내용을 포괄하고 있는 테라폼 IaC 형상을 사용하여 EKS 클러스터를 배포하고 이후 과정으로 진행할 준비를 하고자 합니다.<br>
+- 테라폼의 장점 
   - Rollback 지원
   - State 파일 관리가 필요 없음
   - 개발자 친환적 - 인프라를 진정한 프로그래밍 코드로 구성
@@ -26,11 +26,11 @@
 
 아래 명령을 실행하여 Day 1 자원을 생성하기에 앞서 몇몇 ALB (ArgoCD, Argo Rollouts 등)에서 사용하기 위한 Amazon Certificate Manager (ACM) 사설 (Private) CA를 생성하고 Self-signed Root CA 인증서를 설치합니다.<br>
 
-먼저 사설 CA를 설치합니다.<br>
+먼저 사설 CA를 설치하는 등의 준비를 합니다.<br>
 ```bash
 hash -d aws
 
-cd ~/environment/m2m-travelbuddy/prepare/acm
+cd ~/environment/m2m-travelbuddy/infrastructure-terraform
 
 # 1. Create Private Certificate Authority.
 export CA_ARN=`aws acm-pca create-certificate-authority --certificate-authority-configuration file://ca-config.txt --revocation-configuration file://ocsp-config.txt --certificate-authority-type "ROOT" --idempotency-token 01234567 --tags Key=Name,Value=AwsProservePCA | jq --raw-output .CertificateAuthorityArn`

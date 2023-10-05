@@ -117,6 +117,7 @@ curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9
 향후 실습을 도와줄 통합 가이드를 다운로드 받습니다.
 
 ```bash
+cd ~/environment/
 git clone https://github.com/shkim4u/m2m-travelbuddy.git
 cd m2m-travelbuddy
 ```

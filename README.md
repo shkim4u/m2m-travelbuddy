@@ -58,7 +58,9 @@
 
 ### 실습 환경 구성
 - 먼저 [Cloud9 환경 구성하기](./docs/cloud9-latest.md)를 합니다.
-- 다음으로 [EKS Cluster를 생성 (CDK 사용)](./docs/eks-cluster-cdk.md)합니다.
+- 다음으로 아래 방법 중 하나를 사용하여 EKS 클러스터를 생성합니다.
+  - [EKS Cluster를 생성 (CDK 사용)](./docs/eks-cluster-cdk.md)
+  - [EKS Cluster를 생성 (Terraform 사용)](./docs/eks-cluster-terraform.md)
 
 ### 실습 1: TravelBuddy 애플리케이션 컨테이너화, 빌드 및 전달 (ECR 푸시)
 
