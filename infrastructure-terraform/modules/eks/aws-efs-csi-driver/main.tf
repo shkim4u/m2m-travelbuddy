@@ -41,4 +41,6 @@ resource "helm_release" "efs_csi_driver" {
   values = [templatefile("${path.module}/values.yaml", {
     service_account_name = kubernetes_service_account.efs_csi_controller_sa.metadata.0.name
   })]
+
+  wait = true
 }

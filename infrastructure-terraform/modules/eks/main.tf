@@ -454,6 +454,7 @@ module "cronjob_awscli" {
 module "ack" {
   source = "./ack"
   depends_on = [module.eks]
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
 }
 
 
