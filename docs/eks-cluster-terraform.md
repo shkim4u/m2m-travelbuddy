@@ -6,108 +6,81 @@
 - (Optional) 콘솔 권한 추가하기
 - 현재의 아키텍처 리뷰
 
-## AWS CDK를 사용하여 EKS 클러스터 생성하기
+## 테라폼을 사용하여 EKS 클러스터 생성하기
 우리는 이미 앞선 과정에서 테라폼 (Terraform)을 사용하여 Amazon EKS를 생성하는 과정을 배웠습니다.<br>
-이번에는 앞서 배운 내용을 포괄하고 있는 테라폼 IaC 형상을 사용하여 EKS 클러스터를 배포하고 이후 과정으로 진행할 준비를 하고자 합니다.<br>
+이번에는 이러한 내용을 포함하고 있는 테라폼 IaC 코드를 사용하여 EKS 클러스터를 배포하고 이후 과정으로 진행할 준비를 하고자 합니다.<br>
 - 테라폼의 장점 
+  - 자원 관리를 적절한 추상화 수준에서 정의하고 통제할 수 있는 설정 언어 지원 (HCL)
+  - IaC 코드, 상태 파일, 실제 자원을 일치시키기 위하여 최선의 노력 (Best Effort)
+  - 다양한 클라우드 및 플랫폼 지원 (Vendor & platform-agnostic) 
+- AWS CDK의 장점
   - Rollback 지원
   - State 파일 관리가 필요 없음
   - 개발자 친환적 - 인프라를 진정한 프로그래밍 코드로 구성
   - 필요한 Role과 Permission Policy를 자동으로 구성
-- Terraform의 장점
-  - 단순한 Declaritive 언어를 통해 로직을 신경쓰지 않고 인프라를 직관적으로 구성
 
 아래 명령어를 통해, 클러스터를 배포합니다. 30 ~ 40분 정도 소요됩니다.<br>
 
-- (참고) ```~/environment/m2m-travelbuddy/infrastructure/bin/infrastructure.ts``` 파일 40, 42라인 근방에서 EKS Admin User와 Admin Role을 자신이 생성한 User 혹은 Role (예: cloud9-admin)을 포함하고 있는지 확인합니다. 우리는 이 정보를 사용하여 ```aws_auth``` ConfigMap의 동작 양상을 한번 살펴볼 것입니다. (혹시 강사가 언급하는 것을 깜빡한다면 알려주세요~^^)
-    ![EKS Admin User and Role](./assets/cdk-eks-admin-user-and-role.png)
+- (참고) ```~/environment/m2m-travelbuddy/infrastructure-terraform/modules/eks/main.tf``` 파일 5라인 근방에서 EKS Admin Role을 확인해 봅니다. 우리는 이 정보를 사용하여 ```aws_auth``` ConfigMap의 동작 양상을 한번 살펴볼 것입니다. (혹시 강사가 언급하는 것을 깜빡한다면 알려주세요~^^)
+    ![EKS Admin User and Role](./assets/terraform-eks-admin-role.png)
 
 - (참고) 설정하지 않아도 EKS 클러스터 생성 후에 kubectl로 접근할 수 있습니다. 방법은?
 
 아래 명령을 실행하여 Day 1 자원을 생성하기에 앞서 몇몇 ALB (ArgoCD, Argo Rollouts 등)에서 사용하기 위한 Amazon Certificate Manager (ACM) 사설 (Private) CA를 생성하고 Self-signed Root CA 인증서를 설치합니다.<br>
 
-먼저 사설 CA를 설치하는 등의 준비를 합니다.<br>
 ```bash
 hash -d aws
 
 cd ~/environment/m2m-travelbuddy/infrastructure-terraform
 
-# 1. Create Private Certificate Authority.
-export CA_ARN=`aws acm-pca create-certificate-authority --certificate-authority-configuration file://ca-config.txt --revocation-configuration file://ocsp-config.txt --certificate-authority-type "ROOT" --idempotency-token 01234567 --tags Key=Name,Value=AwsProservePCA | jq --raw-output .CertificateAuthorityArn`
-echo $CA_ARN
+# 1. Configure Terraform workspace and Private Certificate Authority.
+. ./configure.sh travelbuddy-prod
 
-# (Optional) For Terraform
-export TF_VAR_ca_arn=${CA_ARN}
 echo $TF_VAR_ca_arn
 ```
 
 위와 같이 수행하면 ACM에 사설 CA가 생성되는데 강사와 함께 ACM 콘솔로 이동하여 Private CA를 한번 살펴봅니다.<br>
-아래와 같이 Private CA가 Pending 상태 (보류 중인 인증서)인 것을 알 수 있습니다.<br>
-![Private CA Pending](./assets/private-ca-pending.png)
-
-
-이 사설 CA에 Self-signed 인증서를 아래와 같이 발행하고 설치해 봅니다.<br>
-```bash
-# 2. Generate a certificate signing request (CSR).
-aws acm-pca get-certificate-authority-csr \
-     --certificate-authority-arn ${CA_ARN} \
-     --output text > ca.csr
-
-# 3. View and verify the contents of the CSR.
-openssl req -text -noout -verify -in ca.csr
-
-# 4. Root CA 인증서를 발행합니다.
-export CERTIFICATE_ARN=`aws acm-pca issue-certificate --certificate-authority-arn ${CA_ARN} --csr fileb://ca.csr --signing-algorithm SHA256WITHRSA --template-arn arn:aws:acm-pca:::template/RootCACertificate/V1 --validity Value=3650,Type=DAYS | jq --raw-output .CertificateArn`
-echo $CERTIFICATE_ARN
-
-# 5. Root CA 인증서를 가져옵니다.
-aws acm-pca get-certificate \
-	--certificate-authority-arn ${CA_ARN} \
-	--certificate-arn ${CERTIFICATE_ARN} \
-	--output text > cert.pem
-	
-# 6. Certificate 정보를 OpenSSL로 조회해 봅니다.
-openssl x509 -in cert.pem -text -noout
-
-# 7. Root CA 인증서를 CA로 주입하고 설치합니다.
-aws acm-pca import-certificate-authority-certificate \
-     --certificate-authority-arn ${CA_ARN} \
-     --certificate fileb://cert.pem     
-
-# 8. 사설 CA의 상태를 살펴봅니다. ACTIVE 상태임을 확인합니다.
-aws acm-pca describe-certificate-authority \
-	--certificate-authority-arn ${CA_ARN} \
-	--output json
-```
-
-위 과정을 수행하면 사설 CA 상태가 활성화되고 자원을 생성할 준비가 되었습니다.<br>
+아래와 같이 Private CA가 활성 상태인 것을 확인합니다.<br>
 ![Private CA Active](./assets/private-ca-active.png)
 
 
-이제 자원을 배포하기 위하여 다음과 같이 수행하면 됩니다.
-
-```bash
-# 1. IaC 디렉토리로 이동
-cd ~/environment/m2m-travelbuddy/infrastructure-cdk
-
-# 2. Upgrade CDK - (2023-07-17) 아래는 Cloud9 설정 과정에서 이미 수행하였으므로 더 이상 수행하지 않아도 됨
-#npm uninstall -g aws-cdk
-#rm -rf ~/.nvm/versions/node/v16.20.0/bin/cdk
-#npm install -g aws-cdk
-#cdk --version
-
-
-# 3. npm install package dependencies
-npm install
-
-# 4. AWS CDK Bootstrap
-cdk bootstrap
-
-
-# 5. CDK synthesize & deploy for Day 1
-#cdk synth && cdk deploy --all --outputs-file ./cdk-outputs.json --require-approval=never
-npm run day1
-```
+이제 자원을 배포하기 위하여 다음과 같이 수행하면 됩니다.<br>
+* 어플리케이션 컴퓨팅 환경
+    * 아래에서 배포될 레거시 데이터베이스와는 달리 어플리케이션 컴퓨팅 환경은 쿠버네테스를 대상으로 하여 컨테이너화가 완료되었고, 자원들은 테라폼으로 배포 되고 있습니다.
+    * 여기에는 향후 마이크로서비스로 분리될 것을 대비한 특정 마이크로서비스 전용 Pologlot 데이터베이스 자원 (PostgreSQL)도 포함되어 있습니다.<br>
+    * (참고) Amazon MSK 클러스터는 생성하는데 시간이 다소 소요되므로 (약 30분) 오늘 과정에서는 생성하지 않고 내일 생성하도록 합니다.<br>
+      ```bash
+      # 1. IaC 디렉토리로 이동
+      cd ~/environment/m2m-travelbuddy/infrastructure-terraform
+      
+      # terraform init
+      terraform init
+      
+      # terraform plan
+      terraform plan
+      
+      # terraform apply
+      terraform apply -var='exclude_msk=true' -autu-approve
+      ```
+* 레거시 모놀리스 데이터베이스
+  * 운영팀에서는 레거시 모놀리스 어플리케이션에 사용되는 데이터베이스를 AWS의 CloudFormation으로 생성하였다고 합니다. 이 CloudFormation 템플릿 파일을 아래와 같이 수행하여 레거시 모놀리스 어플리케이션을 위한 데이터베이스를 생성합니다.<br>
+    ```bash
+    # CloudFormation 템플릿 디렉토리로 이동
+    cd ~/environment/m2m-travelbuddy/prepare
+    
+    # VPC ID 조회
+    export VPC_ID=`aws ec2 describe-vpcs --filter Name=tag:Name,Values=M2M-VPC --query "Vpcs[0].VpcId" --output text`
+    echo $VPC_ID
+    
+    export QUOTED_VPC_ID=\'${VPC_ID}\'
+    export PRIVATE_SUBNET_IDS=`aws ec2 describe-subnets --filter Name=tag:"kubernetes.io/role/internal-elb",Values=1 | jq -r '[.Subnets[].SubnetId] | join(",")'`
+    echo $PRIVATE_SUBNET_IDS
+    
+    # CloudFormation 템플릿 실행
+    export QUOTED_PRIVATE_SUBNET_IDS=\"${PRIVATE_SUBNET_IDS}\"
+    echo $QUOTED_PRIVATE_SUBNET_IDS
+    aws cloudformation create-stack --stack-name M2M-RdsLegacyStack --template-body file://./rds-fixed-sg-cidr.template --parameters ParameterKey=VpcId,ParameterValue=${VPC_ID} ParameterKey=PrivateSubnetIds,ParameterValue=${QUOTED_PRIVATE_SUBNET_IDS}
+    ```
 
 배포가 진행되는 동안에 우리가 무엇을 배포하고 있는지 잠깐 살펴보도록 하겠습니다.<br>
 아래 그림은 모더나이제이션의 가장 초기 단계에서 예상되는 블루프린트 아키텍처입니다.<br>
@@ -115,7 +88,7 @@ npm run day1
 ![블루프린트 아키텍처](./assets/M2M-Replatform-Architecture.png)
 
 배포가 성공적으로 완료되면 아래와 같이 표시됩니다.<br>
-![EKS Cluster Deployed](./assets/eks-cluster-deployed-with-cdk.png)
+![EKS Cluster Deployed](./assets/eks-cluster-deployed-with-terraform.png)
 
 배포 이후에 안내되는 아래와 같은 "aws eks update-kubeconfig ~~~" 명령을 수행하여 EKS 클러스터에 접근하기 위한 설정을 해줍니다.
 > M2M-EksStack.M2MEksClusterConfigCommand3B10CDA8 = aws eks update-kubeconfig --name M2M-EksCluster --region ap-northeast-2 --role-arn arn:aws:iam::663701857288:role/M2M-EksCluster-ap-northeast-2-MasterRole

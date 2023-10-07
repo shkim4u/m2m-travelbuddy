@@ -21,3 +21,8 @@ variable "grafana_admin_password" {
   description = "Admin password for Grafana"
   default = "P@$$w0rd00#1"
 }
+
+variable "exclude_msk" {
+  description = "True or False to exclude Amazon MSK cluster for its longer time to create"
+  default = false
+}

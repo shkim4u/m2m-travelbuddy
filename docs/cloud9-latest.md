@@ -5,10 +5,12 @@ IDE로 Cloud9을 사용하기 위해서 Cloud9 환경을 시작하고, 각종 �
 ## Agenda
 
 1. Cloud9 시작하기
-    * 1.1. AWS Cloud9 IDE 구성
-    * 1.2. IAM Role 생성
-    * 1.3. IDE(AWS Cloud9 인스턴스)에 IAM Role 부여
-    * 1.4. IDE에서 IAM 설정 업데이트
+    * 1.1. AWS Cloud9 IDE 생성 (AWS CLI 사용)
+    * 1.2. AWS Cloud9 IDE 생성 (AWS Management Console 사용)
+      * 1.2.1. Cloud9 환경 생성
+      * 1.2.2. IAM Role 생성
+      * 1.2.3. IDE(AWS Cloud9 인스턴스)에 IAM Role 부여
+      * 1.2.4. IDE에서 IAM 설정 업데이트
 2. Cloud9 통합 설정 파일 실행
 
 ## 1. Cloud9 시작하기
@@ -20,8 +22,11 @@ AWS Cloud9으로 실습 환경을 구축하는 순서는 아래와 같습니다.
 - IDE(AWS Cloud9 인스턴스)에 IAM Role 부여
 - IDE에서 IAM 설정 업데이트
 
-### 1.1 AWS Cloud9으로 IDE 구성
+### 1.1. AWS Cloud9 환경 생성 (AWS CLI 사용)
+TODO: CloudShell을 사용하여 Cloud9 생성하는 과정 설명 및 검증
 
+### 1.2. AWS Cloud9 환경 생성 (AWS Management Console 사용)
+#### 1.2.1. Cloud9 환경 생성
 1. [AWS Cloud9 콘솔창](https://console.aws.amazon.com/cloud9)에 접속한 후, ```환경 생성 (Create environment)``` 버튼을 클릭합니다.<br>
    ![Create Cloud9 Environment](../images/cloud9/create-cloud9-environment.png)
 2. ```세부 정보 (Details)```에서 이름을 다음과 같이 cloud9-workspace으로 입력합니다.
@@ -44,7 +49,7 @@ AWS Cloud9으로 실습 환경을 구축하는 순서는 아래와 같습니다.
 
    ![Create Cloud9 Details](../images/cloud9/create-cloud9-details.png)
 
-### 1.2. IAM Role 생성
+#### 1.2.2. IAM Role 생성
 
 IAM Role은 특정 권한을 가진 IAM 자격 증명입니다. IAM 역할의 경우, IAM 사용자 및 AWS가 제공하는 서비스에 사용할 수 있습니다. 서비스에 IAM Role을 부여할 경우, 서비스가 사용자를 대신하여 수임받은 역할을 수행합니다.
 
@@ -65,7 +70,7 @@ IAM Role은 특정 권한을 가진 IAM 자격 증명입니다. IAM 역할의 �
    ![Create Cloud9 Role Review](../images/cloud9/create-cloud9-role-review.png)
 
 
-### 1.3. IDE (AWS Cloud9 인스턴스)에 IAM Role 부여
+#### 1.2.3. IDE (AWS Cloud9 인스턴스)에 IAM Role 부여
 
 AWS Cloud9 환경은 EC2 인스턴스로 구동됩니다. 따라서 EC2 콘솔에서 AWS Cloud9 인스턴스에 방금 생성한 IAM Role을 부여합니다.
 
@@ -77,7 +82,7 @@ AWS Cloud9 환경은 EC2 인스턴스로 구동됩니다. 따라서 EC2 콘솔�
 
     ![modify-role.png](../images/cloud9/modify-role-new2.png)
 
-### 1.4. IDE에서 IAM 설정 업데이트
+#### 1.2.4. IDE에서 IAM 설정 업데이트
 
 기본적으로 AWS Cloud9는 IAM 인증 정보 (Credentials)를 동적으로 관리합니다. 해당 인증 정보는 Cloud9 환경을 생성한 Principal의 권한을 상속받아서 필요한 권한이 없을 수 있으며 15분마다 갱신되므로 긴 수행 시간을 가지는 작업의 경우에는 인증 토큰이 만료됨에 따라 실패할 수도 있습니다. 따라서 이를 비활성화하고 앞서 생성한 IAM Role을 Cloud9 환경에 부여하고자 합니다.
 

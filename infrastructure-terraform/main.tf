@@ -63,6 +63,8 @@ module "rds" {
 ### MSK cluster.
 ###
 module "msk" {
+  count = var.exclude_msk ? 0 : 1
+
   source = "./modules/msk"
   vpc_id = module.network.vpc_id
   vpc_cidr_block = module.network.vpc_cidr_block
