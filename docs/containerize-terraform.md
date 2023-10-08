@@ -1,9 +1,9 @@
 # TravelBuddy 컨테이너화하기
-앞서 우리가 CDK를 배포한 자원에는 EKS 클러스터와 더불어 빌드 및 전달 (Build and Delivery) 파이프라인도 포함되어 있습니다.
+앞서 우리가 테라폼을 이용해 배포한 자원에는 EKS 클러스터와 더불어 CI (Continuous Integration) 파이프라인도 포함되어 있습니다.
 
-우리는 이 파이프라인을 통해 TravelBuddy를 빌드하고 컨테이너화 (Containerize)하여 AWS의 컨테이너 레지스트리 서비스인 ECR (Elastic Container Registry)의 리포지터리로 전달할 예정입니다.
+우리는 이 파이프라인을 통해 TravelBuddy를 빌드하고 컨테이너화 (Containerize)하여 AWS의 컨테이너 레지스트리 서비스인 ECR (Elastic Container Registry)의 리포지터리로 전달(Push)하는 과정을 살펴보겠습니다.
 
-TravelBuddy 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제공하므로, 우리는 애플리케이션을 빌드하는 새로운 Scheme을 구성하는 대신 기존의 빌드 툴인 Maven을 이용하면서 컨테이너화 하는 것에만 집중하여 실습을 진행합니다.
+TravelBuddy 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제공하므로, 우리는 애플리케이션을 빌드하는 새로운 Scheme을 구성하는 대신 기존의 빌드 툴인 Maven을 이용하면서 컨테이너화된 어플리케이션의 유효성을 검증 하는 것에만 집중하여 실습을 진행합니다.
 
 ## Agenda
 - 준비하기
@@ -50,7 +50,7 @@ git push --set-upstream origin main
 3. CodeCommit 리포지터리에 소스 코드가 푸시되었음을 확인합니다.<br>
 ![소스 파일 푸시됨](./assets/build-codecommit-repository-source-pushed-terraform.png)
 
-4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않은 등의 이유로 파이프라인은 실패하였을 수 있습니다.
+4. 또한 빌드 파이프라인도 트리거되어 실행되었음을 확인합니다. 다만, Build Spec이 없거나 정상적으로 구성되지 않은 등의 이유로 파이프라인은 실패하였을 수 있습니다. <u>혹은 성공하였더라도 컨테이너 이미지가 최적화되지 않은 상태로 ECR (Elastic Container Registry) 리포지터리에 Push 되었을 수 있습니다.</u>
 ![빌드 파이프라인 실패](./assets/build-codepipeline-initial-run-failed-terraform.png)<br>
 ![빌드 파이프라인 실패 이유](./assets/build-codepipeline-initial-run-fail-reason-terraform.png)
 
@@ -132,7 +132,7 @@ Dockerfile 예시를 확인하기 전에 직접 Dockerfile을 작성하여 컨�
 혹시 컨테이너 이미지의 크기를 조금 더 최적화 (크기 축소)할 수 있을까요?
 
 ## ECR (Elastic Container Registry)에 이미지 푸시 테스트
-ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 합니다. 하지만 앞서 EKS 클러스터를 CDK로 생성하는 과정에서 ECR 리포지터리도 함께 생성되었으므로 따로 생성할 필요는 없습니다.<br>
+ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 합니다. 하지만 앞서 EKS 클러스터를 테라폼으로 생성하는 과정에서 ECR 리포지터리도 함께 생성되었으므로 따로 생성할 필요는 없습니다.<br>
 생성된 ECR 리포지터리는 다음에서 확인할 수 있습니다.<br>
 ```Amazon ECR > Repositories > travelbuddy```
 ![TravelBuddy ECR Repository](./assets/travelbuddy-ecr-repository-terraform.png)
@@ -147,7 +147,7 @@ ECR에 이미지를 업로드하려면 먼저 리포지터리를 생성해야 �
 우리는 이제 로컬 (Cloud9)에서 소스를 빌드하고 빌드 결과물을 담은 컨테이너 이미지를 생성한 후 이를 ECR 리포지터리에 푸시하는 것까지 완료하였습니다.<br>
 이제 이 과정을 CodeBuild의 Build Spec에 적용하여 소스 코드가 CodeCommit Repository에 푸시되면 자동으로 ECR 리포지터리에 전돨되도록 해보겠습니다.
 
-### ~~1. Build Spec (buildspec.yml) 파일 작성~~<br>
+### ~~1. Build Spec (buildspec.yaml) 파일 작성~~<br>
 - <u>***이 과정은 워크샵 소스 코드에 반영되어 있으므로 수행할 필요가 없습니다.***</u> 
 - ~~빌드 및 전달 파이프라인에서 사용하는 빌드 서버 인스턴스 (CodeBuild)는 내부적으로 Build Spec이라는 규약을 사용하여 빌드 과정을 구성할 수 있습니다.~~
 - ~~궁금하신 분들은 CodeBuild에서 이를 확인할 수 있으며, Terraform 소스에서도 마찬가지 사항을 발견하실 수 있을 것입니다.~~
@@ -218,6 +218,8 @@ EOF
 ### 2. 어플리케이션 소스 푸시 및 빌드 시작<br>
 1. 다음과 같이 어플리케이션 소스를 푸시하면 빌드 및 전달 파이프라인이 시작됩니다.
 ```bash
+cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/build
+
 git add .
 git commit -am "[Modified] buildspec.yaml to build source and deliver to ECR repository." && git push
 ```

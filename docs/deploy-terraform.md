@@ -47,32 +47,33 @@ docker ps
 ### 1.2. TravelBuddy 컨테이너 실행
 
 #### STEP 1. Docker Login
+```bash
+# Account ID 확인
+export AWS_ACCOUNT_ID=`aws sts get-caller-identity --query "Account" --output text`
+echo $AWS_ACCOUNT_ID
 
-AWS 콘솔에서 ECR로 이동합니다.<br>
-`travelbuddy` 리포지토리로 이동한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드의 1번 명령어를 복사합니다.<br>
+# ECR 리포지터리에 로그인
+aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.ap-northeast-2.amazonaws.com
+```
+![TravelBuddy ECR Login Success](./assets/travelbuddy-ecr-login-success.png)
+
+혹은 AWS 콘솔에서 ECR 로그인 명령을 아래와 같이 확인할 수 있습니다.<br>
+ECR의 `travelbuddy` 리포지토리로 이동한 후 `푸시 명령 보기 (View push commands)` 버튼을 클릭하여 표시되는 가이드의 1번 명령어를 복사합니다.<br>
 ![TravelBuddy ECR Push Command](./assets/travelbuddy-ecr-push-command-step-1-terraform.png)
 
 다시 Bastion 호스트의 Shell로 돌아와서 위에서 복사한 명령어를 이용하여 docker login을 실행합니다.
-```bash
-# (예시) 아래를 자신이 복사한 명령으로 대체하여 실행할 것
-aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 256878912116.dkr.ecr.ap-northeast-2.amazonaws.com
-```
-![TravelBuddy ECR Login Success](./assets/travelbuddy-ecr-login-success.png)
 
 #### STEP 2. 환경 변수 설정
 ~~CloudFormation의 ```M2M-RdsLegacyStack``` 스택의 출력값으로부터 RDS 엔드포인트를 확인하고 아래 명령을 수행합니다.~~<br>
 ![TravelBuddy RDS Endpoint](./assets/travelbuddy-rds-endpoint-check-terraform.png)
 
 ```bash
-# (2023-07-17) 아래 명령을 통해 더 이상 콘솔에서 확인할 필요가 없습니다.
-# 아래에 CF로 배포한 환경의 RDS 주소로 대체할 것
-# (예시) export RDS_ENDPOINT=travelbuddy-rds-dbinstance-yh3bquza02iz.ch3z4vioqkk9.ap-northeast-2.rds.amazonaws.com
-
-#export RDS_ENDPOINT=<RDS_ENDPOINT>
+# 레거시 데이터베이스 엔드포인트 확인.
 export RDS_ENDPOINT=`aws cloudformation describe-stacks --region ap-northeast-2 --query "Stacks[?StackName=='M2M-RdsLegacyStack'][].Outputs[?OutputKey=='RDSEndpoint'].OutputValue" --output text`
 echo $RDS_ENDPOINT
 ```
 ```bash
+# AWS Account ID 및 리전 확인
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text)
 echo $AWS_ACCOUNT_ID
 
@@ -84,7 +85,7 @@ echo $AWS_REGION
 
 ```bash
 # 환경변수를 주입하여 컨테이너 실행
-docker run --rm \
+docker run --name travelbuddy --rm \
   -e JDBC_CONNECTION_STRING="jdbc:mysql://${RDS_ENDPOINT}:3306/travelbuddy?useSSL=false&autoReconnect=true" \
   -e JDBC_UID=root \
   -e JDBC_PWD=labpassword \
@@ -94,7 +95,7 @@ docker run --rm \
 docker ps
 
 # 로그 확인
-docker logs <컨테이너 이름>
+docker logs travelbuddy
 ```
 
 #### STEP 4. travelbuddy 애플리케이션 실행 확인
@@ -102,7 +103,7 @@ docker logs <컨테이너 이름>
 ```bash
 # 페이지 요청
 # (참고) 마지막에 꼭 "/"를 붙여주어야 합니다.
-curl localhost:8080
+curl http://localhost:8080/travelbuddy/
 
 # html 페이지 응답 확인 (웹브라우저로도 확인 가능)
 # <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.# w3.org/TR/html4/loose.dtd">
@@ -116,7 +117,7 @@ curl localhost:8080
 
 ```bash
 # 컨테이너 중지하기
-docker stop <컨테이너 이름>
+docker stop travelbuddy
 ```
 
 ## 2. EKS 배포
@@ -130,9 +131,10 @@ docker stop <컨테이너 이름>
 다행히도 배포 파이프라인을 위한 CodeCommit 리포지터리와 이로부터 Trigger되는 배포 파이프라인은 EKS 클러스터를 Terraform으로 생성할 때 함께 생성되어 있으므로 우리는 이를 이용하도록 합니다.
 
 ### 2.1. EKS 배포 형상 리포지터리를 위한 Manifest 파일 준비하기
-이번에는 Bastion 호스트가 아닌 먼저 사용하던 Cloud9 환경을 다시 사용합니다.<br>
+<u>***이번에는 Bastion 호스트가 아닌 먼저 사용하던 Cloud9 환경을 다시 사용합니다.***</u><br>
 Deployment, Service, Ingress 등의 쿠버네테스 매니페스트 파일은 이미 아래 경로에 저장되어 있을 것입니다.
 ```bash
+# 배포 설정 디렉토리로 이동
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-files
 ```
 ![TravelBuddy 매니페스트 파일 경로](./assets/travelbuddy-k8s-manifest-directory.png)
@@ -148,20 +150,20 @@ cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy/eks-manifest-fi
 2. 그외 매니페스트 파일 (00_namespace.yaml, 01_configmap.yaml, 03_service.yaml, 04_ingress.yaml)은 수정할 필요가 없습니다.
 
 ### 2.2. 배포 리포지터리 연결 및 Push하여 배포 파이프라인 시작
-배포 리포지터리는 아직 초기화가 되지 않은 상태이므로 위에서 생성한 ```~/environment/m2m-travelbuddy/application/TravelBuddy/deploy``` 폴더를 아래와 같이 연결하여 배포 파이프라인을 시작합니다.<br>
+~~배포 리포지터리는 아직 초기화가 되지 않은 상태이므로 위에서 생성한 ```~/environment/m2m-travelbuddy/application/TravelBuddy/deploy``` 폴더를 아래와 같이 연결하여 배포 파이프라인을 시작합니다.~~<br>
 ![배포 리포지터리지 초기화되지 않음](./assets/travelbuddy-deploy-repository-not-initialized-terraform.png)
 
-1. 배포 리포지터리 URL 확인
+1. ~~배포 리포지터리 URL 확인~~
 ![배포 리포지터리 URL 확인](./assets/travelbuddy-deploy-repository-url-terraform.png)
 
-2. 위에서 확인한 URL을 해당 디렉토리에 연결<br>
+2. ~~위에서 확인한 URL을 해당 디렉토리에 연결~~<br>
    (참고) 아래 스크립트에서는 위에서 확인 URL을 AWS CLI를 통해서 직접 가져오고 있어서 따로 설정할 필요는 없습니다. 배포 구성 리포지터리를 확인해 보기 위한 취지였다고 생각해 주시면 됩니다.
 ```bash
 cd ~/environment/m2m-travelbuddy/applications/TravelBuddy/deploy
 git init
 git branch -M main
 
-export DEPLOY_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name travelbuddy-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
+export DEPLOY_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name travelbuddy-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
 echo $DEPLOY_CODECOMMIT_URL
 
 # 아래에 위 1에서 확인 URL로 대체할 것.
@@ -183,7 +185,7 @@ git push --set-upstream origin main
 잠시 후 배포가 완료되면 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
-echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/
+echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/travelbuddy/
 ```
 ![TravelBuddy Landing Page](./assets/travelbuddy-landing-page.png)
 
@@ -197,3 +199,11 @@ echo http://$(kubectl get ingress/travelbuddy-ingress -n travelbuddy -o jsonpath
 PO (Product Owner)는 몇몇 고객으로부터 상황에 따라 몇몇 FlighSpecial과 HotelSpecial 정보가 표시되지 않는 것 같다는 VOC를 받았습니다.<br>
 이미 스프린트 15가 끝나가고 있으므로 이번 스프린트에 Expedited Backlog로 추가하기에는 어렵지만, 우선 순위가 높으므로 다음 수요일부터 시작되는 스프린트 16의 백로그에 넣기를 원합니다.<br>
 <u>해당 이슈를 분석하고 스토리 포인트를 산정한 후 수정 및 배포를 진행해 보세요.</u>
+
+## 4. (For fun) Kube Ops View 띄워보기
+강사의 안내를 따라 다음 명령을 수행하여 ```kube-ops-view```를 띄워보고 클러스터 노드 현황을 일견해 봅니다.<br>
+```bash
+helm repo add christianknell https://christianknell.github.io/helm-charts
+helm repo update
+helm install kube-ops-view christianknell/kube-ops-view
+```

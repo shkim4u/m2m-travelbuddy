@@ -49,7 +49,7 @@ resource "kubernetes_deployment" "awscli" {
 # This is used by AWSCLI for demonstration.
 ################################################################################
 resource "aws_iam_policy" "awscli_irsa" {
-  name = "AWSCLI-IRSA_Policy"
+  name = "AWSCLI-IRSA-Policy"
   path = "/"
   policy = file("${path.module}/awscli-irsa-policy.json")
   description = "IAM policy for AWSCLI demo"

@@ -98,7 +98,7 @@
 - FlightSpecial 프로젝트를 참고하여 직접 HotelSpecial 애플리케이션을 제작합니다.
 - 이 과정을 통해서 앞에서 학습한 세부 기술들을 익히고 내재화합니다.
 
-## (Optional) 실습 6: FlightSpecial 마이크로서비스 이벤기 기반 아키텍처
+## (Optional) 실습 6: FlightSpecial 마이크로서비스 이벤트 기반 아키텍처
 Apache Kafka에 FlightSpecial 마이크로서비스의 도메인 이벤트를 Publish해 봅니다. 이 과정에서 IRSA를 Kubernetes Pod에 적용하는 과정도 실무적으로 살펴보도록 합니다.
 
 ## 추후 연계 세션: Migration Hub 서비스의 Refactor Space를 활용한 Strangler-Fig Application 체험

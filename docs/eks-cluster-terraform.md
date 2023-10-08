@@ -63,24 +63,7 @@ echo $TF_VAR_ca_arn
       terraform apply -var='exclude_msk=true' -autu-approve
       ```
 * 레거시 모놀리스 데이터베이스
-  * 운영팀에서는 레거시 모놀리스 어플리케이션에 사용되는 데이터베이스를 AWS의 CloudFormation으로 생성하였다고 합니다. 이 CloudFormation 템플릿 파일을 아래와 같이 수행하여 레거시 모놀리스 어플리케이션을 위한 데이터베이스를 생성합니다.<br>
-    ```bash
-    # CloudFormation 템플릿 디렉토리로 이동
-    cd ~/environment/m2m-travelbuddy/prepare
-    
-    # VPC ID 조회
-    export VPC_ID=`aws ec2 describe-vpcs --filter Name=tag:Name,Values=M2M-VPC --query "Vpcs[0].VpcId" --output text`
-    echo $VPC_ID
-    
-    export QUOTED_VPC_ID=\'${VPC_ID}\'
-    export PRIVATE_SUBNET_IDS=`aws ec2 describe-subnets --filter Name=tag:"kubernetes.io/role/internal-elb",Values=1 | jq -r '[.Subnets[].SubnetId] | join(",")'`
-    echo $PRIVATE_SUBNET_IDS
-    
-    # CloudFormation 템플릿 실행
-    export QUOTED_PRIVATE_SUBNET_IDS=\"${PRIVATE_SUBNET_IDS}\"
-    echo $QUOTED_PRIVATE_SUBNET_IDS
-    aws cloudformation create-stack --stack-name M2M-RdsLegacyStack --template-body file://./rds-fixed-sg-cidr.template --parameters ParameterKey=VpcId,ParameterValue=${VPC_ID} ParameterKey=PrivateSubnetIds,ParameterValue=${QUOTED_PRIVATE_SUBNET_IDS}
-    ```
+  * 운영팀에서는 레거시 모놀리스 어플리케이션에 사용되는 데이터베이스를 AWS의 CloudFormation으로 생성하였다고 합니다. 이 CloudFormation 템플릿 파일을 사용하여 데이터베이스를 생성하는 과정은 이후에 진행될 데이터베이스 설정 항목에서 살펴봅니다.<br>
 
 배포가 진행되는 동안에 우리가 무엇을 배포하고 있는지 잠깐 살펴보도록 하겠습니다.<br>
 아래 그림은 모더나이제이션의 가장 초기 단계에서 예상되는 블루프린트 아키텍처입니다.<br>
@@ -90,20 +73,16 @@ echo $TF_VAR_ca_arn
 배포가 성공적으로 완료되면 아래와 같이 표시됩니다.<br>
 ![EKS Cluster Deployed](./assets/eks-cluster-deployed-with-terraform.png)
 
-배포 이후에 안내되는 아래와 같은 "aws eks update-kubeconfig ~~~" 명령을 수행하여 EKS 클러스터에 접근하기 위한 설정을 해줍니다.
-> M2M-EksStack.M2MEksClusterConfigCommand3B10CDA8 = aws eks update-kubeconfig --name M2M-EksCluster --region ap-northeast-2 --role-arn arn:aws:iam::663701857288:role/M2M-EksCluster-ap-northeast-2-MasterRole
-
+또한 배포되는 EKS 클러스터에 대해 ```kubectl```을 수행할 수 있도록 "aws eks update-kubeconfig ~~~" 명령이 자동으로 수행되어 EKS 클러스터에 접근하기 위한 설정을 해줍니다.<br>
+이 사항은 다음 명령을 통해 확인할 수 있습니다.<br>
 ```bash
-# ~/.kube/config 파일 설정
-# (중요) 자신의 배포 결과에서 표시된 명령을 사용할 것.
-aws eks update-kubeconfig --name M2M-EksCluster --region ap-northeast-2 --role-arn arn:aws:iam::663701857288:role/M2M-EksCluster-ap-northeast-2-MasterRole
-
-# 클러스터 배포 확인
-kubectl get nodes
+terraform output eks_update_kubeconfig_command
 ```
 
+![EKS kube-config by Terraform](./assets/eks-cluster-kube-config-by-terraform.png)
+
 ## (이슈 해결하기) AWS 콘솔에서 EKS 클러스터 자원 표시 가능하도록 설정
-우리는 CDK를 통하여 EKS 클러스터를 성공적으로 배포하였습니다.<br>
+우리는 테라폼을 통하여 EKS 클러스터를 성공적으로 배포하였습니다.<br>
 이제 잠깐 AWS 콘솔을 통해서 생성된 클러스터를 둘러보도록 하겠습니다.
 
 1. AWS EKS 콘솔에서 Pod 등의 쿠버네테스 자원을 조회할 수 있을까요? 조회가 불가능하다면 그 이유는 무엇일까요?
@@ -116,10 +95,12 @@ kubectl get nodes
    2. 획득한 인증 토큰을 사용하여 쿠버네테스의 API 서버 호출
    3. (참고 URL) https://www.notion.so/AWS-EKS-Kubectl-5659dc627ea044719b385030693c8011?pvs=4
 3. Amazon EKS 인증 과정 참고 자료
-   1. [kubectl과 AWS IAM Authenticator 인증](https://ssup2.github.io/theory_analysis/AWS_EKS_%EC%9D%B8%EC%A6%9D/)에 대하여
+   1. [[Kubernetes Authentication Strategies]](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
+   2. [[Amazon EKS Cluster 인증]](https://docs.aws.amazon.com/eks/latest/userguide/cluster-auth.html)
+   3. [[kubectl과 AWS IAM Authenticator 인증]](https://ssup2.github.io/theory_analysis/AWS_EKS_%EC%9D%B8%EC%A6%9D/)에 대하여
 
 
-## TravelBuddy Blue Print 아키텍처
+## TravelBuddy 블루프린트 아키텍처
 위에서 잠깐 언급되었지만, 현재 배포된 EKS 클러스터 및 추후 구성이 고려될 수 있는 요소를 포함한 TravelBuddy 어플리케이션의 Blue Print 아키텍처는 다음과 같습니다.
 ![TravelBuddy Blue Print Architecture](./assets/M2M-Replatform-Architecture.png)
 
@@ -143,6 +124,6 @@ kubectl get nodes
        * 6으로부터 애플리케이션 컨테이너 이미지를 Pull 한 후, 7에서 정의된 EKS 매니페스터 파일을 적용하여 EKS 클러스터에 배포
        * (참고) Kubernetes 클러스터를 다룰 수 있도록 kubectl이 CodeBuild 실행 시 설치됩니다.
       
-인프라스트럭처 레벨의 CDK가 배포되게 되면 위에서 설명된 자원이 생성됩니다. 이후 어플리케이션 소스 코드가 리포지터리에 Push되면 CI/CD 빌드 파이프라인이 동작하여 생성된 자원들 중 하나인 ECR에 컨테이너 이미지를 생성하게 됩니다. 이후 배포 파이프라인이 작동하여 ECR에서 컨테이너 이미지를 Pull 한 다음, 별도로 정의되는 Kubernetes 매니페스트 파일을 참조하여 해당 이미지를 최종적으로 EKS 클러스터로 배포하게 됩니다. 즉, 배포 파이프라인에서는 (ECR 컨테이너 리포지터리 + Kubernetes 매니페스트 파일 CodeCommit 리포지터리) 의 결합으로 소스를 정의하는 점을 참고하시면 좋습니다.
+인프라스트럭처 레벨의 테라폼 코드가 배포되게 되면 위에서 설명된 자원이 생성됩니다. 이후 어플리케이션 소스 코드가 리포지터리에 Push되면 CI/CD 빌드 파이프라인이 동작하여 생성된 자원들 중 하나인 ECR에 컨테이너 이미지를 생성하게 됩니다. 이후 배포 파이프라인이 작동하여 ECR에서 컨테이너 이미지를 Pull 한 다음, 별도로 정의되는 Kubernetes 매니페스트 파일을 참조하여 해당 이미지를 최종적으로 EKS 클러스터로 배포하게 됩니다. 즉, 배포 파이프라인에서는 (ECR 컨테이너 리포지터리 + Kubernetes 매니페스트 파일 CodeCommit 리포지터리) 의 결합으로 소스를 정의하는 점을 참고하시면 좋습니다.
 
 

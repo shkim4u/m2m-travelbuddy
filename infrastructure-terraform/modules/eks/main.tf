@@ -480,3 +480,13 @@ module "ack" {
 module "kubehelper" {
   source = "./kubehelper"
 }
+
+/**
+ * [2023-10-08] Some baseline resource for FlightSpecials application.
+ * - Namespace
+ * - IRSA
+ */
+module "flightspecials" {
+  source = "./flightspecials"
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
+}

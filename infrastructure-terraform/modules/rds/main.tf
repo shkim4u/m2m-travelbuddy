@@ -46,6 +46,26 @@ resource "aws_db_parameter_group" "flightspecials" {
   }
 }
 
+resource "random_password" "master" {
+  length = 16
+  special = true
+  override_special = "_!%^@"
+}
+
+resource "aws_secretsmanager_secret" "flightspecials_db_credentials_test" {
+  name = "flightspecials_db_credentials_test"
+}
+
+resource "aws_secretsmanager_secret_version" "flightspecials_db_credentials_test" {
+  secret_id = aws_secretsmanager_secret.flightspecials_db_credentials_test.id
+  secret_string = random_password.master.result
+}
+
+# Database 사용자 및 암호를 Manipulate하고자 한다면 아래 참고
+# - https://automateinfra.com/2021/03/24/how-to-create-secrets-in-aws-secrets-manager-using-terraform-in-amazon-account/
+# - https://stackoverflow.com/questions/46051538/syntax-for-filters-for-aws-rds-describe-db-instances
+# - https://velog.io/@kwakwoohyun/Terraform-AWS-Secrets-Manager
+# - https://stackoverflow.com/questions/65603923/terraform-rds-database-credentials
 resource "aws_db_instance" "flightspecials" {
   identifier = "${local.service_name}-test-postgres-db"
   db_name = "dso"

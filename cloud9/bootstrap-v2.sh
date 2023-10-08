@@ -43,13 +43,14 @@ aws iam add-role-to-instance-profile --role-name cloud9-admin --instance-profile
 
 # Cloud9 EC2의 기본 인스턴스 프로파일 Detach.
 # 참고: https://repost.aws/knowledge-center/attach-replace-ec2-instance-profile
+export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+echo $EC2_INSTANCE_ID
+
 export CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID=`aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${EC2_INSTANCE_ID} --query "IamInstanceProfileAssociations[0].AssociationId" --output text`
 echo $CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID
 aws ec2 disassociate-iam-instance-profile --association-id ${CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID}
 
 # Cloud9 EC2 인스턴스에 인스턴스 프로파일 부착 (Attach)
-export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
-echo $EC2_INSTANCE_ID
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=cloud9-admin-instance-profile --instance-id $EC2_INSTANCE_ID
 
 # 마지막으로 Cloud9 Managed Credentials 비활성화 -> 위에서 생성한 Instance Profile 사용

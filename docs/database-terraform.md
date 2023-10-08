@@ -10,15 +10,32 @@
     - MySQL 클라이언트 설치하기
     - RDS 접속 및 데이터베이스 초기 구성
 
-## 1. RDS MySQL 인스턴스 생성
+## 1. 레거시 모놀리스 데이터베이스 (RDS MySQL) 인스턴스 생성
+### 1.1. AWS CLI를 통한 데이터베이스 생성
+운영팀에서는 레거시 모놀리스 어플리케이션에 사용되는 데이터베이스를 AWS의 CloudFormation으로 생성하였다고 합니다. 이 CloudFormation 템플릿 파일을 아래와 같이 수행하여 레거시 모놀리스 어플리케이션을 위한 데이터베이스를 생성합니다.<br>
+  ```bash
+  # CloudFormation 템플릿 디렉토리로 이동
+  cd ~/environment/m2m-travelbuddy/prepare
+  
+  # VPC ID 조회
+  export VPC_ID=`aws ec2 describe-vpcs --filter Name=tag:Name,Values=M2M-VPC --query "Vpcs[0].VpcId" --output text`
+  echo $VPC_ID
+  
+  export QUOTED_VPC_ID=\'${VPC_ID}\'
+  export PRIVATE_SUBNET_IDS=`aws ec2 describe-subnets --filter Name=tag:"kubernetes.io/role/internal-elb",Values=1 | jq -r '[.Subnets[].SubnetId] | join(",")'`
+  echo $PRIVATE_SUBNET_IDS
+  
+  # CloudFormation 템플릿 실행
+  export QUOTED_PRIVATE_SUBNET_IDS=\"${PRIVATE_SUBNET_IDS}\"
+  echo $QUOTED_PRIVATE_SUBNET_IDS
+  aws cloudformation create-stack --stack-name M2M-RdsLegacyStack --template-body file://./rds-fixed-sg-cidr.template --parameters ParameterKey=VpcId,ParameterValue=${VPC_ID} ParameterKey=PrivateSubnetIds,ParameterValue=${QUOTED_PRIVATE_SUBNET_IDS}
+  
+  # CloudFormation 스택 생성 상태 확인
+  watch -n 3 aws cloudformation describe-stacks --stack-name M2M-RdsLegacyStack --query "Stacks[0].StackStatus" 
+  ```
 
-[//]: # (> &#40;참고&#41;<br>)
-
-[//]: # (> 모놀리스 어플리케이션을 위한 RDS MySQL 데이터베이스도 Day 1 자원을 CDK로 배포하는 과정에서 미리 생성되었습니다.<br>)
-
-[//]: # (> 따라서 이 섹션은 Skip해도 됩니다.)
-
-RDS 인스턴스는 CloudFormation을 이용하여 배포합니다.
+### 1.2. CloudFormation 콘솔 화면을 통한 데이터베이스 생성
+RDS 인스턴스를 CloudFormation 콘솔 화면을 이용하여 배포하는 과정을 다음과 같습니다.
 
 CloudFormation 콘솔로 이동하여 `Create stack` > `With new resources (standard)`를 클릭하여 Create stack 화면으로 진입합니다.
 
@@ -104,7 +121,7 @@ mysql -u root --password=labpassword -h `aws cloudformation describe-stacks --re
 
 접속에 성공하면 다음 명령어로 travelbuddy 데이터베이스를 생성합니다.<br>
 
-> ***(참고) 데이터베이스가 이미 생성되어 있을 수 있으므로 아래와 같은 오류가 표시되면 무시해도 됩니다.<br>
+> <u>***(참고) 데이터베이스가 이미 생성되어 있을 수 있으므로 아래와 같은 오류가 표시되면 무시해도 됩니다.***</u><br>
 >  ERROR 1007 (HY000): Can't create database 'travelbuddy'; database exists
 > 
 > ***(참고) 데이터베이스 형상 관리 도구 - Flyway***<br>
