@@ -60,7 +60,7 @@ echo $TF_VAR_ca_arn
       terraform plan
       
       # terraform apply
-      terraform apply -var='exclude_msk=true' -autu-approve
+      terraform apply -var='exclude_msk=true' -auto-approve
       ```
 * 레거시 모놀리스 데이터베이스
   * 운영팀에서는 레거시 모놀리스 어플리케이션에 사용되는 데이터베이스를 AWS의 CloudFormation으로 생성하였다고 합니다. 이 CloudFormation 템플릿 파일을 사용하여 데이터베이스를 생성하는 과정은 이후에 진행될 데이터베이스 설정 항목에서 살펴봅니다.<br>
@@ -93,12 +93,11 @@ terraform output eks_update_kubeconfig_command
 2. 강사와 함께 Amazon EKS 클러스터를 대상으로 ```kubectl``` 명령이 수행될 때의 인증 과정을 살펴보십시요.
    1. ```~/.kube/config``` 파일을 참고하여 쿠버네테스의 인증 토큰 획득
    2. 획득한 인증 토큰을 사용하여 쿠버네테스의 API 서버 호출
-   3. (참고 URL) https://www.notion.so/AWS-EKS-Kubectl-5659dc627ea044719b385030693c8011?pvs=4
+   3. (Reference) [Amazon EKS IAM Authenticator](./amazon-eks-cluster-authentication.md)
 3. Amazon EKS 인증 과정 참고 자료
    1. [[Kubernetes Authentication Strategies]](https://kubernetes.io/docs/reference/access-authn-authz/authentication/)
    2. [[Amazon EKS Cluster 인증]](https://docs.aws.amazon.com/eks/latest/userguide/cluster-auth.html)
-   3. [[kubectl과 AWS IAM Authenticator 인증]](https://ssup2.github.io/theory_analysis/AWS_EKS_%EC%9D%B8%EC%A6%9D/)에 대하여
-
+   3. [[(타사) AKS(Azure Kubernetes Service)의 액세스 및 ID 옵션]](https://learn.microsoft.com/ko-kr/azure/aks/concepts-identity)
 
 ## TravelBuddy 블루프린트 아키텍처
 위에서 잠깐 언급되었지만, 현재 배포된 EKS 클러스터 및 추후 구성이 고려될 수 있는 요소를 포함한 TravelBuddy 어플리케이션의 Blue Print 아키텍처는 다음과 같습니다.

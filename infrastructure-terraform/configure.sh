@@ -74,4 +74,4 @@ aws acm-pca import-certificate-authority-certificate \
 # 8. 사설 CA의 상태를 살펴봅니다. ACTIVE 상태임을 확인합니다.
 aws acm-pca describe-certificate-authority \
 	--certificate-authority-arn ${CA_ARN} \
-	--output json
+	--output json --no-cli-pager
