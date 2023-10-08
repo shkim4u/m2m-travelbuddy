@@ -141,3 +141,7 @@ echo "7. Extending disk size..."
 curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash
 df -h
 
+## 8. AWS CLI Completer.
+echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
+. ~/.bashrc
+
