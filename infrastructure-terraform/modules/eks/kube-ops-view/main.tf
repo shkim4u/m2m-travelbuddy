@@ -8,10 +8,10 @@
  * - USE THIS TO INSTALL WITH HELM
  *    ~ https://artifacthub.io/packages/helm/christianknell/kube-ops-view
  *
- * Commands to install:
- * 1. helm repo add christianknell https://christianknell.github.io/helm-charts
- * 2. helm repo update
- * 3. helm install kube-ops-view christianknell/kube-ops-view
+ * (Use This) Commands to install:
+helm repo add christianknell https://christianknell.github.io/helm-charts
+helm repo update
+helm install kube-ops-view christianknell/kube-ops-view
  *
  * View Kube Ops View
  * - http://localhost:8080/#scale=3
