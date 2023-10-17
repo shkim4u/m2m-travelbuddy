@@ -1,46 +1,5 @@
 #!/bin/bash
 
-# [2023-08-03] Cloud9 초기 설정 추가
-# 1. AdministratorAccess 권한을 가진 Role 생성
-# 2. Instance Profile 생성
-# 3. Instance Profile을 Cloud9 EC2 인스턴스와 연결
-# (Hmm~) 결론: 아래 동작은 Cloud9에서 동작하지 않으므로 별도의 Bootstrapping 작업에서 수행할 것
-#   - AWS 콘솔 혹은 별도의 CLI 환경
-#   - 출처: https://docs.aws.amazon.com/cloud9/latest/user-guide/security-iam.html#auth-and-access-control-temporary-managed-credentials
-
-#cd ~/environment
-#cat > cloud9-admin-role-trust-policy.json <<EOF
-#{
-#  "Version": "2012-10-17",
-#  "Statement": [
-#    {
-#      "Sid": "",
-#      "Effect": "Allow",
-#      "Principal": {
-#        "Service": "ec2.amazonaws.com"
-#      },
-#      "Action": "sts:AssumeRole"
-#    }
-#  ]
-#}
-#EOF
-#
-## Role 생성, AdministratorAccess 권한 부여
-#aws iam create-role --role-name cloud9-admin --assume-role-policy-document file://cloud9-admin-role-trust-policy.json
-#aws iam attach-role-policy --role-name cloud9-admin --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
-#
-## 인스턴스 프로파일 생성
-#aws iam create-instance-profile --instance-profile-name cloud9-admin-instance-profile
-#aws iam add-role-to-instance-profile --role-name cloud9-admin --instance-profile-name cloud9-admin-instance-profile
-#
-## Cloud9 EC2 인스턴스에 인스턴스 프로파일 부착 (Attach)
-#export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values=*cloud9-workspace* --query "Reservations[*].Instances[*].InstanceId" --output text)
-#echo $EC2_INSTANCE_ID
-#aws ec2 associate-iam-instance-profile --iam-instance-profile Name=cloud9-admin-instance-profile --instance-id $EC2_INSTANCE_ID
-#
-## 마지막으로 Cloud9 Managed Credentials 비활성화 -> 위에서 생성한 Instance Profile 사용
-#aws cloud9 update-environment --environment-id ${C9_PID} --managed-credentials-action DISABLE
-
 # 1. IDE IAM 설정 확인
 echo "1. Checking Cloud9 IAM role..."
 rm -vf ${HOME}/.aws/credentials
@@ -138,7 +97,13 @@ echo "export ACCOUNT_ID=${ACCOUNT_ID}" | tee -a ~/.bash_profile
 
 ## 7. Extend disk size.
 echo "7. Extending disk size..."
+echo "7.1. Checking disk size before extending..."
+df -h
+
+echo "7.2. Now extending the disk size..."
 curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash
+
+echo "7.3. Checking disk size with extension..."
 df -h
 
 ## 8. AWS CLI Completer.

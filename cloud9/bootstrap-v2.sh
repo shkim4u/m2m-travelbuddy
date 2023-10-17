@@ -43,8 +43,26 @@ aws iam add-role-to-instance-profile --role-name cloud9-admin --instance-profile
 
 # Cloud9 EC2의 기본 인스턴스 프로파일 Detach.
 # 참고: https://repost.aws/knowledge-center/attach-replace-ec2-instance-profile
-export EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+while [[ -z "${EC2_INSTANCE_ID}" ]]; do
+  EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*cloud9-workspace*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+  echo "Backend instance of Cloud9 is not yet created. Waiting for 5 seconds..."
+  sleep 5
+done
 echo $EC2_INSTANCE_ID
+
+# Cloud9 인스턴스가 실행되기까지 기다림.
+STATUS=""
+while [ "$STATUS" != "running" ]; do
+  # Get the current status of the instance
+  STATUS=$(aws ec2 describe-instances --instance-ids ${EC2_INSTANCE_ID} --query 'Reservations[].Instances[].State.Name' --output text)
+
+  if [ "$STATUS" != "running" ]; then
+    echo "Instance is not yet running. Waiting for 5 seconds..."
+    sleep 5
+  fi
+done
+echo "Cloud9 instance is now running."
 
 export CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID=`aws ec2 describe-iam-instance-profile-associations --filters Name=instance-id,Values=${EC2_INSTANCE_ID} --query "IamInstanceProfileAssociations[0].AssociationId" --output text`
 echo $CLOUD_INSTANCE_PROFILE_ASSOCIATION_ID

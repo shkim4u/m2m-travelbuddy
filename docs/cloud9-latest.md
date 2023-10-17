@@ -50,7 +50,7 @@ curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9
 
 [//]: # (![Cloud9 생성 화면]&#40;./images/cloud9/cloud9-network-settings.png&#41;)
 
-3. New EC2 Instance에서 인스턴스 타입 (Instance Type)으로 ```추가 인스턴스 유형``` > ```m5.4xlarge (16vCPU + 64GiB RAM)```를 선택합니다. 플랫폼 (Platform)은 "Amazon Linux 2"를 선택하고 Timeout은 "1 Day"를 선택한 후 하단의 Create를 클릭하여 생성합니다. 나머지는 기본값을 그대로 사용합니다.
+3. New EC2 Instance에서 인스턴스 타입 (Instance Type)으로 ```추가 인스턴스 유형``` > ```m5.4xlarge (16vCPU + 64GiB RAM)``` 혹은 선호하는 인스턴스 유형을 선택합니다. 플랫폼 (Platform)은 "Amazon Linux 2"를 선택하고 Timeout은 "1 Day"를 선택한 후 하단의 Create를 클릭하여 생성합니다. 나머지는 기본값을 그대로 사용합니다.
 
    ![Create Cloud9 Details](../images/cloud9/create-cloud9-details.png)
 
