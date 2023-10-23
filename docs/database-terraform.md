@@ -31,7 +31,18 @@
   aws cloudformation create-stack --stack-name M2M-RdsLegacyStack --template-body file://./rds-fixed-sg-cidr.template --parameters ParameterKey=VpcId,ParameterValue=${VPC_ID} ParameterKey=PrivateSubnetIds,ParameterValue=${QUOTED_PRIVATE_SUBNET_IDS}
   
   # CloudFormation 스택 생성 상태 확인
-  watch -n 3 aws cloudformation describe-stacks --stack-name M2M-RdsLegacyStack --query "Stacks[0].StackStatus" 
+#  watch -n 3 aws cloudformation describe-stacks --stack-name M2M-RdsLegacyStack --query "Stacks[0].StackStatus"
+  STATUS=""
+  while [ "$STATUS" != "CREATE_COMPLETE" ]; do
+    # Get the current status of the instance
+    STATUS=$(aws cloudformation describe-stacks --stack-name M2M-RdsLegacyStack --query "Stacks[0].StackStatus" --output text)
+
+    if [ "$STATUS" != "CREATE_COMPLETE" ]; then
+      echo "Database is still being created. Waiting for 5 seconds..."
+      sleep 5
+    fi
+  done
+  echo "Database creation completed." 
   ```
 
 ### 1.2. CloudFormation 콘솔 화면을 통한 데이터베이스 생성

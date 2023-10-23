@@ -21,7 +21,12 @@ module "karpenter" {
 #  }
 
   # Instead, use this.
-  iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"]
+  # [2023-10-20] Changes from Karpenter v19.17.1 -> v19.17.2: String list to map(string)
+#  iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"]
+  iam_role_additional_policies = {
+    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+    AmazonElasticFileSystemFullAccess = "arn:aws:iam::aws:policy/AmazonElasticFileSystemFullAccess"
+  }
 }
 
 # Additional reference
