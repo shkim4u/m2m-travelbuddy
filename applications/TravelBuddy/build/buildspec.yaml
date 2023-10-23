@@ -19,7 +19,7 @@ phases:
       - echo "### SRC_VERISON-> ${CODEBUILD_RESOLVED_SOURCE_VERSION} | Logging-in to ECR"
       - docker login --username AWS -p $(aws ecr get-login-password --region ${REGION}) ${ECR_REPO_URI}
       - export TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION}
-      - export TAG=$(echo $TAG | sed -e "s/\.//g"| tr '[:upper:]' '[:lower:]')
+      - export TAG=$(echo $TAG | sed -e "s/\.//g" | tr '[:upper:]' '[:lower:]')
       - export TAG=$(echo "${TAG:0:8}")
       - export IMAGE_TAG="${TAG}"
       - echo "## TAG-> ${TAG}"

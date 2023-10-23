@@ -33,8 +33,10 @@ aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type m5.4xl
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
 
+#sed -i 's@CONTAINER_IMAGE@'"$ECR_REPO_URI:$IMAGE_TAG"'@' $EKS_MANIFEST_FILES_DIR/02_deployment.yaml
+
 # AdministratorAccess 권한이 부여된 Trust Relationship Policy (from GitHub).
-export CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT=`curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/cloud9-admin-role-trust-policy-with-admin-user-trust.json | envsubst`
+export CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT=`curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/cloud9-admin-role-trust-policy-with-admin-user-trust.json | sed -e "s/AWS_ACCOUNT_ID/${AWS_ACCOUNT_ID}/g"`
 echo $CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT
 
 # "cloud9-admin" Role 생성 및 권한 부여

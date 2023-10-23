@@ -13,8 +13,8 @@ let count=`echo $versions |jq 'length'`-1
 if [ $count -gt -1 ]; then
         echo "removing files"
         for i in $(seq 0 $count); do
-                key=`echo $versions | jq .[$i].Key |sed -e 's/\"//g'`
-                versionId=`echo $versions | jq .[$i].VersionId |sed -e 's/\"//g'`
+                key=`echo $versions | jq .[$i].Key | sed -e 's/\"//g'`
+                versionId=`echo $versions | jq .[$i].VersionId | sed -e 's/\"//g'`
                 cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
                 echo $cmd
                 $cmd
@@ -27,8 +27,8 @@ if [ $count -gt -1 ]; then
         echo "removing delete markers"
 
         for i in $(seq 0 $count); do
-                key=`echo $markers | jq .[$i].Key |sed -e 's/\"//g'`
-                versionId=`echo $markers | jq .[$i].VersionId |sed -e 's/\"//g'`
+                key=`echo $markers | jq .[$i].Key | sed -e 's/\"//g'`
+                versionId=`echo $markers | jq .[$i].VersionId | sed -e 's/\"//g'`
                 cmd="aws s3api delete-object --bucket $bucket --key $key --version-id $versionId"
                 echo $cmd
                 $cmd
