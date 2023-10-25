@@ -1,3 +1,7 @@
+# 아래와 같이 실행할 것
+# 1. ACM에서 Certificate ARN 확인
+# 2. export CERTIFICATE_ARN=<CERTIFICATE_ARN>
+# 3. cat riches_ingress.yaml | envsubst | kubectl apply -f -
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
