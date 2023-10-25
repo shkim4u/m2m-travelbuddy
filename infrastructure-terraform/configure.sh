@@ -42,8 +42,19 @@ echo $TF_VAR_ca_arn
 
 # Wait for a while so that the private CA is completed to be created.
 # TODO: Do more elegantly by probing with AWS API.
-echo "Wait for 10 secs for the private CA is ready to go."
-sleep 10
+#echo "Wait for 10 secs for the private CA is ready to go."
+#sleep 10
+STATUS=""
+while [ "$STATUS" != "PENDING_CERTIFICATE" ]; do
+  # Ge the current status of the PCA.
+  STATUS=$(aws acm-pca describe-certificate-authority --certificate-authority-arn ${CA_ARN} --query "CertificateAuthority.Status" --output text)
+
+  if [ "$STATUS" != "PENDING_CERTIFICATE" ]; then
+    echo "Private CA is not yet ready to install its root CA certificate. Waiting for 5 seconds..."
+    sleep 5
+  fi
+done
+echo "Private CA is ready to go to install root CA certificate."
 
 # 2. Generate a certificate signing request (CSR).
 aws acm-pca get-certificate-authority-csr \

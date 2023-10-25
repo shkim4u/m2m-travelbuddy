@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.aws.proserve.korea.appsec</groupId>
+    <artifactId>riches</artifactId>
+    <name>RichesBank</name>
+    <packaging>war</packaging>
+    <version>1.0.0</version>
+    <properties>
+        <java-version>1.8</java-version>
+        <org.springframework-version>5.3.14</org.springframework-version>
+        <org.aspectj-version>1.9.7</org.aspectj-version>
+        <hibernate.version>5.6.3.Final</hibernate.version>
+        <jackson.version>1.9.10</jackson.version>
+        <log4j.version>2.16.0</log4j.version>
+        <aws.xray-version>2.10.0</aws.xray-version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>local-libs-repository</id>
+            <name>Local Library Repository</name>
+            <url>file://${project.basedir}/local-libs-repository</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>apache-commons</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>1.2.1</version>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>3.0.14</version>
+        </dependency>
+        <dependency>
+            <groupId>naming</groupId>
+            <artifactId>naming-factory-dbcp</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+</project>
