@@ -18,12 +18,19 @@ spec:
         run: riches
     spec:
       containers:
-      - image: 301391518739.dkr.ecr.ap-northeast-2.amazonaws.com/riches-web-app:latest
+      - image: 577850250040.dkr.ecr.ap-northeast-2.amazonaws.com/riches:latest
         imagePullPolicy: IfNotPresent
         name: riches
         ports:
         - containerPort: 8080
-        resources: {}
+#        resources: {}
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
       dnsPolicy: ClusterFirst
       dnsConfig:
         nameservers:

@@ -2,6 +2,7 @@
 
 export CERTIFICATE_ARN=<CERTIFICATE_ARN>
 
+kubectl apply -f riches_namespace.yaml
 kubectl apply -f riches_deployment.yaml
 kubectl apply -f riches_service.yaml
 #kubectl apply -f riches_ingress.yaml

@@ -173,7 +173,6 @@ bin/
 # Package Files #
 *.jar
 *.war
-!riches.war
 *.nar
 *.ear
 *.zip
@@ -334,3 +333,7 @@ infrastructure-terraform/cert.pem
 infrastructure-terraform/tfplan
 infrastructure-terraform-backup
 terraform.log
+
+# [2023-10-26] For Riches (Bank) vulnerable application testing.
+!riches.war
+!**/local-libs-repository/**/*.jar
