@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# IAM User 생성.
+aws iam create-user --user-name admin
+
+# Permission Policy 설정.
+aws iam attach-user-policy --user-name admin --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+# Verify.
+aws iam get-user --user-name admin
+aws iam list-attached-user-policies --user-name admin
+
+
 # Cloud9을 처음 수행하기 위한 Role 및 Instance Profile 추가
 # (이것은 정확하지 않을 수 있음) Instance Profile은 이후에 AdministratorAccess 권한을 가진 Role에 연결된 Instance Profile로 대체됨.
 # (이것은 정확하지 않을 수 있음) Why does "aws cloud9 create-environment-ec2" command NOT support this option with it?
@@ -84,3 +95,5 @@ aws cloud9 update-environment --environment-id ${C9_PID} --managed-credentials-a
 ###
 
 # TODO: Create an IAM user and export credentials to event-engine-1 profile.
+# Create access key.
+aws iam create-access-key --user-name admin

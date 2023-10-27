@@ -28,6 +28,12 @@ AWS Cloud9으로 실습 환경을 구축하는 순서는 아래와 같습니다.
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/bootstrap-v2.sh | bash
 ```
+
+(참고) IAM 사용자 ```admin```을 생성하고 권한 설정을 추가적으로 구성해 주려면 다음 스크립트를 실행해 줍니다.<br>
+```bash
+curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/bootstrap-v2-with-admin-user-trust.sh | bash
+```
+
 ![](./assets/bootstrap-cloud9-via-cloudshell.png)
 
 ### 1.2. AWS Cloud9 환경 생성 (AWS Management Console 사용)

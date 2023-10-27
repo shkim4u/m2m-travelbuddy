@@ -1,0 +1,13 @@
+1. Build container image.
+docker build -t riches .
+
+2. Run container.
+# docker run --name riches --rm -dp 8080:8080 riches:latest
+# docker run --name riches -dp 8080:8080 riches:latest
+docker run --name riches --rm -p 8080:8080 riches:latest
+
+# 컨테이너 이름을 확인
+docker ps
+
+# 로그 확인
+docker logs riches
