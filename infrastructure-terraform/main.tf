@@ -29,6 +29,7 @@ module "cicd" {
   for_each = {
     "cicd-travelbuddy" = "travelbuddy"
     "cicd-flightspecials" = "flightspecials"
+    "cide-riches" = "riches"
   }
 
   name = each.value
