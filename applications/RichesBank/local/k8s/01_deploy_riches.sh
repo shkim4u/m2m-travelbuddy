@@ -6,7 +6,7 @@ export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryLis
 echo $CERTIFICATE_ARN
 
 kubectl apply -f riches_namespace.yaml
-cat riches_deployment.yaml | enbsubst | kubectl apply -f -
+cat riches_deployment.yaml | envsubst | kubectl apply -f -
 kubectl apply -f riches_service.yaml
 cat riches_ingress.yaml | envsubst | kubectl apply -f -
 
