@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: riches-service
+  namespace: riches
+spec:
+  ports:
+    - port: 80 # 서비스가 생성할 포트
+      protocol: TCP
+      targetPort: 8080 # 서비스가 접근할 pod의 포트
+  selector:
+    app: riches
+  type: NodePort
+  sessionAffinity: ClientIP
+status:
+  loadBalancer: {}
