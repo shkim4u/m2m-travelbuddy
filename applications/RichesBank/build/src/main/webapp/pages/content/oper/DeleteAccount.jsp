@@ -1,4 +1,5 @@
 <%@ include file="../../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <script type="text/javascript">
     function RestfulResource(resource_url)
@@ -119,7 +120,7 @@
 		<td align="center">
 			<table cellpadding="0" cellspacing="0" class="detailBox" width="45%">
 				<tr valign="top" align="center" class="titleRow">
-					<td width="35%" align="left">&nbsp;&nbsp;Delete Account</td>
+					<td width="35%" align="left">&nbsp;&nbsp;계좌 삭제</td>
 					<td width="20%">&nbsp;&nbsp;</td>
                     <td width="8%">&nbsp;&nbsp;</td>
 				</tr>
@@ -133,14 +134,14 @@
                     <c:when test="${size > 1}" >
                         <s:form theme="simple">
                             <tr valign="top">
-                                <td class="dataCell alt" align="right">select a customer:</td>
+                                <td class="dataCell alt" align="right">고객을 선택하세요:</td>
                                 <td class="dataCell alt" align="left">&nbsp;&nbsp;
                                     <s:select list="profiles" id="ddCustomers" name="customer" listKey="username" listValue="username" cssStyle="width:100"  onchange="retrieveAccounts()"/>
                                 </td>
                                 <td class="dataCell alt" width="8%">&nbsp;</td>
                             </tr>
                             <tr>
-                                <td class="dataCell alt" align="right">select an account:</td>
+                                <td class="dataCell alt" align="right">계좌를 선택하세요:</td>
                                 <td class="dataCell alt" align="left">&nbsp;&nbsp;
                                     <select id="ddAccounts" name="Account" cssStyle="width:100"/>
                                 </td>

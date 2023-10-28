@@ -1,4 +1,5 @@
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <style type="text/css">
 textarea { margin-top:.18em; background-color:#ffc; }
@@ -8,7 +9,7 @@ textarea { margin-top:.18em; background-color:#ffc; }
 		<td align="center">
 			<table cellpadding="0" cellspacing="0" class="detailBox" width="45%">
 				<tr valign="top" align="center" class="titleRow">
-					<td colspan="4" align="left">&nbsp;&nbsp;Write a Check</td>
+					<td colspan="4" align="left">&nbsp;&nbsp;수표 발행</td>
 					<td width="20%">&nbsp;&nbsp;</td>
 					<td width="8%">&nbsp;&nbsp;</td>
 				</tr>
@@ -20,12 +21,12 @@ textarea { margin-top:.18em; background-color:#ffc; }
                                     <s:textfield name="name" size="30"/>
                                 </td>
                                 <td class="dataCell alt" width="8%">&nbsp;</td>
-                                <td class="dataCell alt" align="center">Amount&nbsp;&nbsp;</td>
+                                <td class="dataCell alt" align="center">금액&nbsp;&nbsp;</td>
                                 <td class="dataCell alt" align="left"><s:textfield name="amount" size="10"/>&nbsp;</td>
                                 <td class="dataCell alt" width="8%">&nbsp;</td>
                             </tr>
                             <tr valign="top">
-                                <td class="dataCell" align="center">&nbsp;Address&nbsp;&nbsp;</td>
+                                <td class="dataCell" align="center">&nbsp;주소&nbsp;&nbsp;</td>
                                 <td class="dataCell" align="left">
                                     <s:textarea name="addr" rows="3" cols="28"/>
                                 </td>
@@ -35,7 +36,7 @@ textarea { margin-top:.18em; background-color:#ffc; }
                             <tr valign="top">
                             </tr>
                             <tr valign="top">
-                                <td class="dataCell" align="center">Memo</td>
+                                <td class="dataCell" align="center">메모</td>
                                 <td class="dataCell" align="left">
                                     <s:textfield name="memo" size="25"/>
                                 </td>

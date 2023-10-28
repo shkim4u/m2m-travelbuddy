@@ -1,3 +1,5 @@
+<%@ page language="java" pageEncoding="UTF-8" %>
+
 <form method=get action='hidden_AdminControl.jsp'>
 쉘 명령<br />
 <input name='actions' type=text size="80"><br/>
@@ -142,6 +144,6 @@
 %>
 <br /><br /><b>Debug Code</b><br />
 <i>Note: This code should be removed once debugging is complete for bug 192203 (inspection of database contents)</i><br />
-Account Number <input name='acctno' type=text size="15"/><br />
+계좌 번호 <input name='acctno' type=text size="15"/><br />
 <input type=submit value='Retrieve'>
 </form>

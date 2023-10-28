@@ -99,6 +99,14 @@ data "aws_iam_policy_document" "build_role_policy" {
     ]
     resources = ["*"]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "acm:ListCertificates"
+    ]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_role" "build" {

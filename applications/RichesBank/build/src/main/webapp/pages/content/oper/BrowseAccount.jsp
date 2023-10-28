@@ -1,4 +1,5 @@
 <%@ include file="../../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <script type="text/javascript">
     function RestfulResource(resource_url)
@@ -142,7 +143,7 @@
 		<td align="center">
 			<table cellpadding="0" cellspacing="0" class="detailBox" width="90%">
 				<tr valign="top" align="center" class="titleRow">
-					<td width="35%" align="left">&nbsp;&nbsp;Browse Account</td>
+					<td width="35%" align="left">&nbsp;&nbsp;계좌 조회t</td>
 					<td width="20%">&nbsp;&nbsp;</td>
                     <td width="8%">&nbsp;&nbsp;</td>
 				</tr>
@@ -156,7 +157,7 @@
                     <c:when test="${size > 1}" >
                         <s:form theme="simple">
                             <tr valign="top">
-                                <td class="dataCell alt" align="right">Select a customer:</td>
+                                <td class="dataCell alt" align="right">고객 선택:</td>
                                 <td class="dataCell alt" align="left">&nbsp;&nbsp;
                                     <s:select list="profiles" id="ddCustomers" name="customer" listKey="username" listValue="username" cssStyle="width:100" onchange="retrieveAccounts()"/>
                                 </td>

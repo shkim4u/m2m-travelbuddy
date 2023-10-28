@@ -1,4 +1,6 @@
 <%@ page import="java.util.*,java.io.*" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
+
 <html>
 <head><title>파일 뷰어</title></head>
 <body>

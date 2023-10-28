@@ -1,3 +1,5 @@
+<%@ page language="java" pageEncoding="UTF-8" %>
+
 <%@ include file="../../common/moduleInclude.jsp" %>
 	<tr>
 		<td>
@@ -10,17 +12,17 @@
                     </tr>
                     <tr valign="top" class="subtitle">
                         <td align="left">
-                            <table border=0 cellpadding="0" cellspacing="0"><tr><td style="border:0px" width="50px"><strong>To:</strong><td style="border:0px"><s:select list="addresses" label="To" name="to"/></td></tr></table>
+                            <table border=0 cellpadding="0" cellspacing="0"><tr><td style="border:0px" width="50px"><strong>수신자:</strong><td style="border:0px"><s:select list="addresses" label="To" name="to"/></td></tr></table>
                         </td>
                     </tr>
                     <tr class="subtitle">
                         <td colspan="2" align="left">
-                            <table cellpadding="0" cellspacing="0"><tr ><td style="border:0px" width="50px"><strong>Severity:</strong></td><td style="border:0px"><s:textfield label="Severity" name="severity" size="10"/></td></tr></table>
+                            <table cellpadding="0" cellspacing="0"><tr ><td style="border:0px" width="50px"><strong>중요도:</strong></td><td style="border:0px"><s:textfield label="Severity" name="severity" size="10"/></td></tr></table>
                         </td>
                     </tr>
                     <tr class="subtitle">
                         <td colspan="2" align="left">
-                            <table cellpadding="0" cellspacing="0"><tr ><td style="border:0px" width="50px"><strong>Subject:</strong></td><td style="border:0px"><s:textfield label="Subject" name="subject" size="50"/></td></tr></table>
+                            <table cellpadding="0" cellspacing="0"><tr ><td style="border:0px" width="50px"><strong>제목:</strong></td><td style="border:0px"><s:textfield label="Subject" name="subject" size="50"/></td></tr></table>
                         </td>
                     </tr>
                     <tr valign="top">

@@ -1,4 +1,6 @@
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
+
 <%@ page import="java.text.NumberFormat" %>
 <%@ page import="java.text.DateFormat" %>
 <%@ page import="java.util.Date" %>
@@ -7,14 +9,14 @@
         String today = DateFormat.getDateInstance(DateFormat.SHORT).format(new Date());
         NumberFormat numFormat = NumberFormat.getCurrencyInstance();
     %>
-	
+
 	<tr>
 		<td align="center">
 			<table cellpadding="0" cellspacing="0" class="detailBox" width="90%">
 				<tr valign="top" align="center" class="titleRow">
-					<td width="35%" align="left">Account Number</td>
-					<td width="15%">As of Date</td>
-					<td width="30%">Current Balance</td>
+					<td width="35%" align="left">계좌 번호</td>
+					<td width="15%">날짜</td>
+					<td width="30%">현재 잔액</td>
 				</tr>
                 <%
                     int size = ((java.util.List)request.getAttribute("accounts")).size();
@@ -39,7 +41,7 @@
                     </c:when>
                     <c:otherwise>
                         <tr valign="top">
-                            <td class="dataCell">No accounts found.</td>
+                            <td class="dataCell">계좌가 없습니다.</td>
                             <td class="dataCell"></td>
                             <td class="dataCell"></td>
                         </tr>

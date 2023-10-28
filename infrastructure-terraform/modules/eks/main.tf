@@ -490,3 +490,8 @@ module "flightspecials" {
   source = "./flightspecials"
   irsa_oidc_provider_arn = module.eks.oidc_provider_arn
 }
+
+module "riches" {
+  source = "./riches"
+  irsa_oidc_provider_arn = module.eks.oidc_provider_arn
+}

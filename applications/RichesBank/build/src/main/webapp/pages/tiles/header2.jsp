@@ -22,7 +22,7 @@
             <tr valign="top">
                 <td><a href="<s:url value="/auth/AccountSummary.action" includeParams="none"/>" title="계좌 정보">계좌</a></td>
                 <td><a href="<s:url value="/auth/Transfer.action" includeParams="none"/>" title="">이체</a></td>
-                <td><a href="<s:url value="/auth/Check.action" includeParams="none"/>" title="">수표 발생</a></td>
+                <td><a href="<s:url value="/auth/Check.action" includeParams="none"/>" title="">수표 발행</a></td>
                 <td><a href="<s:url value="/auth/PayBill.action" includeParams="none"/>" title="">지불</a></td>
 <%--                <td><a href="" title="">Make Payments</a></td> --%>
                 <td><a href="<s:url value="/auth/Messages.action" includeParams="none"/>" title="">메시지</a></td>

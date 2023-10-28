@@ -1,4 +1,5 @@
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 <%@ page import="java.text.DateFormat" %>
 <%@ page import="java.sql.Date" %>
 	<tr>
@@ -9,9 +10,9 @@
 						<table cellspacing="0"  width="100%">
 								<tr align="left"  class="titleRow">
 									<td>&nbsp;</td>
-									<td align="left">Date</td>
-									<td align="left">Subject</td>
-									<td>From</td>
+									<td align="left">날짜</td>
+									<td align="left">제목</td>
+									<td>발송자</td>
 								</tr>
 
                             <%
@@ -50,7 +51,7 @@
                                                 <tr class="dataCell alt" align="left">
                                             </c:otherwise>
                                         </c:choose>
-                                                    <td colspan="4">&nbsp;<input type="image" align="absmiddle" alt="Delete" src="<s:url value="/img/btnDeleteMessages.jpg" includeParams="none"/>" value="Submit"/></td>                                        
+                                                    <td colspan="4">&nbsp;<input type="image" align="absmiddle" alt="Delete" src="<s:url value="/img/btnDeleteMessages.jpg" includeParams="none"/>" value="Submit"/></td>
                                                 </tr>
                                     </s:form>
                                 </c:when>
@@ -58,7 +59,7 @@
                                     <tr class="dataCell alt">
                                         <td></td>
                                         <td></td>
-                                        <td width="100%">No Messages found.</td>
+                                        <td width="100%">메시지가 없습니다.</td>
                                         <td></td>
                                     </tr>
                                 </c:otherwise>

@@ -2,6 +2,7 @@
 <%@ page import="java.text.DateFormat" %>
 <%@ page import="java.sql.Date" %>
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <%
     NumberFormat numFormat = NumberFormat.getCurrencyInstance();
@@ -14,10 +15,10 @@
 					<td>
 						<table cellspacing="0"  width="100%" class="subtitle">
 								<tr align="left">
-                                    <td width="20%"><a href="">Account Number</a></td>
-                                    <td width="15%"><a href="">Date</a></td>
-									<td width=""><a href="">Description</a></td>
-									<td width="15%"><a href="">Amount</a></td>
+                                    <td width="20%"><a href="">계좌 번호</a></td>
+                                    <td width="15%"><a href="">날짜</a></td>
+									<td width=""><a href="">설명</a></td>
+									<td width="15%"><a href="">금액</a></td>
 								</tr>
 
                                 <%

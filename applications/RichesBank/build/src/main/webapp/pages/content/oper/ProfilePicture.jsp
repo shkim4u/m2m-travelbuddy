@@ -1,4 +1,5 @@
 <%@ include file="../../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 
 <tr>
@@ -7,7 +8,7 @@
 
             <s:form action="UploadProfilePicture" method="post" enctype="multipart/form-data" theme="simple">
                 <tr valign="top" class="titleRow">
-                    <td  align="left">&nbsp;&nbsp;Upload your new profile picture:</td>
+                    <td  align="left">&nbsp;&nbsp;프로필 사진 업로드:</td>
                 </tr>
                 <tr class="subtitle">
                     <td colspan="2" align="left">

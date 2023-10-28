@@ -166,42 +166,43 @@ response.setDateHeader ("Expires", 0); //prevents caching at the proxy server
 					<td>
 						<table cellpadding="0" cellspacing="0" border="0" align="right" id="right">
 							<tr valign="top">
-								<td colspan="3">
-									<script language="javascript">
-										if (AC_FL_RunContent == 0) {
-											alert("This page requires AC_RunActiveContent.js.");
-										} else {
-											AC_FL_RunContent(
-												'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0',
-												'width', '731',
-												'height', '194',
-												'src', 'rwi-1',
-												'quality', 'high',
-												'pluginspage', 'http://www.macromedia.com/go/getflashplayer',
-												'align', 'middle',
-												'play', 'true',
-												'loop', 'true',
-												'scale', 'showall',
-												'wmode', 'window',
-												'devicefont', 'false',
-												'id', 'rwi-1',
-												'bgcolor', '#ffffff',
-												'name', 'rwi-1',
-												'menu', 'true',
-												'allowFullScreen', 'false',
-												'allowScriptAccess','sameDomain',
-												'movie', '<s:url value="/rwi-1" includeParams="none"/>',
-												'salign', ''
-												); //end AC code
-										}
-									</script>
-									<noscript>
-										<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="731" height="194" id="rwi-1" align="middle">
-										<param name="allowScriptAccess" value="sameDomain" />
-										<param name="allowFullScreen" value="false" />
-										<param name="movie" value="rwi-1.swf" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" />	<embed src="<s:url value="/rwi-1.swf" includeParams="none"/>" quality="high" bgcolor="#ffffff" width="731" height="194" name="rwi-1" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />
-										</object>
-									</noscript>
+								<td colspan="3" align="center">
+									<img width="300" src="<s:url value = "/img/online-banking.gif" includeParams="none"/>" />
+<%--									<script language="javascript">--%>
+<%--										if (AC_FL_RunContent == 0) {--%>
+<%--											alert("This page requires AC_RunActiveContent.js.");--%>
+<%--										} else {--%>
+<%--											AC_FL_RunContent(--%>
+<%--												'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0',--%>
+<%--												'width', '731',--%>
+<%--												'height', '194',--%>
+<%--												'src', 'rwi-1',--%>
+<%--												'quality', 'high',--%>
+<%--												'pluginspage', 'http://www.macromedia.com/go/getflashplayer',--%>
+<%--												'align', 'middle',--%>
+<%--												'play', 'true',--%>
+<%--												'loop', 'true',--%>
+<%--												'scale', 'showall',--%>
+<%--												'wmode', 'window',--%>
+<%--												'devicefont', 'false',--%>
+<%--												'id', 'rwi-1',--%>
+<%--												'bgcolor', '#ffffff',--%>
+<%--												'name', 'rwi-1',--%>
+<%--												'menu', 'true',--%>
+<%--												'allowFullScreen', 'false',--%>
+<%--												'allowScriptAccess','sameDomain',--%>
+<%--												'movie', '<s:url value="/rwi-1" includeParams="none"/>',--%>
+<%--												'salign', ''--%>
+<%--												); //end AC code--%>
+<%--										}--%>
+<%--									</script>--%>
+<%--									<noscript>--%>
+<%--										<object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,0,0" width="731" height="194" id="rwi-1" align="middle">--%>
+<%--										<param name="allowScriptAccess" value="sameDomain" />--%>
+<%--										<param name="allowFullScreen" value="false" />--%>
+<%--										<param name="movie" value="rwi-1.swf" /><param name="quality" value="high" /><param name="bgcolor" value="#ffffff" />	<embed src="<s:url value="/rwi-1.swf" includeParams="none"/>" quality="high" bgcolor="#ffffff" width="731" height="194" name="rwi-1" align="middle" allowScriptAccess="sameDomain" allowFullScreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" />--%>
+<%--										</object>--%>
+<%--									</noscript>--%>
 								</td>
 							</tr>
 							<tr valign="top" class="links">

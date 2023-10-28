@@ -4,7 +4,7 @@ env:
   git-credential-helper: yes
   variables:
     REGION: "ap-northeast-2"
-    IMAGE_TAG_KEY: "/application/riches/container/image/main/tag"
+    ENVIRONMENT: test
 phases:
   install:
     # runtime-versions:
@@ -16,13 +16,22 @@ phases:
     commands:
       - echo "Print awscli version"
       - aws --version
+      - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
       - echo "### SRC_VERISON-> ${CODEBUILD_RESOLVED_SOURCE_VERSION} | Logging-in to ECR"
       - docker login --username AWS -p $(aws ecr get-login-password --region ${REGION}) ${ECR_REPO_URI}
-      - export TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION}
+      #     Mix with one alphabet "t" to avoid floating type conversion in helm operation.
+      - export TAG="t${CODEBUILD_RESOLVED_SOURCE_VERSION}"
       - export TAG=$(echo $TAG | sed -e "s/\.//g" | tr '[:upper:]' '[:lower:]')
       - export TAG=$(echo "${TAG:0:8}")
       - export IMAGE_TAG="${TAG}"
       - echo "## TAG-> ${TAG}"
+#      - echo "### Retrieving database information..."
+#      - export DATABASE_ENDPOINT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Address" --output text) && echo $DATABASE_ENDPOINT
+#      - export DATABASE_PORT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Port" --output text) && echo $DATABASE_PORT
+#      - export DATABASE_USERNAME=$(aws secretsmanager list-secrets --filters Key=tag-value,Values="arn:aws:rds:ap-northeast-2:${AWS_ACCOUNT_ID}:db:riches-test-postgres-db" --query "SecretList[0].Name" --output text) && echo $DATABASE_USERNAME
+      - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text`
+      - echo "## CERTIFICATE_ARN-> ${CERTIFICATE_ARN}"
+      - env
   build:
     commands:
       - |
@@ -39,13 +48,28 @@ phases:
         docker push $ECR_REPO_URI:$IMAGE_TAG
   post_build:
     commands:
-      - |
-        echo "### Pushing container image tag to SSM for reuse ###"
-        aws ssm put-parameter --name $IMAGE_TAG_KEY --value $IMAGE_TAG --type String --region $REGION --overwrite
       - echo "${IMAGE_TAG}" >> build_output.txt
+      - git config --global --replace-all credential.helper '!aws codecommit credential-helper $@'
+      #        [TODO] 아래 클론 시의 Repository URL 값도 CodeBuild의 환경변수 혹은 CloudFormation Output으로부터 주입되면 좋습니다.
+      - |
+        echo "### Update value to manifest repository ###"
+        git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/riches-configuration
+        cd riches-configuration
+        ls
+        cat values-template.yaml | envsubst > ./values.yaml
+        cat ./values.yaml
+        git status
+        git config user.email "anyone@example.com"
+        git config user.name "RichesBank Developer"
+        git add .
+        git commit -m "Updated image tag to $IMAGE_TAG"
+        git log --oneline
+        git remote -v
+        git push -u origin main
 artifacts:
   files:
     - build_output.txt
-cache:
-  paths:
-    - '/root/.gradle/caches/**/*'
+#    - interface/build/libs/flightspecials.jar
+#cache:
+#  paths:
+#    - '/root/.gradle/caches/**/*'

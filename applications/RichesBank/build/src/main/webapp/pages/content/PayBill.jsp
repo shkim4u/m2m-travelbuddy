@@ -1,4 +1,5 @@
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <style type="text/css">
 textarea { margin-top:.18em; background-color:#ffc; }
@@ -88,7 +89,7 @@ textarea { margin-top:.18em; background-color:#ffc; }
 		<td align="center">
 			<table cellpadding="0" cellspacing="0" class="detailBox" width="45%">
 				<tr valign="top" align="center" class="titleRow">
-					<td align="left">&nbsp;&nbsp;Bill Pay</td>
+					<td align="left">&nbsp;&nbsp;지불</td>
 					<td width="20%">&nbsp;&nbsp;</td>
                     <td width="8%">&nbsp;&nbsp;</td>
 				</tr>
@@ -102,26 +103,26 @@ textarea { margin-top:.18em; background-color:#ffc; }
                     <c:when test="${size > 1}" >
                         <s:form theme="simple">
                             <tr valign="top">
-                                <td class="dataCell alt" align="left">&nbsp;&nbsp;Pay To:&nbsp;</td>
+                                <td class="dataCell alt" align="left">&nbsp;&nbsp;지불 대상:&nbsp;</td>
                                 <td class="dataCell alt" align="left">
                                     <s:textfield id="textPayTo" name="payee" size="30"/>
                                 </td>
                                 <td class="dataCell alt" width="8%">&nbsp;&nbsp;</td>
                             </tr>
                             <tr valign="top">
-                                <td class="dataCell alt" align="left">&nbsp;&nbsp;Amount:&nbsp;</td>
+                                <td class="dataCell alt" align="left">&nbsp;&nbsp;금액:&nbsp;</td>
                                 <td class="dataCell alt" align="left"><s:textfield id="textAmount" name="amount" size="10"/>&nbsp;</td>
                                 <td class="dataCell alt" width="8%">&nbsp;&nbsp;</td>
                             </tr>
                             <tr valign="top">
-                                <td class="dataCell alt" align="left">&nbsp;&nbsp;select an account:</td>
+                                <td class="dataCell alt" align="left">&nbsp;&nbsp;계좌 선택:</td>
                                 <td class="dataCell alt" align="left">
                                     <s:select list="accounts" id="ddAccounts" name="account" listKey="acctno" listValue="acctno" cssStyle="width:100"/>
                                 </td>
                                 <td class="dataCell alt" width="8%">&nbsp;&nbsp;</td>
                             </tr>
                             <tr valign="top">
-                                <td class="dataCell alt" align="left">&nbsp;&nbsp;Memo:&nbsp;</td>
+                                <td class="dataCell alt" align="left">&nbsp;&nbsp;메모:&nbsp;</td>
                                 <td class="dataCell alt" align="left">
                                     <s:textfield id="textMemo" name="memo" size="25"/>
                                 </td>
