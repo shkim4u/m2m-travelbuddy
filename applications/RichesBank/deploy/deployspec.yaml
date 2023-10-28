@@ -90,8 +90,8 @@ phases:
       - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text` && echo $CERTIFICATE_ARN
 #      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/04_ingress.yaml
       - cat $EKS_MANIFEST_FILES_DIR/04_ingress.yaml | envsubst | kubectl apply -f -
-      - echo "Step 99 - Applying ConfigMap for logging."
-      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/99_aws_logging_cloudwatch_configmap.yaml
+#      - echo "Step 99 - Applying ConfigMap for logging."
+#      - kubectl apply -f $EKS_MANIFEST_FILES_DIR/99_aws_logging_cloudwatch_configmap.yaml
       - echo "Final Step - Finally restart deployment to reflect latest container image."
       - kubectl rollout restart deployment riches -n riches | true
 

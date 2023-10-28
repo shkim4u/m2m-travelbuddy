@@ -185,7 +185,7 @@ git push --set-upstream origin main
 잠시 후 배포가 완료되면 다음 명령어 수행 결과를 웹 브라우저에 붙여넣어 확인합니다.
 
 ```bash
-echo http://$(kubectl get ingress/riches-ingress -n travelbuddy -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/riches/
+echo http://$(kubectl get ingress/riches-ingress -n riches -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')/riches/
 ```
 ![RichesBank Landing Page](./assets/travelbuddy-landing-page.png)
 

@@ -20,6 +20,11 @@ RichesBank 어플리케이션은 이미 Java와 Maven을 빌드 체계를 제공
    1. ~~(참고) 우리는 이미 실습 가이드 및 소스 코드 전체를 가진 Git Repository 내에서 작업하고 있으므로 아래와 같이 서브 디렉토리 (어플리케이션 소스 코드)를 또 다른 Git Repository로 연결하면 Git 관리에 다소 혼란이 생길 수 있습니다. 하지만 전체 Git 경로는 추가적인 Git 관리 작업이 없음을 가정하고 이렇게 수행하도록 합니다.~~
    2. (참고) 지난 차수에서의 경험을 바탕으로 Git Clone받은 전체 경로의 Git 정보를 깔끔하게 초기화하기 위한 단계를 아래와 같이 진행하도록 하겠습니다. 
    3. (참고) Git으로 관리되는 리포지터리의 하위 디렉토리를 또 다른 Git 리포지터리와 연계하는 대표적인 방법은 Git Submodule 기법을 활용하는 것입니다. 이에 대해서는 다음을 참고하십시요 - [Git Submodule (from Atlassian)](https://www.atlassian.com/git/tutorials/git-submodule) /  [7.11 Git Tools - Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+
+> (주의)<br>
+> ```Dockerfile```내에서 Docker Hub의 Base Image를 참조할 경우 Throttling 관련 에러가 발생할 수 있습니다.<br>
+> 이 경우 AWS Public ECR로 Base Image 경로를 수정하면 됩니다.
+
 ```bash
 # 0. Git 초기화
 cd ~/environment/m2m-travelbuddy

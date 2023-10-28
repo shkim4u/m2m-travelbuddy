@@ -337,3 +337,4 @@ terraform.log
 # [2023-10-26] For Riches (Bank) vulnerable application testing.
 !riches.war
 !**/local-libs-repository/**/*.jar
+!AC_RunActiveContent.js
