@@ -16,6 +16,9 @@ RUN mvn -f pom.xml clean package
 FROM tomcat:9-jdk11
 #FROM public.ecr.aws/docker/library/tomcat:9.0-jre11
 
+RUN locale-gen ko_KR.UTF-8
+ENV LC_ALL ko_KR.UTF-8
+
 COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/riches.war
 # (Optional) Make the "/travelbuddy/" path to root "/" with root healthcheck.
 #COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/ROOT.war

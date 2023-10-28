@@ -1,4 +1,5 @@
 <%@ include file="../pages/common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -18,10 +19,10 @@
 		<td colspan="2">
 			<table cellpadding="0" cellspacing="0" border="0">
 				<tr valign="middle">
-					<td id="utilities" align="right"><a >Find Locations</a> | <a >Contact Us</a> | <a >Site Map</a>&nbsp;</td>
+					<td id="utilities" align="right"><a >위치 검색</a> | <a >담당자 문의</a> | <a >사이트 맵</a>&nbsp;</td>
 					<td id="search" align="right" >
                         <form id="search" action="" method="get" >
-							<input type="text" size="28" maxlength="75" name="query" id="searchbox" title="Search" height="24" align="absmiddle" />
+							<input type="text" size="28" maxlength="75" name="query" id="searchbox" title="검색" height="24" align="absmiddle" />
 							<input type="image" src="<s:url value="/img/btn_search_white.gif" includeParams="none"/>" alt="Search" name="searchBtn" id="searchbtn"  align="absmiddle" disabled/>
 						</form>
                     </td>
@@ -36,10 +37,10 @@
 		<td colspan="2">
 			<table cellpadding="0" cellspacing="0" border="0" align="right">
 				<tr valign="top">
-					<td><a  title="Personal Banking Services">Personal</a></td>
-					<td><a  title="Small Business. Serving businesses with up to $20 million in annual revenue">Small Business</a></td>
-					<td><a  title="Commercial. Serving businesses with over $20 million in annual revenue">Commercial</a></td>
-					<td><a  title="Information About RWi">About RWi</a></td>
+					<td><a  title="개인 뱅킹 서비스">개인</a></td>
+					<td><a  title="중소 기업. 연간 매출 최대 200억원 이하 중소 기업 대상 서비스">중소 기업</a></td>
+					<td><a  title="커머셜. 연간 매출 200억원 초과 기업 대상 서비스">커머셜</a></td>
+					<td><a  title="RWI 정보">RWI에 대하여</a></td>
 				</tr>
 			</table>
 		</td>
@@ -99,9 +100,9 @@
                             <tr valign="top" class="footer">
                                 <td colspan="3">
                                     <br />
-                                    <p id="footerNav"><a >About RWi</a> | <a >Careers</a> | <a >Privacy, Security &amp; Legal</a> | <a >Report Email Fraud</a> | <a >Diversity &amp; Accessibility</a>  <br /><a >Important Notice on Trading in Fast Markets</a> | <a >Online Access Agreement (3/06/2008) </a> | <a >Sitemap</a></p>
+                                    <p id="footerNav"><a >RWI에 대하여</a> | <a >커리어</a> | <a >개인 정보, 보안 및 법적 보호</a> | <a >이메일 사기 신고</a> | <a >다양성 및 접근성</a>  <br /><a >거래에 관한 중요 공지</a> | <a >온라인 접근에 관한 협의 (2008/03/06) </a> | <a >사이트 맵</a></p>
                                 </td>
-                            </tr>                            
+                            </tr>
                         </table>
                     </td>
                 </tr>
@@ -109,7 +110,7 @@
 			<table cellpadding="0" cellspacing="0" border="0" align="center">
 				<tr valign="top">
 					<td>
-						<p id="copy"><img src="<s:url value="/img/al_ehl_house_gen.gif" includeParams="none"/>" alt="" width="14" height="10" style="padding:0 5px 0 15px" /><strong style="color:#000">Equal Housing Lender</strong><br />RWi, Member FDIC. &copy; 2008 RWI. All rights reserved. </p>
+						<p id="copy"><img src="<s:url value="/img/al_ehl_house_gen.gif" includeParams="none"/>" alt="" width="14" height="10" style="padding:0 5px 0 15px" /><strong style="color:#000">차별없는 주택 금융</strong><br />RWI - 금융거래위원회 회원 &copy; 2018 RWI. All rights reserved. </p>
 					</td>
 				</tr>
 			</table>

@@ -1,4 +1,5 @@
 <%@ include file="/pages/common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <!-- header -->
 	<tr>

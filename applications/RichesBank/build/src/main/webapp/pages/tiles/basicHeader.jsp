@@ -1,4 +1,5 @@
 <%@ include file="../common/moduleInclude.jsp" %>
+<%@ page language="java" pageEncoding="UTF-8" %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -18,7 +19,7 @@
         <td colspan="2">
             <table cellpadding="0" cellspacing="0" border="0">
                 <tr valign="middle">
-                    <td id="utilities" align="right"><a href="/riches/">Bank Home</a> | <a href="<s:url action="FindLocations.action" includeParams="none"/>">Find Locations</a> | <a >Contact Us</a> | <a >Site Map</a>&nbsp;</td>
+                    <td id="utilities" align="right"><a href="/riches/">Bank Home</a> | <a href="<s:url action="FindLocations.action" includeParams="none"/>">위치 검색</a> | <a >담당자 문의</a> | <a >사이트 맵</a>&nbsp;</td>
                     <td id="search" align="right" >
                         <form id="search" action="" method="get" >
                             <input type="text" size="28" maxlength="75" name="query" id="searchbox" title="Search" height="24" align="absmiddle" />
@@ -37,10 +38,10 @@
         <td colspan="2">
             <table cellpadding="0" cellspacing="0" border="0" align="right">
                 <tr valign="top">
-                    <td><a title="Personal Banking Services">Personal</a></td>
-                    <td><a title="Small Business. Serving businesses with up to $20 million in annual revenue">Small Business</a></td>
-                    <td><a title="Commercial. Serving businesses with over $20 million in annual revenue">Commercial</a></td>
-                    <td><a title="Information About RWi">About RWi</a></td>
+                    <td><a  title="개인 뱅킹 서비스">개인</a></td>
+                    <td><a  title="중소 기업. 연간 매출 최대 200억원 이하 중소 기업 대상 서비스">중소 기업</a></td>
+                    <td><a  title="커머셜. 연간 매출 200억원 초과 기업 대상 서비스">커머셜</a></td>
+                    <td><a  title="RWI 정보">RWI에 대하여</a></td>
                 </tr>
             </table>
         </td>
