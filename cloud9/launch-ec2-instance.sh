@@ -15,7 +15,8 @@ aws ec2 run-instances \
     --instance-type m5.xlarge \
     --subnet-id ${SUBNET_ID} \
     --block-device-mappings "[{\"DeviceName\":\"/dev/sdf\",\"Ebs\":{\"VolumeSize\":30,\"DeleteOnTermination\":false}}]" \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server}]' 'ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk}]'
+    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server}]' 'ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk}]' \
+    --no-cli-pager
 
 # AdministratorAccess 권한이 부여된 Trust Relationship Policy (from GitHub, shared with Cloud9).
 export EC2_INSTANCE_ROLE_POLICY_DOCUMENT=`curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/cloud9-admin-role-trust-policy.json`
@@ -25,7 +26,7 @@ echo $EC2_INSTANCE_ROLE_POLICY_DOCUMENT
 aws iam create-role --role-name ec2-admin --assume-role-policy-document "${EC2_INSTANCE_ROLE_POLICY_DOCUMENT}"
 aws iam attach-role-policy --role-name ec2-admin --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
 
-# Cloud9 인스턴스 프로파일 생성
+# EC2 인스턴스 프로파일 생성
 aws iam create-instance-profile --instance-profile-name ec2-admin-instance-profile
 aws iam add-role-to-instance-profile --role-name ec2-admin --instance-profile-name ec2-admin-instance-profile
 
