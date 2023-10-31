@@ -18,7 +18,7 @@ aws ec2 run-instances \
     --instance-type m5.xlarge \
     --subnet-id ${SUBNET_ID} \
     --block-device-mappings "[{\"DeviceName\":\"/dev/sdf\",\"Ebs\":{\"VolumeSize\":30,\"DeleteOnTermination\":false}}]" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server-${DTTM}}]" "ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk-${DTTM}}]" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server-$DTTM}]" "ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk-$DTTM}]" \
     --no-cli-pager
 
 # AdministratorAccess 권한이 부여된 Trust Relationship Policy (from GitHub, shared with Cloud9).
