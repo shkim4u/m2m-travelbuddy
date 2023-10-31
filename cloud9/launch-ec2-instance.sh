@@ -9,13 +9,16 @@ export QUOTED_VPC_ID=\'${VPC_ID}\'
 export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone=='ap-northeast-2a')].SubnetId" --output text`
 echo $SUBNET_ID
 
+DTTM=`date "+%Y%m%d%H%M%S"`
+echo $DTTM
+
 aws ec2 run-instances \
     --image-id resolve:ssm:/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2 \
     --count 1 \
     --instance-type m5.xlarge \
     --subnet-id ${SUBNET_ID} \
     --block-device-mappings "[{\"DeviceName\":\"/dev/sdf\",\"Ebs\":{\"VolumeSize\":30,\"DeleteOnTermination\":false}}]" \
-    --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server}]' 'ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk}]' \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=appsec-demo-server-${DTTM}]" "ResourceType=volume,Tags=[{Key=Name,Value=appsec-demo-server-disk-${DTTM}]" \
     --no-cli-pager
 
 # AdministratorAccess 권한이 부여된 Trust Relationship Policy (from GitHub, shared with Cloud9).
@@ -31,9 +34,9 @@ aws iam create-instance-profile --instance-profile-name ec2-admin-instance-profi
 aws iam add-role-to-instance-profile --role-name ec2-admin --instance-profile-name ec2-admin-instance-profile
 
 # EC2 인스턴스가 셩성되는 것을 확인.
-EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*appsec-demo-server*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*appsec-demo-server-${DTTM}*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
 while [[ -z "${EC2_INSTANCE_ID}" ]]; do
-  EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*appsec-demo-server*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
+  EC2_INSTANCE_ID=$(aws ec2 describe-instances --filters Name=tag:Name,Values="*appsec-demo-server-${DTTM}*" Name=instance-state-name,Values=running --query "Reservations[*].Instances[*].InstanceId" --output text)
   echo "EC2 instance is not yet created. Waiting for 5 seconds..."
   sleep 5
 done
