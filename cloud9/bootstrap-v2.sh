@@ -20,10 +20,13 @@ aws iam add-role-to-instance-profile --role-name AWSCloud9SSMAccessRole --instan
 export VPC_ID=`aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text`
 echo $VPC_ID
 
+# Region 조회
+export AWS_REGION=`aws ec2 describe-availability-zones --output text --query "AvailabilityZones[0].[RegionName]"` && echo $AWS_REGION
+
 # 서브넷 조회
 export QUOTED_VPC_ID=\'${VPC_ID}\'
 #aws ec2 describe-subnets --filter "Name=vpc-id,Values=${QUOTED_VPC_ID}"
-export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone=='ap-northeast-2a')].SubnetId" --output text`
+export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone==\"${AWS_REGION}a\")].SubnetId" --output text`
 echo $SUBNET_ID
 
 # 우선 Workshop Studio 콘솔에서 "Get AWS CLI credentials"를 통해 AWS Credentials 환경 변수를 설정한 후 실행할 것.
