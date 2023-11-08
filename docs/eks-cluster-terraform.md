@@ -34,7 +34,7 @@ hash -d aws
 cd ~/environment/m2m-travelbuddy/infrastructure-terraform
 
 # 1. Configure Terraform workspace and Private Certificate Authority.
-. ./configure.sh travelbuddy-prod
+. ./configure.sh travelbuddy-prod ap-northeast-2
 
 echo $TF_VAR_ca_arn
 ```

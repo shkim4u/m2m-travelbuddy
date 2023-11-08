@@ -219,7 +219,7 @@ resource "null_resource" "kubeconfig" {
     command = <<EOT
       set -e
       echo 'Adding ./kube/config context for the Amazon EKS cluster...'
-      aws eks wait cluster-active --name '${var.cluster_name}'
+      aws eks wait cluster-active --name ${var.cluster_name} --region=${var.region}
       aws eks update-kubeconfig --name ${var.cluster_name} --alias ${var.cluster_name} --region=${var.region} --role-arn ${aws_iam_role.cluster_admin.arn}
     EOT
   }

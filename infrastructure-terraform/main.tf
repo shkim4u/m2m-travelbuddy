@@ -78,3 +78,10 @@ module "msk" {
 module "frontend" {
   source = "./modules/frontend"
 }
+
+###
+### [2023-11-07] WAFv2
+###
+module "wafv2" {
+  source = "./modules/wafv2"
+}
