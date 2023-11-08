@@ -86,7 +86,7 @@ module "cronjob_awscli_irsa" {
 resource "kubernetes_service_account" "cronjob_awscli_irsa" {
   metadata {
     name = var.service_account_name
-    namespace = local.namespace
+    namespace = kubernetes_namespace.batch.metadata[0].name
     annotations = {
       "eks.amazonaws.com/role-arn" = module.cronjob_awscli_irsa.iam_role_arn
       # [2023-08-27] Testing for cross-account IRSA.
@@ -105,7 +105,7 @@ resource "kubernetes_service_account" "cronjob_awscli_irsa" {
 resource "kubernetes_cron_job_v1" "awscli_irsa" {
   metadata {
     name = "${local.name}-irsa"
-    namespace = local.namespace
+    namespace = kubernetes_namespace.batch.metadata[0].name
     labels = {
       app = "${local.name}-irsa"
     }
