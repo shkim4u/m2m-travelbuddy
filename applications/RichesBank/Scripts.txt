@@ -11,3 +11,46 @@ docker ps
 
 # 로그 확인
 docker logs riches
+
+---
+
+1. Build container image with SpotBugs.
+cat Dockerfile-spotbugs | docker build -t riches -f - .
+
+2. Run container to copy the output SpotBugs files (XML and SARIF formats).
+
+!!! Use This !!!
+docker run -it --rm riches:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml > spotbugs.xml
+docker run -it --rm riches:latest cat /usr/local/tomcat/webapps/spotbugs-sarif.json > spotbugs.json
+
+You can't directly copy a file from a Docker container to a local machine using Docker's "docker run" command. However, you can use Docker Compose or Kubernetes to manage Docker containers, copy files, and run applications. To copy a file from a Docker container to a local machine, you can mount a shared folder, copy the file, and use the "docker cp" command to transfer the file between the container and the local machine. However, this requires more advanced setup and configuration.
+
+
+docker run --rm -v .:/ -t riches:latest cp /usr/local/tomcat/webapps/spotbugs-xml.xml spotbugs.xml && cp /usr/local/tomcat/webapps/spotbugs-sarif.json spotbubgs.json
+
+OR run and then copy with this.
+docker run -it --rm riches:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml
+
+
+3. Copy SpotBugs XML and SARIF files.
+docker cp 838b47bc7980:/usr/local/tomcat/webapps/spotbugs-xml.xml spotbugs-xml.xml
+docker cp 838b47bc7980:/usr/local/tomcat/webapps/spotbugs-sarif.json spotbugs-sarif.json
+
+4. SARIF viewer
+sarif summary spotbugs-sarif.json
+
+error: 0
+
+warning: 18
+ - CIPHER_INTEGRITY Cipher with no integrity: 3
+ - PATH_TRAVERSAL_IN Potential Path Traversal (file read): 3
+ - HARD_CODE_KEY Hard coded key: 2
+ - PREDICTABLE_RANDOM Predictable pseudorandom number generator: 2
+ - SQL_INJECTION_JDBC Potential JDBC Injection: 2
+ - COMMAND_INJECTION Potential Command Injection: 2
+ - ECB_MODE ECB mode is insecure: 1
+ - SQL_NONCONSTANT_STRING_PASSED_TO_EXECUTE Nonconstant string passed to execute or addBatch method on an SQL statement: 1
+ - SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING A prepared statement is generated from a nonconstant String: 1
+ - XXE_DOCUMENT XML parsing vulnerable to XXE (DocumentBuilder): 1
+
+note: 0

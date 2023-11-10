@@ -10,11 +10,18 @@ COPY rulesets /app/rulesets
 # RUN mvn dependency:go-offline
 
 COPY src ./src
-RUN mvn -f pom.xml clean compile package
+#RUN mvn -f pom.xml -Dmaven.compiler.debug=true -Dmaven.compiler.debuglevel=lines,vars,source clean compile test spotbugs:spotbugs package
+RUN mvn -f pom.xml clean compile spotbugs:spotbugs package
 #RUN mvn -f pom-spotbugs.xml spotbugs:spotbugs site
-RUN mvn -f pom.xml spotbugs:spotbugs
+
+#RUN mvn -f pom.xml spotbugs:spotbugs
+
+#RUN mvn -f pom.xml site
 # RUN mvn -f pom.xml com.github.spotbugs:spotbugs-maven-plugin:4.8.0:spotbugs
 
+#RUN echo $(ls -al /app/target/site)
+
+#RUN file="$(ls -al /app/target/site)" && echo $file
 
 # 컨테이너 이미지 빌드 스테이지
 # 하지만 아래 소스 이미지가 최선일까요?
@@ -27,7 +34,9 @@ ENV LC_ALL ko_KR.UTF-8
 COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/riches.war
 # (Optional) Make the "/travelbuddy/" path to root "/" with root healthcheck.
 #COPY --from=build /app/target/\*.war /usr/local/tomcat/webapps/ROOT.war
-COPY --from=build /app/target/spotbugsXml.xml /usr/local/tomcat/webapps/riches-spotbugs.xml
+COPY --from=build /app/target/spotbugsXml.xml /usr/local/tomcat/webapps/spotbugs-xml.xml
+COPY --from=build /app/target/spotbugsSarif.json /usr/local/tomcat/webapps/spotbugs-sarif.json
+#COPY --from=build /app/target/site/index.html /usr/local/tomcat/webapps/site/index.html
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]

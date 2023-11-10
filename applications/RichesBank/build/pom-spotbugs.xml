@@ -16,7 +16,7 @@
         <log4j.version>2.16.0</log4j.version>
         <aws.xray-version>2.10.0</aws.xray-version>
         <spotbugs.maven.plugin.version>4.7.3.6</spotbugs.maven.plugin.version>
-        <spotbugs.version>4.8.0</spotbugs.version>
+        <spotbugs.version>4.8.1</spotbugs.version>
     </properties>
 
     <repositories>
@@ -331,8 +331,11 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+<!--                    https://spotbugs.github.io/spotbugs-maven-plugin/spotbugs-mojo.html-->
                     <includeFilterFile>rulesets/spotbugs-security-include.xml</includeFilterFile>
                     <excludeFilterFile>rulesets/spotbugs-security-exclude.xml</excludeFilterFile>
+                    <xmlOutput>true</xmlOutput>
+                    <sarifOutput>true</sarifOutput>
                     <plugins>
                         <plugin>
                             <groupId>com.h3xstream.findsecbugs</groupId>
@@ -342,6 +345,29 @@
                     </plugins>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+<!--                        <phase>package</phase>-->
+<!--                        <phase>verify</phase>-->
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
 
         <resources>
@@ -358,24 +384,24 @@
         <finalName>riches</finalName>
     </build>
 
-    <reporting>
-        <plugins>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${spotbugs.maven.plugin.version}</version>
-                <configuration>
-                    <includeFilterFile>rulesets/spotbugs-security-include.xml</includeFilterFile>
-                    <excludeFilterFile>rulesets/spotbugs-security-exclude.xml</excludeFilterFile>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.12.0</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
-            </plugin>
-        </plugins>
-    </reporting>
+<!--    <reporting>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>com.github.spotbugs</groupId>-->
+<!--                <artifactId>spotbugs-maven-plugin</artifactId>-->
+<!--                <version>${spotbugs.maven.plugin.version}</version>-->
+<!--                <configuration>-->
+<!--                    <includeFilterFile>rulesets/spotbugs-security-include.xml</includeFilterFile>-->
+<!--                    <excludeFilterFile>rulesets/spotbugs-security-exclude.xml</excludeFilterFile>-->
+<!--                    <plugins>-->
+<!--                        <plugin>-->
+<!--                            <groupId>com.h3xstream.findsecbugs</groupId>-->
+<!--                            <artifactId>findsecbugs-plugin</artifactId>-->
+<!--                            <version>1.12.0</version>-->
+<!--                        </plugin>-->
+<!--                    </plugins>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </reporting>-->
 </project>

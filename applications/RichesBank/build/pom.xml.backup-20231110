@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.aws.proserve.korea.appsec</groupId>
     <artifactId>riches</artifactId>
@@ -15,8 +15,6 @@
         <jackson.version>1.9.10</jackson.version>
         <log4j.version>2.16.0</log4j.version>
         <aws.xray-version>2.10.0</aws.xray-version>
-        <spotbugs.maven.plugin.version>4.7.3.6</spotbugs.maven.plugin.version>
-        <spotbugs.version>4.8.1</spotbugs.version>
     </properties>
 
     <repositories>
@@ -264,21 +262,6 @@
             <artifactId>json</artifactId>
             <version>20180130</version>
         </dependency>
-
-        <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-        <!--<dependency>-->
-        <!--    <groupId>com.github.spotbugs</groupId>-->
-        <!--    <artifactId>spotbugs</artifactId>-->
-        <!--    <version>${spotbugs.version}</version>-->
-        <!--</dependency>-->
-
-        <!-- https://mvnrepository.com/artifact/com.github.spotbugs/spotbugs-maven-plugin -->
-        <!--<dependency>-->
-        <!--    <groupId>com.github.spotbugs</groupId>-->
-        <!--    <artifactId>spotbugs-maven-plugin</artifactId>-->
-        <!--    <version>${spotbugs.maven.plugin.version}</version>-->
-        <!--</dependency>-->
-
     </dependencies>
 
     <build>
@@ -317,55 +300,6 @@
                     <mainClass>org.test.int1.Main</mainClass>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>${spotbugs.maven.plugin.version}</version>
-                <dependencies>
-                    <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-                    <dependency>
-                        <groupId>com.github.spotbugs</groupId>
-                        <artifactId>spotbugs</artifactId>
-                        <version>${spotbugs.version}</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <!--                    https://spotbugs.github.io/spotbugs-maven-plugin/spotbugs-mojo.html-->
-                    <includeFilterFile>rulesets/spotbugs-security-include.xml</includeFilterFile>
-                    <excludeFilterFile>rulesets/spotbugs-security-exclude.xml</excludeFilterFile>
-                    <xmlOutput>true</xmlOutput>
-                    <sarifOutput>true</sarifOutput>
-                    <plugins>
-                        <plugin>
-                            <groupId>com.h3xstream.findsecbugs</groupId>
-                            <artifactId>findsecbugs-plugin</artifactId>
-                            <version>1.12.0</version>
-                        </plugin>
-                    </plugins>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.11</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
 
         <resources>

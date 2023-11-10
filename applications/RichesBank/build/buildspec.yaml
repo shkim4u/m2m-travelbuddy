@@ -12,6 +12,10 @@ phases:
     commands:
       - apt-get update
       - apt-get install -y jq
+      - apt-get install -y cloc
+      - apt-get install -y bc
+      - pip install sarif-tools
+      - sarif --version
   pre_build:
     commands:
       - echo "Print awscli version"
@@ -43,6 +47,21 @@ phases:
         docker images
         docker tag $ECR_REPO_URI:latest $ECR_REPO_URI:$IMAGE_TAG
       - |
+        echo "### Checking quality and security metrics ###"
+        echo "# Just printing some crucial metrics for now, with more coming soon..."
+        docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml > spotbugs.xml
+        docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-sarif.json > spotbugs.json
+        export LOC=$(cloc src | grep SUM | awk '{print $5}')
+        echo "# LOC: "
+        echo ${LOC}
+        echo "# SpotBugs SARIF summary as follows. This information are combined with LOC to calculate NVS (Normalized Vulnerability Score) in the next step."
+        export SARIF_SUMMARY=$(sarif summary spotbugs.json) && echo $SARIF_SUMMARY
+        export ERRORS=$(echo ${SARIF_SUMMARY} | awk -F 'error: ' '{print $2}' | awk '{print $1}') && echo $ERRORS
+        export WARNINGS=$(echo ${SARIF_SUMMARY} | awk -F 'warning: ' '{print $2}' | awk '{print $1}') && echo $WARNINGS
+        export NOTES=$(echo ${SARIF_SUMMARY} | awk -F 'note: ' '{print $2}' | awk '{print $1}') && echo $NOTES
+        export NVS=$(./calculate_nvs.sh ${ERRORS} ${WARNINGS} ${NOTES} ${LOC} | grep "NVS:" | awk '{print $2}')
+        echo "# NVS: ${NVS}"
+      - |
         echo "### Pushing Container Image ###"
         docker push $ECR_REPO_URI:latest
         docker push $ECR_REPO_URI:$IMAGE_TAG
@@ -69,6 +88,8 @@ phases:
 artifacts:
   files:
     - build_output.txt
+    - spotbugs.xml
+    - spotbugs.json
 #    - interface/build/libs/flightspecials.jar
 #cache:
 #  paths:
