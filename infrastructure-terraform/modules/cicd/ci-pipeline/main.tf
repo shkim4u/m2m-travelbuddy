@@ -157,6 +157,22 @@ resource "aws_codebuild_project" "build" {
       name = "ECR_REPO_URI"
       value = var.ecr_repository_url
     }
+    environment_variable {
+      name  = "WEIGHTED_ERRORS"
+      value = "10"
+    }
+    environment_variable {
+      name  = "WEIGHTED_WARNINGS"
+      value = "3"
+    }
+    environment_variable {
+      name  = "WEIGHTED_NOTES"
+      value = "1"
+    }
+    environment_variable {
+      name  = "LOC_SCALER"
+      value = "1000"
+    }
   }
 
   source {

@@ -152,6 +152,12 @@ module "eks" {
       labels         = {
         ondemand = "true"
       }
+      update_config = {
+        # Refer to: https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest/submodules/eks-managed-node-group
+        # This is the default.
+        "max_unavailable_percentage": 33
+#        "max_unavailable" = "1"
+      }
     }
   }
 

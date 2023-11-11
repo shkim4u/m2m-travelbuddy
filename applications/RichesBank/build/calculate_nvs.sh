@@ -17,11 +17,11 @@ echo "Warnings: $WARNINGS"
 echo "Notes: $NOTES"
 echo "Lines of Code: $LOC"
 
-# TODO: Parameter Store와 같은 외부 환경 저장소로부터 읽어올 것.
-WEIGHT_ERROR=10
-WEIGHT_WARNING=3
-WEIGHT_NOTE=1
-LOC_SCALER=1000
+# Each weight per pipeline or build environment variables.
+: "${WEIGHT_ERROR:=10}"
+: "${WEIGHT_WARNING:=3}"
+: "${WEIGHT_NOTE:=1}"
+: "${LOC_SCALER:=1000}"
 
 WEIGHTED_ERRORS=$((ERRORS * $WEIGHT_ERROR))
 WEIGHTED_WARNINGS=$((WARNINGS * $WEIGHT_WARNING))
