@@ -36,7 +36,7 @@ export AWS_REGION=`aws ec2 describe-availability-zones --output text --query "Av
 
 # 서브넷 조회
 export QUOTED_VPC_ID=\'${VPC_ID}\'
-export QUOTED_AZa=\'{AWS_REGION}a\'
+export QUOTED_AZa=\'${AWS_REGION}a\'
 #aws ec2 describe-subnets --filter "Name=vpc-id,Values=${QUOTED_VPC_ID}"
 export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone==${QUOTED_AZa})].SubnetId" --output text` && echo $SUBNET_ID
 
