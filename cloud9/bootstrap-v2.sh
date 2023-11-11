@@ -25,13 +25,13 @@ export AWS_REGION=`aws ec2 describe-availability-zones --output text --query "Av
 
 # 서브넷 조회
 export QUOTED_VPC_ID=\'${VPC_ID}\'
+export QUOTED_AZa=\'${AWS_REGION}a\'
 #aws ec2 describe-subnets --filter "Name=vpc-id,Values=${QUOTED_VPC_ID}"
-export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone==\"${AWS_REGION}a\")].SubnetId" --output text`
-echo $SUBNET_ID
+export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VPC_ID} && AvailabilityZone==${QUOTED_AZa})].SubnetId" --output text` && echo $SUBNET_ID
 
 # 우선 Workshop Studio 콘솔에서 "Get AWS CLI credentials"를 통해 AWS Credentials 환경 변수를 설정한 후 실행할 것.
 #aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type c5.9xlarge --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
-aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type m5.4xlarge --subnet-id ${SUBNET_ID} --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
+aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type m5.4xlarge --subnet-id "${SUBNET_ID}" --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
 
 # AdministratorAccess 권한이 부여된 Trust Relationship Policy (from GitHub).
 export CLOUD9_INSTANCE_ROLE_POLICY_DOCUMENT=`curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9/cloud9-admin-role-trust-policy.json`
