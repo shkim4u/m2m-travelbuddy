@@ -73,29 +73,23 @@ IAM 인증자의 동작 원리를 좀 더 자세하게 설명하는 그림과 �
 
 2. 실제로 ```aws eks get-token --cluster <클러스터 이름> [--role <AWS IAM Role ARN>]``` 명령을 수행해 봄으로써 반환되는 토큰값 (서명된 요청 URL; Presigned Request URL)을 살펴봅니다.<br>
    ```bash
-   # Region 및 Account ID 설정
-   export AWS_REGION=ap-northeast-2
-   export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text) && echo $AWS_ACCOUNT_ID
-
-   # EKS 클러스터 이름 및 ARN 설정
+   # EKS 클러스터 이름 설정
    export CLUSTER_NAME=M2M-EksCluster
-   export CLUSTER_ARN="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT_ID}:cluster/${CLUSTER_NAME}" && echo $CLUSTER_ARN
    
-   # ~/.kube/config 파일 내의 해당 클러스터에 설정된 사용자 확인
-   #kubectl config view -o=jsonpath='{.users}' | jq #(Deprecated)
-   export CLUSTER_USER=$(kubectl config view -o jsonpath="{.contexts[?(.context.cluster==\"$CLUSTER_ARN\")].context.user}") && echo $CLUSTER_USER
+   # (정보 확인) kubeconfig에 설정된 전체 사용자 확인
+   kubectl config view -o=jsonpath='{.users}' | jq
    
-   # 위에서 확인된 사용자의 설정된 Credential Plugin (aws eks get-token) 확인 및 실행
+   # (정보 확인) 위에서 확인된 사용자 중 첫번째 사용자에 설정된 Credential Plugin (aws eks get-token) 확인 및 실행
    # 해당 명령은 "서명된 요청 URL (Presigned Request URL)"을 토큰값으로 반환
-   export AWS_EKS_EXEC_COMMAND=$(kubectl config view -o=jsonpath="{.users[?(.name==\"$CLUSTER_USER\")].user.exec.command}") && echo $AWS_EKS_EXEC_COMMAND
-   export AWS_EKS_EXEC_ARGS=$(kubectl config view -o=jsonpath="{.users[?(.name==\"$CLUSTER_USER\")].user.exec.args[*]}") && echo $AWS_EKS_EXEC_ARGS
-   export AWS_EKS_TOKEN_COMMAND="${AWS_EKS_EXEC_COMMAND} ${AWS_EKS_EXEC_ARGS}" && echo $AWS_EKS_TOKEN_COMMAND
-   bash -c ${AWS_EKS_TOKEN_COMMAND}
+   export AWS_EKS_TOKEN_COMMAND=$(kubectl config view -o=jsonpath='{.users[0].user.exec.command} {.users[0].user.exec.args[*]}')
+   echo $AWS_EKS_TOKEN_COMMAND
+   ${AWS_EKS_TOKEN_COMMAND}
    
    # 반환되는 토큰값 (서명된 요청 URL)을 환경변수로 저장 - Base64로 인코딩된 부분만 발췌
    # (참고) 실제로 ```kubectl```로 전달되는 값은 토큰의 전체 값이며, 여기서는 확인을 위해 Base64 인코됭된 부분만 발췌
    # export TOKEN=$(${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token' | grep -oP '(?<=k8s-aws-v1.).*')
-   export TOKEN=$(bash -c ${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token' | sed "s/\"//g" | sed "s/k8s-aws-v1\.//g") && echo $TOKEN
+   export TOKEN=$(${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token' | sed "s/\"//g" | sed "s/k8s-aws-v1\.//g")
+   echo $TOKEN
    ```
    
    ![](./assets/aws-eks-get-token-01.png)
@@ -153,36 +147,29 @@ IAM 인증자의 동작 원리를 좀 더 자세하게 설명하는 그림과 �
 > ```kubectl get pods --v=8```
 
 ```bash
-# Region 및 Account ID 설정
-export AWS_REGION=ap-northeast-2
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query 'Account' --output text) && echo $AWS_ACCOUNT_ID
-
-# EKS 클러스터 이름 및 ARN 설정
+# EKS 클러스터 이름 설정
 export CLUSTER_NAME=M2M-EksCluster
-export CLUSTER_ARN="arn:aws:eks:${AWS_REGION}:${AWS_ACCOUNT_ID}:cluster/${CLUSTER_NAME}" && echo $CLUSTER_ARN
 
-# ~/.kube/config 파일 내의 해당 클러스터에 설정된 사용자 확인
-#kubectl config view -o=jsonpath='{.users}' | jq #(Deprecated)
-export CLUSTER_USER=$(kubectl config view -o jsonpath="{.contexts[?(.context.cluster==\"$CLUSTER_ARN\")].context.user}") && echo $CLUSTER_USER
+# (정보 확인) kubeconfig에 설정된 전체 사용자 확인
+kubectl config view -o=jsonpath='{.users}' | jq
 
-# 위에서 확인된 사용자의 설정된 Credential Plugin (aws eks get-token) 확인 및 실행
+# (정보 확인) 위에서 확인된 사용자 중 첫번째 사용자에 설정된 Credential Plugin (aws eks get-token) 확인 및 실행
 # 해당 명령은 "서명된 요청 URL (Presigned Request URL)"을 토큰값으로 반환
-export AWS_EKS_EXEC_COMMAND=$(kubectl config view -o=jsonpath="{.users[?(.name==\"$CLUSTER_USER\")].user.exec.command}") && echo $AWS_EKS_EXEC_COMMAND
-export AWS_EKS_EXEC_ARGS=$(kubectl config view -o=jsonpath="{.users[?(.name==\"$CLUSTER_USER\")].user.exec.args[*]}") && echo $AWS_EKS_EXEC_ARGS
-export AWS_EKS_TOKEN_COMMAND="${AWS_EKS_EXEC_COMMAND} ${AWS_EKS_EXEC_ARGS}" && echo $AWS_EKS_TOKEN_COMMAND
-bash -c ${AWS_EKS_TOKEN_COMMAND}
+export AWS_EKS_TOKEN_COMMAND=$(kubectl config view -o=jsonpath='{.users[0].user.exec.command} {.users[0].user.exec.args[*]}')
+echo $AWS_EKS_TOKEN_COMMAND
+${AWS_EKS_TOKEN_COMMAND}
 
-# 반환되는 토큰값 (서명된 요청 URL)을 환경변수로 저장 - Base64로 인코딩된 부분만 발췌
-# (참고) 실제로 ```kubectl```로 전달되는 값은 토큰의 전체 값이며, 여기서는 확인을 위해 Base64 인코됭된 부분만 발췌
-# export TOKEN=$(${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token' | grep -oP '(?<=k8s-aws-v1.).*')
-export TOKEN=$(bash -c ${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token' | sed "s/\"//g" | sed "s/k8s-aws-v1\.//g") && echo $TOKEN
+# 반환되는 토큰값 (서명된 요청 URL)을 환경변수로 저장 - 이번에는 Base64로 인코딩된 부분만 발췌하는 것이 아닌 전체 반환값을 저장한다.
+export TOKEN=$(${AWS_EKS_TOKEN_COMMAND} | jq -r '.status.token')
+echo $TOKEN
 
 ### 여기까지가 "kubectl" 호출 시 kubeconfig 내에 설정된 Credential Pluging이 수행되는 과정이다.
 
 ### 아래부터가 kubectl 내에서 실제로 수행되는 작업이다.
 
 # Kubernetes API 서버 주소를 확인하고 환경변수로 지정 
-export K8S_API_SERVER=$(kubectl config view -o jsonpath="{.clusters[?(@.name==\"$CLUSTER_ARN\")].cluster.server}") && echo $K8S_API_SERVER
+export K8S_API_SERVER=$(kubectl config view -o=jsonpath='{.clusters[*].cluster.server}')
+echo $K8S_API_SERVER
 
 # Namespace 조회 보는 API 호출
 curl -k -X GET -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" $K8S_API_SERVER/api/v1/namespaces

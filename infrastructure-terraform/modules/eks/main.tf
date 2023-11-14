@@ -158,6 +158,7 @@ module "eks" {
         "max_unavailable_percentage": 33
 #        "max_unavailable" = "1"
       }
+      force_update_version = true
     }
   }
 

@@ -9,8 +9,10 @@ aws sts get-caller-identity --query Arn | grep cloud9-admin
 ## 2.1. Kubectl
 # 설치
 echo "2.1. Installing kubectl..."
-sudo curl -o /usr/local/bin/kubectl  \
-   https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+#sudo curl -o /usr/local/bin/kubectl  \
+#   https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
+sudo curl -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.1/2023-09-14/bin/linux/amd64/kubectl
+
 # 실행 모드 변경
 sudo chmod +x /usr/local/bin/kubectl
 # 설치 확인
