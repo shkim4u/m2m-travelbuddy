@@ -11,7 +11,7 @@
 Kubernetes용 AWS IAM 인증자는 모든 Kubernetes 클러스터에 설치할 수 있으며, AWS 클라우드와 온프레미스(Amazon EKS Anywhere)의 모든 EKS 클러스터에 기본적으로 설치되어 있습니다.<br>
 클러스터 인프라가 제공자에 의해 관리되는 경우, 최종 사용자는 API 서버 Pod를 포함한 컨트롤 플레인 리소스에 액세스할 수 없습니다. AWS IAM 인증자도 컨트롤 플레인에도 배포되기 때문에 최종 사용자는 관리형 EKS 클러스터의 리소스에 액세스할 수 없지만, CloudWatch에서 로그를 볼 수는 있습니다.
 
-이 설명 글은 AWS IAM 인증자 서버의 전체 백엔드 구현에 대해 자세히 설명하지는 않겠지만, 이 인증자 서버는 API 서버에서 토큰을 수신하고 이를 사용하여 일치하는 ID( 사용자 또는 역할) 세부 정보를 AWS STS (AWS Security Token Service)에 쿼리하는 핵심 구성 요소라는 점을 강조하고 싶습니다. 그런 다음, AWS IAM 인증자 서버는 매핑을 사용하여 AWS ID를 사용자 이름과 그룹이 있는 Kubernetes ID로 변환합니다. 매핑은 "aws-auth"라는 이름의 컨피그맵에 지정되며 클러스터 관리자가 편집할 수 있습니다. 이 컨피그맵의 내용과 구조에 대한 자세한 내용은 위에 적어드린 소스 코드를 살펴봄으로써 좀 더 깊이 파악할 수 있습니다. 또한 이해를 돕는 기본적인 [[AWS 문서]](https://docs.aws.amazon.com/eks/latest/userguide/cluster-auth.html)도 마련되어 있습니다. IAM 인증자 서버는 컨트롤 플레인 인스턴스에서 실행되며, EKS API 서버는 요청의 토큰을 AWS IAM 인증자 서버로 보내는 인증 웹훅 (Webhook)으로 구성됩니다.
+이 설명 글은 AWS IAM 인증자 서버의 전체 백엔드 구현에 대해 자세히 설명하지는 않겠지만, 이 인증자 서버는 API 서버에서 토큰을 수신하고 이를 사용하여 일치하는 ID (사용자 또는 역할) 세부 정보를 AWS STS (AWS Security Token Service)에 쿼리하는 핵심 구성 요소라는 점을 강조하고 싶습니다. 그런 다음, AWS IAM 인증자 서버는 매핑을 사용하여 AWS ID를 사용자 이름과 그룹이 있는 Kubernetes ID로 변환합니다. 매핑은 "aws-auth"라는 이름의 컨피그맵에 지정되며 클러스터 관리자가 편집할 수 있습니다. 이 컨피그맵의 내용과 구조에 대한 자세한 내용은 위에 적어드린 소스 코드를 살펴봄으로써 좀 더 깊이 파악할 수 있습니다. 또한 이해를 돕는 기본적인 [[AWS 문서]](https://docs.aws.amazon.com/eks/latest/userguide/cluster-auth.html)도 마련되어 있습니다. IAM 인증자 서버는 컨트롤 플레인 인스턴스에서 실행되며, EKS API 서버는 요청의 토큰을 AWS IAM 인증자 서버로 보내는 인증 웹훅 (Webhook)으로 구성됩니다.
 
 이 과정을 간략하게 나타낸 그림 및 순서에 대한 설명은 다음과 같습니다.
 ![](./assets/amazon-eks-authentication-flow-simple-frame.png)<br>
@@ -148,8 +148,8 @@ IAM 인증자의 동작 원리를 좀 더 자세하게 설명하는 그림과 �
    ![](./assets/kubernetes-cluster-admin-clusterrolebinding-02.png)<br>
 
 ### 2.2. Putting all thing together 
-위에서 설명된 과정을 결합하여 토큰 (서명된 요청 URL)을 쿠버메테스 ```API 서버``` 호출에 직접 사용해 보면 다음과 같다.<br>
-> (참고) ```kubectl``` 명령은 단계별 Verbosity를 제공하는데 (--v=<n> 옵션) 아래와 같은 방법으로 다른 수준의 실행 내용을 살펴볼 수 있다.<br>
+위에서 설명된 과정을 결합하여 토큰 (서명된 요청 URL)을 쿠버네테스 ```API 서버``` 호출에 직접 사용해 보면 다음과 같습니다.<br>
+> (참고) ```kubectl``` 명령은 단계별 Verbosity를 제공하는데 (--v=<n> 옵션) 아래와 같은 방법으로 Verbosity 별로 실행 내용을 살펴볼 수 있습니다.<br>
 > ```kubectl get pods --v=8```
 
 ```bash
@@ -192,7 +192,7 @@ curl -k -X GET -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/j
 ```
 
 ### 2.3. 결론 (Conclusion)
-```AWS IAM 인증자는``` 쿠버네테스 클러스터의 인증을 ```AWS IAM``` 체계와 결합시키는 가교 (Bridge) 역할을 수행한다. ```정확한 인증 정보를 제공하는 주체만을 선별하고, 또한 인증 정보 정촥한 주체는 반드시 인증됨을 보장하는``` (if and only if) 인증의 원칙을 따르려는 설계를 가지고 있다고 볼 수 있다.<br>
-```kubeconfig```의 Credential Plugin과 ```AWS IAM 인증자``` 웹훅 서버의 관계를 비유하자면 다음왁 같다.<br>
+```AWS IAM 인증자는``` 쿠버네테스 클러스터의 인증을 ```AWS IAM``` 체계와 결합시키는 가교 (Bridge) 역할을 수행합니다. ```정확한 인증 정보를 제공하는 주체만을 선별하고, 또한 인증 정보가 정확한 주체는 반드시 인증됨을 보장하는``` (if and only if) 인증의 원칙을 따르려는 설계를 가지고 있다고 볼 수 있습니다.<br>
+```kubeconfig```의 Credential Plugin과 ```AWS IAM 인증자``` 웹훅 서버의 관계를 비유하자면 다음과 같습니다.<br>
 * ```kubeconfig```의 Credential Plugin: 신뢰받는 중재자 (Mediator, 즉 AWS STS)에게 인증 표식을 맡기고 이를 확인하게 함으로써 신원을 확인받고자 하는 주체<br>
-* ```AWS IAM 인증자``` 웹훅 서버: 인증을 요청하는 모든 주체를 기본적으로 믿지 않으며 (Zero Trust), 신뢰받는 중재자 (AWS STS)에게 맡겨진 인증 주체의 인증 표식을 확인하고 이를 다른 문맥의 인증 주체, 즉 쿠버네테스의 아이덴터티로 변환해 준다.
+* ```AWS IAM 인증자``` 웹훅 서버: 인증을 요청하는 모든 주체를 기본적으로 믿지 않으며 (Zero Trust), 신뢰받는 중재자 (AWS STS)에게 맡겨진 인증 주체의 인증 표식을 확인하고 이를 다른 문맥의 인증 주체, 즉 쿠버네테스의 아이덴터티로 변환해 줍니다.
