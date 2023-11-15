@@ -2,7 +2,7 @@
 
 ## 1. Amazon EKS 인증을 위한 AWS IAM 인증자에 간단한 설명
 2018년에 Amazon EKS가 출시됨과 동시에, 클러스터에 대해 인증할 수 있는 엔티티로서 AWS IAM 사용자 및 역할에 대한 기본 지원이 포함되었습니다.<br>
-인증은 AWS STS (AWS 보안 토큰 서비스)의 GetCallerIdentity 액션에서 릴레이되며, 이 액션은 작업을 호출하는 데 작업을 수행하는데 필요한 자격 증명을 가지는 IAM 사용자 또는 역할에 대한 세부 정보를 반환합니다. 이 인증 흐름은 ```aws-iam-authenticator```라는 쿠버네티스용 AWS IAM 인증자 도구에 의해 구현되고 수행됩니다.<br>
+인증은 AWS STS (AWS 보안 토큰 서비스)의 GetCallerIdentity 액션에서 릴레이되며, 이 액션은 쿠버네테스 작업을 수행하는데 필요한 자격 증명을 가지는 IAM 사용자 또는 역할에 대한 세부 정보를 반환합니다. 이 인증 흐름은 ```aws-iam-authenticator```라는 쿠버네티스용 AWS IAM 인증자 도구에 의해 구현되고 수행됩니다.<br>
 ```aws-iam-authenticator``` 도구는 AWS IAM 자격 증명을 사용하여 Kubernetes 클러스터에 인증하는 메커니즘을 만들기 위해 오픈 소스 이니셔티브로 시작되었으며, 추후 클라우드 공급자 특별 관심 그룹 (SIG)에 기부되었습니다.<br>
 이 프로젝트는 현재 Amazon EKS 엔지니어가 유지 관리하고 있습니다.<br>
 해당 프로젝트의 GitHub 주소는 다음과 같습니다.<br>

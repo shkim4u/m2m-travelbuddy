@@ -173,6 +173,10 @@ resource "aws_codebuild_project" "build" {
       name  = "LOC_SCALER"
       value = "1000"
     }
+    environment_variable {
+      name  = "NVS_THRESHOLD"
+      value = "10"
+    }
   }
 
   source {
