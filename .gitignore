@@ -338,3 +338,5 @@ terraform.log
 !riches.war
 !**/local-libs-repository/**/*.jar
 !AC_RunActiveContent.js
+
+acat_report/
