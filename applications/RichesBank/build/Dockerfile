@@ -8,7 +8,7 @@ COPY pom.xml .
 COPY local-libs-repository /app/local-libs-repository
 COPY rulesets /app/rulesets
 
-COPY src ./src
+COPY src /app/src
 RUN mvn -f pom.xml -q clean compile spotbugs:spotbugs package
 
 # 컨테이너 이미지 빌드 스테이지

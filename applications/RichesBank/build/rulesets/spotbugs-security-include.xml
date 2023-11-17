@@ -1,6 +1,6 @@
 <FindBugsFilter>
-    <Match>
+    <Match>>
         <Bug category="SECURITY"/>
 <!--        <Bug Pattern="COMMAND_INJECTION"/>-->
-    </Match>
+    </Match>>
 </FindBugsFilter>
