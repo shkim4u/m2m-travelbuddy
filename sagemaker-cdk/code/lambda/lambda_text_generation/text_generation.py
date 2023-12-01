@@ -33,7 +33,8 @@ def lambda_handler(event, context):
                                        Body=payload)
 
     model_predictions = json.loads(response['Body'].read())
-    generated_text = model_predictions['generated_texts'][0]
+    # generated_text = model_predictions['generated_texts'][0]
+    generated_text = model_predictions[0]['generated_text']
 
     message = {"prompt": prompt, 'generated_text': generated_text}
 

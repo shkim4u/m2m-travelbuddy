@@ -53,6 +53,8 @@ SAST tool has found that the following code has command injection vulnerablity:
         updateMail();
         return message.toString();
     }
+
+Do you think this code really is vulnerable and if so, please tell me how to fix it.
 """
 
 with st.spinner("Retrieving configurations..."):
@@ -69,19 +71,22 @@ with st.spinner("Retrieving configurations..."):
     endpoint_name = st.sidebar.text_input("SageMaker Endpoint Name:", sm_endpoint)
     url = st.sidebar.text_input("APIGW Url:", apigw_endpoint)
 
-    context = st.text_area("Input Context:", conversation, height=400)
+    context = st.text_area("Input Context:", conversation, height=600)
+    # queries = "Do you think this code really is vulnerable and if so, please tell me how to fix it."
 
-    queries = "Do you think this code really is vulnerable and if so, please tell me how to fix it."
+    # selection = st.selectbox("Select a query:", queries)
 
-    selection = st.selectbox("Select a query:", queries)
-
-    if st.button("Generate Response", key=selection):
-        if endpoint_name == "" or selection == "" or url == "":
-            st.error("Please enter a valid endpoint name, API gateway url and prompt!")
+    # if st.button("모델 호출", key=selection):
+    if st.button("모델 호출"):
+        # if endpoint_name == "" or selection == "" or url == "":
+        if endpoint_name == "" or url == "":
+            # st.error("Please enter a valid endpoint name, API gateway url and prompt!")
+            st.error("모델 엔드포인 혹은 API 게이트웨이 URL이 유효하지 않습니다!")
         else:
             with st.spinner("Wait for it..."):
                 try:
-                    prompt = f"{context}\n{selection}"
+                    # prompt = f"{context}\n{selection}"
+                    prompt = f"{context}"
                     r = requests.post(url, json={"prompt": prompt, "endpoint_name": endpoint_name}, timeout=180)
                     data = r.json()
                     generated_text = data["generated_text"]
