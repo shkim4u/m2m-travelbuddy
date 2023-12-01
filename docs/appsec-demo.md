@@ -282,7 +282,7 @@ cd ~/environment/appsec/sagemaker-cdk
 cdk bootstrap
 
 # VPC Stack 배포.
-cdk deploy GenerativeAiVpcStack
+cdk deploy GenerativeAiNetworkStack
 
 # 웹 어플리케이션 Stack 배포.
 cdk deploy GenerativeAiWebStack

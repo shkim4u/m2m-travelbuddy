@@ -20,7 +20,7 @@ env={"region": region_name}
 
 app = cdk.App()
 
-network_stack = GenerativeAiNetworkStackStack(app, "GenerativeAiVpcStack", env=env)
+network_stack = GenerativeAiNetworkStackStack(app, "GenerativeAiNetworkStack", env=env)
 GenerativeAiWebStack(app, "GenerativeAiWebStack", vpc=network_stack.vpc, env=env)
 
 app.synth()
