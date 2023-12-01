@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import aws_cdk as cdk
+import boto3
 
 from stack.generative_ai_network_stack import GenerativeAiNetworkStackStack
 
