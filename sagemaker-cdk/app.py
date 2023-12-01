@@ -13,9 +13,9 @@ from stack.generative_ai_web_stack import GenerativeAiWebStack
 SageMaker JumpStart Model 및 Endpoint는 SageMaker Python SDK를 사용하여 배포하도록 구성됨
 """
 
-# region_name = boto3.Session().region_name
-# env={"region": region_name}
-env = cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION'))
+region_name = boto3.Session().region_name
+env={"region": region_name}
+# env = cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION'))
 
 app = cdk.App()
 

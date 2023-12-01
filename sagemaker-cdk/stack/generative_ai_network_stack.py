@@ -19,7 +19,6 @@ class GenerativeAiNetworkStackStack(Stack):
 
         # Access the "env" variable from kwargs using the environment property
         region = kwargs.get('region')
-        # region = env.get('region')
         self.output_vpc = ec2.Vpc(
             self,
             "VPC",
