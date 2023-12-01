@@ -110,5 +110,5 @@ class GenerativeAiWebStack(Stack):
             scale_out_cooldown=Duration.seconds(60),
         )
 
-        ssm.StringParameter(self, "text_generation_apigateway_endpoint", parameter_name="text_generation_apigateway_endpoint",
+        ssm.StringParameter(self, "text_generation_apigateway_endpoint_ssm_param", parameter_name="text_generation_apigateway_endpoint",
                             string_value=text_generation_apigateway_endpoint.url)
