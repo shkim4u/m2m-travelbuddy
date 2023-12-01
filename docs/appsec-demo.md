@@ -50,8 +50,8 @@ curl -fsSL https://raw.githubusercontent.com/shkim4u/m2m-travelbuddy/main/cloud9
 의도적으로 취약점이 주입된 레거시 모놀리스 어플리케이션 소스 코드를 다운로드 받습니다.<br>
 ```bash
 cd ~/environment/
-git clone https://github.com/shkim4u/m2m-travelbuddy.git
-cd m2m-travelbuddy
+git clone https://github.com/shkim4u/m2m-travelbuddy.git appsec
+cd appsec
 ```
 
 해당 소스 코드에는 테라폼으로 작성된 IaC 코드도 포함되어 있으며 여기에는 ```Amazon EKS```, ```Amazon RDS```, ```Amazon MSK``` 등의 자원이 포함되어 있습니다.<br>
@@ -63,10 +63,10 @@ cd m2m-travelbuddy
 ```bash
 hash -d aws
 
-cd ~/environment/m2m-travelbuddy/infrastructure-terraform
+cd ~/environment/appsec/infrastructure-terraform
 
 # 1. Configure Terraform workspace and Private Certificate Authority.
-. ./configure.sh travelbuddy-prod ap-northeast-2
+. ./configure.sh appsec ap-northeast-2
 
 echo $TF_VAR_ca_arn
 ```
@@ -79,7 +79,7 @@ echo $TF_VAR_ca_arn
 이제 아래 명령어를 통해 ```Amazon EKS ``` 클러스터 및 기타 자원을 생성합니다. 15 ~ 20분 정도 소요됩니다.<br>
 ```bash
 # 1. IaC 디렉토리로 이동
-cd ~/environment/m2m-travelbuddy/infrastructure-terraform
+cd ~/environment/appsec/infrastructure-terraform
 
 # terraform init
 terraform init
@@ -102,11 +102,11 @@ terraform apply -var='exclude_msk=true' -auto-approve
 
 ```bash
 # 0. Git 초기화
-cd ~/environment/m2m-travelbuddy
+cd ~/environment/appsec
 rm -rf .git
 
 # 1. 어플리케이션 Helm Artifact 경로로 이동
-cd ~/environment/m2m-travelbuddy/applications/RichesBank/helm
+cd ~/environment/appsec/applications/RichesBank/helm
 
 # 2. git 연결
 git init
@@ -133,7 +133,7 @@ git push --set-upstream origin main
 # 0. Git 초기화는 위에서 수행하였으므로 다시 수행하지 않아도 됩니다.
 
 # 1. 어플리케이션 소스 경로로 이동
-cd ~/environment/m2m-travelbuddy/applications/RichesBank/build
+cd ~/environment/appsec/applications/RichesBank/build
 
 # 2. git 연결
 git init
@@ -241,3 +241,22 @@ echo ${API_URL}/riches/
 > * XSS (Cross-Site Scripting)<br>
 > 
 > 각각의 범주에서 하나 이상의 취약점 화면을 찾아 보세요.
+
+## 7. 발견한 취약점에 대해 필요한 조치 사항을 Generative AI를 통해 확인
+### 7.1. Generative AI 모델 (CodeLlama2-7B-Instruct) 배포
+취약점에 대해 조언을 해줄 Generative AI 모델인 ```CodeLlama-7B-Instruct``` 모델을 배포합니다.<br>
+SageMaker JumpStart를 사용하여 배포하는데, 현재 SageMaker JumpStart 모델은 CDK나 CloudFormation에서 공식적으로 지원되지 않으므로 우선 SageMaker Python SDK를 사용하여 배포합니다.
+
+```bash
+cd ~/environment/appsec/sagemaker-cdk
+
+# Python 가상 환경 설정
+python3 -m venv .venv
+source .venv/bin/activate
+
+# pip 업그레이드
+python3 -m pip install --upgrade pip
+
+# 의존성 설치
+pip install -r requirements.txt
+```
