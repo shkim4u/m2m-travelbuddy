@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 import time
 from PIL import Image
-from utils import ssm_utils as ssm_utils
+from ssm_utils import *
 
 image = Image.open("./img/sagemaker.png")
 st.image(image, width=80)
@@ -60,8 +60,8 @@ with st.spinner("Retrieving configurations..."):
 
     while not all_configs_loaded:
         try:
-            apigw_endpoint = ssm_utils.get_parameter(ssm_utils.key_text_generation_apigateway_endpoint)
-            sm_endpoint = ssm_utils.get_parameter(ssm_utils.key_text_generation_sagemaker_endpoint)
+            apigw_endpoint = get_parameter(key_text_generation_apigateway_endpoint)
+            sm_endpoint = get_parameter(key_text_generation_sagemaker_endpoint)
             all_configs_loaded = True
         except:
             time.sleep(5)
