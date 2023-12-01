@@ -2,7 +2,7 @@
 import os
 import aws_cdk as cdk
 
-from stack.generative_ai_vpc_stack import GenerativeAiNetworkStackStack
+from stack.generative_ai_network_stack import GenerativeAiNetworkStackStack
 
 from stack.generative_ai_web_stack import GenerativeAiWebStack
 
