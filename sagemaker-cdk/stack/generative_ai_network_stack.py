@@ -18,7 +18,8 @@ class GenerativeAiNetworkStackStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # Access the "env" variable from kwargs using the environment property
-        region = kwargs.get('region')
+        env = kwargs.get('env')
+        region = env["region"]
         self.output_vpc = ec2.Vpc(
             self,
             "VPC",
