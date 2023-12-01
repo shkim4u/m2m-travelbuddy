@@ -259,4 +259,33 @@ python3 -m pip install --upgrade pip
 
 # 의존성 설치
 pip install -r requirements.txt
+
+# CodeLlama2-7B-Instruct 모델 및 SageMaker 엔드포인트 배포
+python3 scripts/deploy_sagemaker_model.py meta-textgeneration-llama-codellama-7b-instruct
 ```
+
+위 단계가 성공적으로 수행되면 아래 그림과 같이 ```SageMaker Model```과 ```Endpoint```가 생성됩니다.
+
+* CodeLlama2-7B-Instruct SagaMaker 모멜
+  * ![](./assets/sagemaker-codellama-7b-instruct-model.png)
+  * ![](./assets/sagemaker-codellama-7b-instruct-model-info.png)
+* SageMaker 모델 엔드포인트
+  * ![](./assets/sagemaker-codellama-7b-instruct-endpoint.png)
+
+### 7.2. 프롬트르를 호스팅하는 웹 서버 배포
+어플리케이션에 대한 취약점에 대한 내용을 프롬프트로 받아 이에 대한 확도 (Certainty)나 조치 방법을 묻의할 수 있는 웹 서버를 배포해 보도록 하겠습니다.<br>
+
+```bash
+cd ~/environment/appsec/sagemaker-cdk
+
+# CDK bootstrap.
+cdk bootstrap
+
+# VPC Stack 배포.
+cdk deploy GenerativeAiVpcStack
+
+# 웹 어플리케이션 Stack 배포.
+cdk deploy GenerativeAiWebStack
+```
+
+배포가 완료되면 ```WebApplicationServiceURL```을 메모한 후 웹 브라우저에서 이 주소에 접속해 봅니다.

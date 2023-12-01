@@ -2,7 +2,7 @@
 import os
 import aws_cdk as cdk
 
-from stack.generative_ai_vpc_stack import GenerativeAiVpcStack
+from stack.generative_ai_vpc_stack import GenerativeAiNetworkStackStack
 
 from stack.generative_ai_web_stack import GenerativeAiWebStack
 
@@ -15,11 +15,11 @@ SageMaker JumpStart Model 및 Endpoint는 SageMaker Python SDK를 사용하여 �
 
 # region_name = boto3.Session().region_name
 # env={"region": region_name}
-env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION'))
+env = cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION'))
 
 app = cdk.App()
 
-vpc = GenerativeAiVpcStack(app, "GenerativeAiVpcStack", env=env)
-GenerativeAiWebStack(app, "GenerativeAiWebStack", vpc=vpc, env=env)
+network_stack = GenerativeAiNetworkStackStack(app, "GenerativeAiVpcStack", env=env)
+GenerativeAiWebStack(app, "GenerativeAiWebStack", vpc=network_stack.vpc, env=env)
 
 app.synth()
