@@ -16,7 +16,7 @@ sudo curl -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-ek
 # 실행 모드 변경
 sudo chmod +x /usr/local/bin/kubectl
 # 설치 확인
-kubectl version --short --client
+kubectl version --client
 
 ## 2.2. eksctl 설치
 echo "2.2. Installing eksctl..."
@@ -108,7 +108,21 @@ curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cl
 echo "7.3. Checking disk size with extension..."
 df -h
 
-## 8. AWS CLI Completer.
+## 8. Download cuDNN (CUDA Deep Neural Network Library) and install it.
+echo "8.1. Downloading cuDNN..."
+#curl -fsSL https://developer.download.nvidia.com/compute/cudnn/secure/8.1.1.33/cudnn-8.1.1.33-linux-x64-v8.1.1.33.tgz | tar -xz -C /usr/local
+export CUDNN_DOWNLOAD_URL="https://shkim4u-generative-ai.s3.ap-northeast-2.amazonaws.com/cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz"
+wget "${CUDNN_DOWNLOAD_URL}" -O cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
+tar -xvf cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
+
+echo "8.2. Installing cuDNN..."
+sudo mkdir -p /usr/local/cuda/include /usr/local/cuda/lib64
+sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include
+sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64
+sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
+echo "8.2. cuDNN installed!"
+
+## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
 . ~/.bashrc
 

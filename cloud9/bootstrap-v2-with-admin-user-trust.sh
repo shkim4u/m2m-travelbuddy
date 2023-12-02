@@ -28,11 +28,11 @@ aws iam add-role-to-instance-profile --role-name AWSCloud9SSMAccessRole --instan
 
 # 기본 VPC 조회
 #export VPC_ID=`aws ec2 describe-vpcs --query "Vpcs[?isDefault==true].VpcId" --output text`
-export VPC_ID=`aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text`
-echo $VPC_ID
+export VPC_ID=`aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text` && echo $VPC_ID
 
 # Region 조회
 export AWS_REGION=`aws ec2 describe-availability-zones --output text --query "AvailabilityZones[0].[RegionName]"` && echo $AWS_REGION
+export AWS_DEFAULT_REGION=$AWS_REGION
 
 # 서브넷 조회
 export QUOTED_VPC_ID=\'${VPC_ID}\'
@@ -44,7 +44,6 @@ export SUBNET_ID=`aws ec2 describe-subnets --query "Subnets[?(VpcId==${QUOTED_VP
 #aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type c5.9xlarge --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
 #aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type m5.4xlarge --image-id amazonlinux-2-x86_64 --subnet-id "${SUBNET_ID}" --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
 aws cloud9 create-environment-ec2 --name cloud9-workspace --instance-type c5.24xlarge --image-id amazonlinux-2-x86_64 --subnet-id "${SUBNET_ID}" --connection-type CONNECT_SSM --automatic-stop-time-minutes 10080
-
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
 
@@ -91,6 +90,12 @@ aws ec2 disassociate-iam-instance-profile --association-id ${CLOUD_INSTANCE_PROF
 
 # Cloud9 EC2 인스턴스에 인스턴스 프로파일 부착 (Attach)
 aws ec2 associate-iam-instance-profile --iam-instance-profile Name=cloud9-admin-instance-profile --instance-id $EC2_INSTANCE_ID
+
+# [2023-11-28] Security Group 설정
+# Get security group from EC2 instance.
+export SECURITY_GROUP_ID=`aws ec2 describe-security-groups --filters Name=vpc-id,Values="${VPC_ID}" Name=group-name,Values="*cloud9-workspace*" --query "SecurityGroups[0].GroupId" --output text` && echo $SECURITY_GROUP_ID
+# Add 8888 (Jupyter Notebook Server) port to security group.
+aws ec2 authorize-security-group-ingress --group-id $SECURITY_GROUP_ID --protocol tcp --port 8888 --cidr 0.0.0.0/0
 
 # 마지막으로 Cloud9 Managed Credentials 비활성화 -> 위에서 생성한 Instance Profile 사용
 export C9_PID=`aws cloud9 list-environments --query "environmentIds[0]" --output text`
