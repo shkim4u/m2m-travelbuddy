@@ -10,7 +10,7 @@ st.header("Text Generation")
 st.caption("Using CodeLlama2-7B-Instruct model from SageMaker JumpStart")
 
 conversation = """
-SAST tool has found that the following code has command injection vulnerablity:
+SAST tool has found that the following code has command injection vulnerability:
     public String sendMail(String[] cmd)
     {
         Runtime rt = Runtime.getRuntime();
@@ -68,19 +68,13 @@ with st.spinner("Retrieving configurations..."):
         except:
             time.sleep(5)
 
-    endpoint_name = st.sidebar.text_input("SageMaker Endpoint Name:", sm_endpoint)
+    endpoint_name = st.sidebar.text_input("세이지메이커 엔드포인트 이름:", sm_endpoint)
     url = st.sidebar.text_input("APIGW Url:", apigw_endpoint)
 
-    context = st.text_area("Input Context:", conversation, height=600)
-    # queries = "Do you think this code really is vulnerable and if so, please tell me how to fix it."
+    context = st.text_area("입력 컨텍스트:", conversation, height=600)
 
-    # selection = st.selectbox("Select a query:", queries)
-
-    # if st.button("모델 호출", key=selection):
     if st.button("모델 호출"):
-        # if endpoint_name == "" or selection == "" or url == "":
         if endpoint_name == "" or url == "":
-            # st.error("Please enter a valid endpoint name, API gateway url and prompt!")
             st.error("모델 엔드포인 혹은 API 게이트웨이 URL이 유효하지 않습니다!")
         else:
             with st.spinner("Wait for it..."):
