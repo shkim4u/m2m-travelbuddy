@@ -263,7 +263,10 @@ python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 
 # CodeLlama2-7B-Instruct 모델 및 SageMaker 엔드포인트 배포
-python3 scripts/deploy_sagemaker_model.py meta-textgeneration-llama-codellama-7b-instruct
+# CodeLlama-7B 기본 모델
+#python3 scripts/deploy_sagemaker_model.py meta-textgeneration-llama-codellama-7b ml.g5.4xlarge
+# CodeLlama-7B-Instruct 모델
+python3 scripts/deploy_sagemaker_model.py meta-textgeneration-llama-codellama-7b-instruct ml.g5.4xlarge
 ```
 
 위 단계가 성공적으로 수행되면 아래 그림과 같이 ```SageMaker Model```과 ```Endpoint```가 생성됩니다.
@@ -274,7 +277,7 @@ python3 scripts/deploy_sagemaker_model.py meta-textgeneration-llama-codellama-7b
 * SageMaker 모델 엔드포인트
   * ![](./assets/sagemaker-codellama-7b-instruct-endpoint.png)
 
-### 7.2. 프롬트르를 호스팅하는 웹 서버 배포
+### 7.2. 프롬프트를 호스팅하는 웹 서버 배포
 어플리케이션에 대한 취약점에 대한 내용을 프롬프트로 받아 이에 대한 확도 (Certainty)나 조치 방법을 묻의할 수 있는 웹 서버를 배포해 보도록 하겠습니다.<br>
 
 ```bash
@@ -288,6 +291,11 @@ cdk deploy GenerativeAiNetworkStack --require-approval=never
 
 # 웹 어플리케이션 Stack 배포.
 cdk deploy GenerativeAiWebStack --require-approval=never
+
 ```
 
 배포가 완료되면 ```WebApplicationServiceURL```을 메모한 후 웹 브라우저에서 이 주소에 접속해 봅니다.
+<TODO> 프롬프트 웹 브라우저 화면 캡쳐
+
+### 7.3. Generative AI를 호출하여 취약점에 대한 Insight를 얻기
+[[프롬프트 테스팅]](../applications/RichesBank/build/vulnerabilities/docs/remediation/prompt-testing.md) 페이지를 열어 검출된 취약점과 이를 조치하는 여러 프롬프트를 테스트해 봅니다.

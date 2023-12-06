@@ -3,7 +3,7 @@ import boto3
 
 runtime = boto3.client('runtime.sagemaker')
 
-MAX_NEW_TOKEN = 256
+MAX_NEW_TOKEN = 512
 TOP_P = 0.9
 TEMPERATURE = 0.2
 DECODER_INPUT_DETAILS = True

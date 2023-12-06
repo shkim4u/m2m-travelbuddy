@@ -9,12 +9,15 @@ sagemaker_session = sagemaker.Session()
 
 def main():
     # Take model_id argument.
-    # model_id = meta-textgeneration-llama-codellama-7b-instruct
+    # model_id = meta-textgeneration-llama-codellama-7b-instruct ml.g5.4xlarge
     model_id = sys.argv[1]
     model_name = "{}-{}".format(model_id, "model")
     endpoint_name = "{}-{}".format(model_id, "endpoint")
+
+    # instance_type = ml.g5.4xlarge
+    instance_type = sys.argv[2]
     model = JumpStartModel(model_id=model_id, name=model_name)
-    predictor = model.deploy(initial_instance_count=1, instance_type="ml.g5.4xlarge", endpoint_name=endpoint_name,
+    predictor = model.deploy(initial_instance_count=1, instance_type=instance_type, endpoint_name=endpoint_name,
                              accept_eula=True)
 
     # Perform some examples.

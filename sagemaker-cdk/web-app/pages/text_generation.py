@@ -7,7 +7,7 @@ from ssm_utils import *
 image = Image.open("./img/sagemaker.png")
 st.image(image, width=80)
 st.header("Text Generation")
-st.caption("Using CodeLlama2-7B-Instruct model from SageMaker JumpStart")
+st.caption("Using CodeLlama2 model from SageMaker JumpStart")
 
 conversation = """
 SAST tool has found that the following code has command injection vulnerability:
@@ -70,6 +70,8 @@ with st.spinner("Retrieving configurations..."):
 
     endpoint_name = st.sidebar.text_input("세이지메이커 엔드포인트 이름:", sm_endpoint)
     url = st.sidebar.text_input("APIGW Url:", apigw_endpoint)
+    # Rewrite the caption with model endpoint.
+    st.caption("Using CodeLlama2 model from SageMaker JumpStart endpoint: ", sm_endpoint)
 
     context = st.text_area("입력 컨텍스트:", conversation, height=600)
 
