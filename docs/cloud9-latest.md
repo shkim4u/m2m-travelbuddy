@@ -108,21 +108,25 @@ Cloud9 설정에 필요한 사항을 통합하여 구성한 쉘 스크립트 파
 
 여기에는 다음 사항이 포함됩니다.
 
-1. 쿠버네테스 (Amazon EKS) 작업을 위한 Tooling
-    * kubectl 설치
-    * eksctl 설치
-    * k9s 설치
-    * Helm 설치
-2. AWS CLI 업데이트
-3. AWS CDK 업그레이드
-4. 기타 도구 설치 및 구성
+1. IDE IAM 설정 확인
+2. 쿠버네테스 (Amazon EKS) 작업을 위한 Tooling
+   * kubectl 설치
+   * eksctl 설치
+   * k9s 설치
+   * Helm 설치
+3. AWS CLI 업데이트
+4. AWS CDK 업그레이드
+5. 기타 도구 설치 및 구성
    * AWS SSM 세션 매니저 플러그인 설치
    * AWS Cloud9 CLI 설치
    * jq 설치하기
    * yq 설치하기
    * bash-completion 설치하기
-5. Cloud9 추가 설정하기
-6. 디스크 증설
+6. Cloud9 추가 설정하기
+7. 디스크 증설
+8. CUDA Deep Neural Network (cuDNN) 라이브러리
+9. [2023-12-06 추가] Terraform 라이선스 정책 변경으로 인해 Cloud9에서 Terraform이 제거됨으로써 수동 설치
+
 
 ```bash
 cd ~/environment/
