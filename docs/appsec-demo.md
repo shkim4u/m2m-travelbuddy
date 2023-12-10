@@ -98,7 +98,7 @@ terraform apply -var='exclude_msk=true' -auto-approve
 의도적으로 취약점이 주입된 뱅킹 어플리케이션을 (리치웰스 인터내셔널 뱅킹) EKS 클러스터에 배포합니다.
 
 > (주의)<br>
-> <u>***해당 어플리케이션은 교육이나 용도로만 사용하여야 하며 실제 고객 환경이나 운영 환경에는 배포되지 말아야 합니다.***</u>
+> <u>***해당 어플리케이션은 교육이나 데모 용도로만 사용하여야 하며 실제 고객 환경이나 운영 환경에는 배포되지 말아야 합니다.***</u>
 
 ### 5.1. Helm 리포지터리 설정
 아래와 같이 Cloud9 환경에서 Helm Artifact를 배포 리포지터리와 연결합니다.<br>
@@ -300,3 +300,8 @@ cdk deploy GenerativeAiWebStack --require-approval=never
 
 ### 7.3. Generative AI를 호출하여 취약점에 대한 Insight를 얻기
 [[프롬프트 테스팅]](../applications/RichesBank/build/vulnerabilities/docs/remediation/prompt-testing.md) 페이지를 열어 검출된 취약점과 이를 조치하는 여러 프롬프트를 테스트해 봅니다.
+
+## 8. Security Hub 연동 (WIP)
+```bash
+aws securityhub enable-security-hub
+```
