@@ -12,6 +12,12 @@
       </configuration>
     </facet>
   </component>
+  <component name="FindBugs-IDEA">
+    <analysisEffort>min</analysisEffort>
+    <minRank>1</minRank>
+    <minPriority>High</minPriority>
+    <suppressWarningsClassName />
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$" />
