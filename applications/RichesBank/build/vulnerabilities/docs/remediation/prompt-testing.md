@@ -54,7 +54,7 @@ SAST tool has found that the following code has command injection vulnerability:
         return message.toString();
     }
 
-Do you think this code really is vulnerable and if so, please tell me how to fix it.
+Tell me how to fix it and suggest fixed code in Korean. 
 ```
 
 * SQL Injection
@@ -82,7 +82,7 @@ SAST tool has found that the following Java code has "CWE-89: Improper Neutraliz
         }
 
 ---
-Tell me how to fix it.
+Tell me how to fix it, and suggest resolved code.
 ```
 
 * Path Traversal

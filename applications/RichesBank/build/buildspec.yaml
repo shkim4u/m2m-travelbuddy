@@ -49,6 +49,7 @@ phases:
       - |
         echo "### Checking quality and security metrics ###"
         echo "# Just printing some crucial metrics for now, with more coming soon..."
+        echo "# Save vulnerability report files SpotBugs-native and SARIF format to be uploaed as artifacts later..." 
         docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml > spotbugs.xml
         docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-sarif.json > spotbugs.json
         export LOC=$(cloc src | grep SUM | awk '{print $5}')
@@ -67,7 +68,11 @@ phases:
         docker push $ECR_REPO_URI:$IMAGE_TAG
   post_build:
     commands:
+      # Other artifcats: build output, source version, and source files archive.
+      # Source files archive will be used to extract some relevant code snippets with which to get remediation action from GenAI.
       - echo "${IMAGE_TAG}" >> build_output.txt
+      - echo "$CODEBUILD_RESOLVED_SOURCE_VERSION}" >> source_version.txt
+      - zip -r src.zip src/
       - git config --global --replace-all credential.helper '!aws codecommit credential-helper $@'
       #        [TODO] 아래 클론 시의 Repository URL 값도 CodeBuild의 환경변수 혹은 CloudFormation Output으로부터 주입되면 좋습니다.
       - |
@@ -85,11 +90,18 @@ phases:
         git log --oneline
         git remote -v
         git push -u origin main
+    finally:
+      # Vulnerability Report -> GenAI (Bedrock + Claude) -> Slack 연계 구성을 위한 정보 수집
+      - |
+        echo "### CodeBuild Artifacts ###"
+        echo $CODEBUILD_SRC_DIR/artifacts
 artifacts:
   files:
-    - build_output.txt
     - spotbugs.xml
     - spotbugs.json
+    - build_output.txt
+    - source_version.txt
+    - src.zip
 #    - interface/build/libs/flightspecials.jar
 #cache:
 #  paths:
