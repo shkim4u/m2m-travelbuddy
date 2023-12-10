@@ -10,8 +10,8 @@ set -e
 
 echo "Removing all versions from $bucket"
 
-versions=`aws s3api list-object-versions --bucket $bucket |jq '.Versions'`
-markers=`aws s3api list-object-versions --bucket $bucket |jq '.DeleteMarkers'`
+versions=`aws s3api list-object-versions --bucket $bucket | jq '.Versions'`
+markers=`aws s3api list-object-versions --bucket $bucket | jq '.DeleteMarkers'`
 
 echo "removing files"
 for version in $(echo "${versions}" | jq -r '.[] | @base64'); do

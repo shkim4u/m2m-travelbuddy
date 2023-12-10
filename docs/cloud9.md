@@ -4,7 +4,7 @@ IDE로 Cloud9을 사용하기 위해서 Cloud9 환경을 시작하고, 각종 �
 
 ## Agenda
 
-- Cloud9 시작하기로
+- Cloud9 시작하기
   - AWS Cloud9으로 IDE 구성
   - IAM Role 생성
   - IDE(AWS Cloud9 인스턴스)에 IAM Role 부여
