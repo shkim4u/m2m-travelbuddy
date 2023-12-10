@@ -1,0 +1,39 @@
+version: 0.2
+env:
+  shell: bash
+  git-credential-helper: yes
+  variables:
+    REGION: "ap-northeast-2"
+    ENVIRONMENT: test
+phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get install -y jq
+      - pip install sarif-tools
+      - sarif --version
+  pre_build:
+    commands:
+      - echo "Print awscli version"
+      - echo $CODEBUILD_SRC_DIR
+      - ls -al $CODEBUILD_SRC_DIR
+      - aws --version
+      - env
+  build:
+    commands:
+      - |
+        echo "### Post processing main phase... ###"
+  post_build:
+    commands:
+      - |
+        echo "### Post process post_build phase... ###"
+      - echo "Post-Process:" >> build_output.txt
+    finally:
+      - |
+        echo "### post_build finally ###"
+artifacts:
+  files:
+    - build_output.txt
+#cache:
+#  paths:
+#    - '/root/.gradle/caches/**/*'
