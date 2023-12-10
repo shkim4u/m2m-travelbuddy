@@ -103,7 +103,7 @@ echo "7.1. Checking disk size before extending..."
 df -h
 
 echo "7.2. Now extending the disk size..."
-curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash -s -- 100
 
 echo "7.3. Checking disk size with extension..."
 df -h
