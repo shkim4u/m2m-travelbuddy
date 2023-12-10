@@ -109,6 +109,7 @@ data "aws_iam_policy_document" "build_role_policy" {
   }
 }
 
+# Role and permission for build.
 resource "aws_iam_role" "build" {
   name = "${var.name}-${local.phase}-build-role"
   assume_role_policy = data.aws_iam_policy_document.build_role_trust.json
@@ -134,12 +135,94 @@ resource "aws_iam_role_policy_attachment" "build" {
   role = aws_iam_role.build.name
 }
 
+#---
+
+# For post process.
+resource "aws_s3_bucket" "post_process" {
+  bucket = "${var.name}-${local.phase}-post-process-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  force_destroy = true
+}
+
+## 2. IAM role and policies.
+data "aws_iam_policy_document" "post_process_role_trust" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["codebuild.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+data "aws_iam_policy_document" "post_process_role_policy" {
+  statement {
+    effect = "Allow"
+    actions = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:Abort*",
+      "s3:DeleteObject*",
+      "s3:GetBucket*",
+      "s3:GetObject*",
+      "s3:List*",
+      "s3:PutObject*",
+    ]
+    resources = [
+      aws_s3_bucket.build.arn,
+      "${aws_s3_bucket.build.arn}/*",
+      aws_s3_bucket.post_process.arn,
+      "${aws_s3_bucket.post_process.arn}/*",
+      aws_s3_bucket.pipeline_artifact.arn,
+      "${aws_s3_bucket.pipeline_artifact.arn}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:ListSecrets"
+    ]
+    resources = ["*"]
+  }
+}
+
+# Role and permission policy for post-process.
+resource "aws_iam_role" "post_process" {
+  name = "${var.name}-${local.phase}-post-process-role"
+  assume_role_policy = data.aws_iam_policy_document.post_process_role_trust.json
+}
+
+resource "aws_iam_role_policy" "post_process" {
+  name = "${var.name}-${local.phase}-post-process-policy"
+  role = aws_iam_role.post_process.id
+  policy = data.aws_iam_policy_document.post_process_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "post_process" {
+  for_each = {
+    for k, v in {
+      AWSCodeCommitPowerUser = "${local.iam_role_policy_prefix}/AmazonBedrockFullAccess"
+    }: k => v if true
+  }
+
+  policy_arn = each.value
+  role = aws_iam_role.post_process.name
+}
+
 ## 3. CodeBuild.
 resource "aws_codebuild_project" "build" {
   name = "${var.name}-${local.phase}-build"
   service_role = aws_iam_role.build.arn
 
   artifacts {
+    # 만약 Build Spec에서 정의되는 Artifact 이름을 유효하게 하고, S3 Prefix 및 객체 이름을 지정할 수 잏게 하려면 "S3" 타입으로 지정하고,
+    # Artifact Namespace Type을 "BUILD_ID"로 지정한다.
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
     type = "CODEPIPELINE"
   }
 
@@ -185,6 +268,37 @@ resource "aws_codebuild_project" "build" {
   }
 
   description = "Build project for ${var.name}-${local.phase}"
+}
+
+resource "aws_codebuild_project" "post_process" {
+  name = "${var.name}-${local.phase}-post-process"
+  service_role = aws_iam_role.post_process.arn
+
+  artifacts {
+    # 만약 Build Spec에서 정의되는 Artifact 이름을 유효하게 하고, S3 Prefix 및 객체 이름을 지정할 수 잏게 하려면 "S3" 타입으로 지정하고,
+    # Artifact Namespace Type을 "BUILD_ID"로 지정한다.
+    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
+    type = "CODEPIPELINE"
+  }
+
+  cache {
+    type = "LOCAL"
+    modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
+  }
+
+  environment {
+    compute_type = "BUILD_GENERAL1_LARGE"
+    image = "aws/codebuild/standard:5.0"
+    type = "LINUX_CONTAINER"
+    privileged_mode = true
+  }
+
+  source {
+    type = "CODEPIPELINE"
+    buildspec = "postprocess.yaml"
+  }
+
+  description = "Post process project for ${var.name}-${local.phase}"
 }
 
 ###
@@ -326,6 +440,29 @@ resource "aws_codepipeline" "pipeline" {
 
       configuration = {
         ProjectName = aws_codebuild_project.build.id
+      }
+    }
+  }
+
+  # [2023-12-10] Post processing, for example, analyze vulnerability report, acquire remediation actions from GenAI (eg. by calling Bedrock),
+  # and send them to communicaton channels (eg. Slack, Teams, etc.)
+  # 우리는 이러한 후처리를 Lambda에서 수행할 수도 있지만, 15분이라는 시간 제한을 염두에 두어야 하고, 또 현재로서는 복잡한
+  # 구조를 가져갈 필요가 없으므로 일단 단순한 형태인 Pipeline 내의 추가 Stage로서 구현해 본다. (YAGNI)
+  stage {
+    name = "Post_Process_Stage"
+    action {
+      name = "Post_Process_Action"
+      category = "Build"
+      owner = "AWS"
+      provider = "CodeBuild"
+      version = "1"
+
+      input_artifacts = ["BuildOutput"]
+      output_artifacts = ["PostProcessOutput"]
+      run_order = 1
+
+      configuration = {
+        ProjectName = aws_codebuild_project.post_process.id
       }
     }
   }

@@ -102,7 +102,16 @@ artifacts:
     - build_output.txt
     - source_version.txt
     - src.zip
-#    - interface/build/libs/flightspecials.jar
+    - postprocess.yaml
+  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
+  # https://repost.aws/questions/QU2bJmmLUlRNm9voFCsFFIHQ/is-there-a-way-to-change-the-name-of-the-artifact-getting-stored-in-s3-during-build-stage-of-codepipeline
+  # If type is set to CODEPIPELINE, AWS CodePipeline ignores this value if specified. This is because CodePipeline manages its build output names instead of AWS CodeBuild.
+  # name: build/${CODEBUILD_RESOLVED_SOURCE_VERSION}
+
+  # Semantic Versioning도 Pipeline에 속한 CodeBuild에서는 활성화 불가하므로 사용되지 않음
+  # name: riches-artifact-$(date '+%Y-%m-%d-%H-%M-%S')
+  # Following is not used the artifact namespace type is CodePipeline.
+  # s3-prefix: $CODEBUILD_RESOLVED_SOURCE_VERSION
 #cache:
 #  paths:
 #    - '/root/.gradle/caches/**/*'
