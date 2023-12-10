@@ -71,7 +71,7 @@ phases:
       # Other artifcats: build output, source version, and source files archive.
       # Source files archive will be used to extract some relevant code snippets with which to get remediation action from GenAI.
       - echo "${IMAGE_TAG}" >> build_output.txt
-      - echo "$CODEBUILD_RESOLVED_SOURCE_VERSION}" >> source_version.txt
+      - echo "${CODEBUILD_RESOLVED_SOURCE_VERSION}" >> source_version.txt
       - zip -r src.zip src/
       - git config --global --replace-all credential.helper '!aws codecommit credential-helper $@'
       #        [TODO] 아래 클론 시의 Repository URL 값도 CodeBuild의 환경변수 혹은 CloudFormation Output으로부터 주입되면 좋습니다.
