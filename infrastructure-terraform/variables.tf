@@ -17,6 +17,14 @@ variable "ca_arn" {
   description = "ARN of private certificate authority to create server certificate with"
 }
 
+#variable "eks_kms_key_alias" {
+#  description = "The KMS key alias to avoid duplicate KMS key when repeating resource creation"
+#}
+
+variable "eks_cluster_name" {
+  description = "The name of EKS cluster to be created"
+}
+
 variable "grafana_admin_password" {
   description = "Admin password for Grafana"
   default = "P@$$w0rd00#1"

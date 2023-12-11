@@ -89,3 +89,7 @@ aws acm-pca import-certificate-authority-certificate --region ${AWS_REGION} \
 aws acm-pca describe-certificate-authority --region ${AWS_REGION} \
 	--certificate-authority-arn ${CA_ARN} \
 	--output json --no-cli-pager
+
+# 9. Randomize EKS KMS Key Alias.
+#export TF_VAR_eks_cluster_name=M2M-EksCluster-$(date +'%Y%m%d-%H%M%S') && echo $TF_VAR_eks_cluster_name
+export TF_VAR_eks_cluster_name=M2M-EksCluster-$(date +'%Y%m%d') && echo $TF_VAR_eks_cluster_name

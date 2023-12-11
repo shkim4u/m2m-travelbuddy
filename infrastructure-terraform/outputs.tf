@@ -37,10 +37,10 @@ output "iam_m2m_admin_ec2_instance_profile" {
 /*
  * Outputs from EKS resources.
  */
-#output "eks_cluster_name" {
-#  description = "(EKS) EKS cluster name"
-#  value = module.eks.eks_cluster_name
-#}
+output "eks_cluster_name" {
+  description = "(EKS) EKS cluster name"
+  value = module.eks.cluster_name
+}
 
 #output "eks_cluster_arn" {
 #  description = "(EKS) EKS cluster ARN"

@@ -110,6 +110,11 @@ module "eks" {
   cluster_name = var.cluster_name
   cluster_version = var.cluster_version
 
+#  kms_key_aliases = ["${var.cluster_name}-${local.date}"]
+  // Should be static due to the Terraform internal call to 'toset'.
+#  kms_key_aliases = [var.kms_key_alias]
+#  kms_key_deletion_window_in_days = 7
+
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access = true
 

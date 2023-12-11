@@ -129,6 +129,22 @@ git commit -am "First commit."
 git push --set-upstream origin main
 ```
 
+(참고) 기존의 Git Upstream Repository 정보를 유지하면서 CodeCommit Repository를 Remote Repository로 추가하려면 다름과 같이 수행합니다. (예: 로컬 작업 환경에서 작업하는 경우 등)<br>
+```bash
+# 어플리케이션 Helm Artifact 경로로 이동
+# (참고) 소스를 다운로드 받을 위치에 따라 아래의 경로를 적절하게 수정합니다.  
+cd ~/environment/appsec/applications/RichesBank/helm
+
+export HELM_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name riches-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
+echo $HELM_CODECOMMIT_URL
+
+# CodeCommit 배포 리포지터리와 연결
+git remote add ccorigin $HELM_CODECOMMIT_URL
+
+# 배포 리포지터리에 Push합니다.
+git push --set-upstream ccorigin main
+```
+
 ### 5.2. 어플리케이션 빌드 및 ECR 푸시
 1. 이제 어플리케이션의 빌드 파이프라인이 시작될 수 있도록 어플리케이션 소스를 소스 리포지터리에 연결하고 푸시합니다.<br>
 

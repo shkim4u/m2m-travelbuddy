@@ -1,6 +1,6 @@
 variable "cluster_name" {
   description = "The name of EKS cluster"
-  default = "M2M-EksCluster"
+#  default = "M2M-EksCluster"
 }
 
 variable "cluster_version" {
@@ -15,3 +15,7 @@ variable "private_subnet_ids" {}
 variable "certificate_authority_arn" {}
 
 variable "grafana_admin_password" {}
+
+#variable "kms_key_alias" {
+#  description = "The KMS key alias to avoid duplicate KMS key when repeating resource creation"
+#}

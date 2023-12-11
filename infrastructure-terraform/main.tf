@@ -21,6 +21,8 @@ module "eks" {
   private_subnet_ids = module.network.private_subnets
   certificate_authority_arn = var.ca_arn
   grafana_admin_password = var.grafana_admin_password
+#  kms_key_alias = var.eks_kms_key_alias
+  cluster_name = var.eks_cluster_name
 }
 
 module "cicd" {

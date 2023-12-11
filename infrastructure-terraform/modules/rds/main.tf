@@ -56,8 +56,12 @@ locals {
   date = formatdate("YYYYMMDD", timestamp())
 }
 
+resource "random_id" "secrets_random_id" {
+  byte_length = 4
+}
+
 resource "aws_secretsmanager_secret" "flightspecials_db_credentials_test" {
-  name = "flightspecials_db_credentials_test-${local.date}"
+  name = "flightspecials_db_credentials_test_${local.date}-${random_id.secrets_random_id.hex}"
 }
 
 resource "aws_secretsmanager_secret_version" "flightspecials_db_credentials_test" {
