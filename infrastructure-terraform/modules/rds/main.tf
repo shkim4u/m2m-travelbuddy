@@ -52,8 +52,12 @@ resource "random_password" "master" {
   override_special = "_!%^@"
 }
 
+locals {
+  date = formatdate("YYYYMMDD", timestamp())
+}
+
 resource "aws_secretsmanager_secret" "flightspecials_db_credentials_test" {
-  name = "flightspecials_db_credentials_test"
+  name = "flightspecials_db_credentials_test-${local.date}"
 }
 
 resource "aws_secretsmanager_secret_version" "flightspecials_db_credentials_test" {
@@ -84,7 +88,7 @@ resource "aws_db_instance" "flightspecials" {
   iam_database_authentication_enabled = true
   vpc_security_group_ids = [aws_security_group.flightspecials_db.id]
   parameter_group_name = aws_db_parameter_group.flightspecials.name
-
+  skip_final_snapshot = true
   timeouts {
     create = "2h"
   }
