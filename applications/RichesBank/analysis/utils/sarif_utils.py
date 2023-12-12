@@ -1,19 +1,19 @@
-from sarif import loader
-import json
-
 import attrs
 import sarif_om
+
 
 def get_sarif_class(schema_ref):
     class_name = schema_ref.split('/')[-1]
     class_name = class_name[0].capitalize() + class_name[1:]
     return getattr(sarif_om, class_name)
 
+
 def get_field_name(schema_property_name, cls):
     for field in attrs.fields(cls):
         if field.metadata.get('schema_property_name') == schema_property_name:
             return field.name
     return schema_property_name
+
 
 def get_schema_properties(schema, schema_ref):
     cursor = schema
@@ -23,6 +23,7 @@ def get_schema_properties(schema, schema_ref):
         else:
             cursor = cursor[part]
     return cursor['properties']
+
 
 def materialize(data, cls, schema, schema_ref):
     fields = {}
@@ -55,33 +56,30 @@ def materialize(data, cls, schema, schema_ref):
     obj.__dict__.update(extras)
     return obj
 
-path_to_sarif_file = "spotbugs-sarif.json"
 
-sarif_data = loader.load_sarif_file(path_to_sarif_file)
-issue_count_by_severity = sarif_data.get_result_count_by_severity()
-error_histogram = sarif_data.get_issue_code_histogram("error")
-warning_histogram = sarif_data.get_issue_code_histogram("warning")
-note_histogram = sarif_data.get_issue_code_histogram("note")
+def get_code_snippet(relative_file_path, code_line):
+    # Assume Maven.
+    # TODO: Acquire from environment variable "SOURCE_BASE_DIR".
+    file_path = f"src/main/java/{relative_file_path}"
 
-print(f"Issue count by severity: {issue_count_by_severity}")
-print(f"Error histogram: {error_histogram}")
-print(f"Warning histogram: {warning_histogram}")
-print(f"Note histogram: {note_histogram}")
+    # TODO: Exception handling.
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    start_line = code_line
+    end_line = start_line + 10
+    start_line = max(0, start_line - 10)
+    end_line = min(len(lines), end_line)
+    return "".join(lines[start_line:end_line])
 
-with open('spotbugs-sarif.json', 'r') as file:
-    data = json.load(file)
 
-with open('sarif-schema-2.1.0.json', 'r') as file:
-    schema = json.load(file)
-
-sarif_log = materialize(data, sarif_om.SarifLog, schema, '#')
-print(sarif_log)
-print("===")
-
-sarif_runs = sarif_log.runs
-run = sarif_runs[0]
-print(run)
-
-print("===")
-results = run.results
-print(results)
+def construct_prompt(target_name, target_id, text, code_snippet):
+    prompt = """
+SAST 툴이 아래 자바 코드가 "{}-{}: {}" 취약점을 가지고 있다고 진단하였습니다:
+---
+{}
+---
+이 코드가 실제로 취약한가요?
+만약 그렇다면 조치할 수 있는 방법고 조치된 코드를 제시해 주세요.
+답변은 한국어로 해주세요.
+""".format(target_name, target_id, text, code_snippet)
+    return prompt

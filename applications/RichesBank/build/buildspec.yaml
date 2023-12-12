@@ -101,6 +101,7 @@ artifacts:
     - spotbugs.json
     - build_output.txt
     - source_version.txt
+    - pom.xml
     - src.zip
     - postprocess.yaml
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
