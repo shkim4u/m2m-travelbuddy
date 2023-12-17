@@ -16,7 +16,20 @@ import botocore
 from utils import bedrock, print_ww
 from utils.sarif_utils import get_code_snippet, construct_prompt, materialize
 
-path_to_sarif_file = "spotbugs-sarif.json"
+# Ensure that at least one argument is passed.
+if len(sys.argv) < 2:
+    # Show usage.
+    print("Usage: python sarif_riches_all.py <path_to_sarif_file>")
+    sys.exit(1)
+
+# Take the first argument and pass that to "path_to_sarif_file".
+# path_to_sarif_file = "spotbugs-sarif.json"
+path_to_sarif_file = sys.argv[1]
+
+# End verify it is not empty.
+if path_to_sarif_file == "":
+    print("Error: path_to_sarif_file is empty.")
+    sys.exit(1)
 
 sarif_data = loader.load_sarif_file(path_to_sarif_file)
 issue_count_by_severity = sarif_data.get_result_count_by_severity()

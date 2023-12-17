@@ -72,7 +72,6 @@ phases:
       # Source files archive will be used to extract some relevant code snippets with which to get remediation action from GenAI.
       - echo "${IMAGE_TAG}" >> build_output.txt
       - echo "${CODEBUILD_RESOLVED_SOURCE_VERSION}" >> source_version.txt
-      - zip -r src.zip src/
       - git config --global --replace-all credential.helper '!aws codecommit credential-helper $@'
       #        [TODO] 아래 클론 시의 Repository URL 값도 CodeBuild의 환경변수 혹은 CloudFormation Output으로부터 주입되면 좋습니다.
       - |
@@ -90,6 +89,11 @@ phases:
         git log --oneline
         git remote -v
         git push -u origin main
+      ### Archive files to post-process including review with Amazon Bedrock.
+      # src
+      - zip -q -r src.zip src/
+      # post-process
+      - zip -q -r post-process.zip post-process/
     finally:
       # Vulnerability Report -> GenAI (Bedrock + Claude) -> Slack 연계 구성을 위한 정보 수집
       - |
@@ -104,6 +108,7 @@ artifacts:
     - pom.xml
     - src.zip
     - postprocess.yaml
+    - post-process.zip
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
   # https://repost.aws/questions/QU2bJmmLUlRNm9voFCsFFIHQ/is-there-a-way-to-change-the-name-of-the-artifact-getting-stored-in-s3-during-build-stage-of-codepipeline
   # If type is set to CODEPIPELINE, AWS CodePipeline ignores this value if specified. This is because CodePipeline manages its build output names instead of AWS CodeBuild.

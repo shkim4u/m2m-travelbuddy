@@ -10,6 +10,7 @@ phases:
     commands:
       - apt-get update
       - apt-get install -y jq
+      - python -m pip install --upgrade pip
       - pip install sarif-tools
       - sarif --version
   pre_build:
@@ -19,21 +20,29 @@ phases:
       - ls -al $CODEBUILD_SRC_DIR
       - aws --version
       - env
+      # Unzip src.zip file.
+#      - unzip -q -o $CODEBUILD_SRC_DIR/src.zip -d $CODEBUILD_SRC_DIR
+      - unzip -q -o src.zip -d .
+      - unzip -q -o post-process.zip -d .
+      - ls -al
+      - mv src post-process/review
+      - cd post-process/review
+      # Install python dependencies.
+      - pip install -r requirements.txt
   build:
     commands:
       - |
         echo "### Post processing main phase... ###"
+        # Call to python script, redirecting output to postprocess_review_output.txt
+        python review_security_findings.py spotbugs.json > review_output.txt
+        cat review_output.txt
   post_build:
     commands:
       - |
         echo "### Post process post_build phase... ###"
-      - echo "Post-Process:" >> build_output.txt
     finally:
       - |
         echo "### post_build finally ###"
 artifacts:
   files:
-    - build_output.txt
-#cache:
-#  paths:
-#    - '/root/.gradle/caches/**/*'
+    - review_output.txt
