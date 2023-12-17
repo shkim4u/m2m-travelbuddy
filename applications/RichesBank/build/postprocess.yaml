@@ -11,8 +11,6 @@ phases:
       - apt-get update
       - apt-get install -y jq
       - python -m pip install --upgrade pip
-      - pip install sarif-tools
-      - sarif --version
   pre_build:
     commands:
       - echo "Print awscli version"
@@ -29,10 +27,12 @@ phases:
       - cd post-process/review
       # Install python dependencies.
       - pip install -r requirements.txt
+      - sarif --version
   build:
     commands:
       - |
         echo "### Post processing main phase... ###"
+        cd post-process/review
         # Call to python script, redirecting output to postprocess_review_output.txt
         python review_security_findings.py spotbugs.json > review_output.txt
         cat review_output.txt
