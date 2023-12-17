@@ -38,6 +38,8 @@ module "cicd" {
   eks_cluster_admin_role_arn = module.eks.cluster_admin_role_arn
   eks_cluster_deploy_role_arn = module.eks.cluster_deploy_role_arn
   eks_cluster_name = module.eks.cluster_name
+  cicd_appsec_slack_webhook_url = var.cicd_appsec_slack_webhook_url
+  cicd_appsec_slack_channel = var.cicd_appsec_slack_channel
 }
 
 ###

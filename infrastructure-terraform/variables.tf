@@ -34,3 +34,8 @@ variable "exclude_msk" {
   description = "True or False to exclude Amazon MSK cluster for its longer time to create"
   default = false
 }
+
+// [2023-12-18] CICD AppSec Slack Webhook URL
+
+variable "cicd_appsec_slack_webhook_url" {}
+variable "cicd_appsec_slack_channel" {}

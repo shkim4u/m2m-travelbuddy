@@ -291,6 +291,16 @@ resource "aws_codebuild_project" "post_process" {
     image = "aws/codebuild/standard:5.0"
     type = "LINUX_CONTAINER"
     privileged_mode = true
+
+    environment_variable {
+      name = "SLACK_WEBHOOK_URL"
+      value = var.slack_webhook_url
+    }
+
+    environment_variable {
+      name = "SLACK_CHANNEL"
+      value = var.slack_channel
+    }
   }
 
   source {

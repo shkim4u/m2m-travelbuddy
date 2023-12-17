@@ -15,6 +15,7 @@ import botocore
 # sys.path.append(os.path.abspath(module_path))
 from utils import bedrock, print_ww
 from utils.sarif_utils import get_code_snippet, construct_prompt, materialize
+from utils.send_to_collaboration_channel import send_to_slack_channel
 
 # Ensure that at least one argument is passed.
 if len(sys.argv) < 2:
@@ -42,7 +43,7 @@ print(f"Error histogram: {error_histogram}")
 print(f"Warning histogram: {warning_histogram}")
 print(f"Note histogram: {note_histogram}")
 
-with open('spotbugs-sarif.json', 'r') as file:
+with open(path_to_sarif_file, 'r') as file:
     data = json.load(file)
 
 with open('sarif-schema-2.1.0.json', 'r') as file:
@@ -66,6 +67,7 @@ boto3_bedrock = bedrock.get_bedrock_client(
 # Convert sarif_results to iterable.
 sarif_results = enumerate(sarif_results)
 
+vulnerability_infos = []
 # Iterate over all results.
 for index, sarif_result in sarif_results:
     # Get the message and rule index of the current finding.
@@ -74,7 +76,16 @@ for index, sarif_result in sarif_results:
 
     # Get the rule of the current finding.
     rule = sarif_rules[rule_index]
-    # Consider only the first relationship (eg. CWE).
+    rule_help_uri = rule.help_uri
+    # TODO: Find some other useful links to include something like below.
+    # There are shown when loading SpotBugs report XML file onto the SpotBugs UI.
+    # References
+    # Wikipedia: Authenticated encryption: https://en.wikipedia.org/wiki/Authenticated_encryption
+    # NIST: Authenticated Encryption Modes: https://csrc.nist.gov/projects/block-cipher-techniques/bcm/modes-development#01
+    # Moxie Marlinspike's blog: The Cryptographic Doom Principle: https://moxie.org/blog/the-cryptographic-doom-principle/
+    # CWE-353: Missing Support for Integrity Check: https://cwe.mitre.org/data/definitions/353.html
+
+    # Consider only the first relationship for now (eg. CWE).
     relationship = rule.relationships[0]
     target_id = relationship.target.id
     target_name = relationship.target.tool_component.name
@@ -110,9 +121,28 @@ for index, sarif_result in sarif_results:
         response = boto3_bedrock.invoke_model(body=body, modelId=modelId, accept=accept,
                                               contentType=contentType)
         response_body = json.loads(response.get('body').read())
+        completion = response_body.get('completion')
         print(f"=== [{index}] 답변 시작 ===")
-        print_ww(response_body.get('completion'))
+        print_ww(completion)
         print(f"=== [{index}] 답변 끝 ===")
+
+        vulnerability_infos.append({
+            "pretext": f"보안 취약점 정보 [{index}]: {artifact_location_uri}: [line {relevant_code_line}]",
+            "title": f"{target_name}-({target_id}): {message_text}",
+            "title_link": rule_help_uri,
+            "fields": [
+                {
+                    "title": "취약점 코드 조각",
+                    "value": f"```java\n{code_snippet}\n```",
+                    "short": False
+                },
+                {
+                    "title": "권장 조치 사항",
+                    "value": f"```{completion}```",
+                    "short": False
+                }
+            ]
+        })
     except botocore.exceptions.ClientError as error:
         if error.response['Error']['Code'] == 'AccessDeniedException':
             print(f"\x1b[41m{error.response['Error']['Message']}\
@@ -122,3 +152,22 @@ for index, sarif_result in sarif_results:
 
         else:
             raise error
+
+# TODO: 전체 취약점 정보를 모아 한번에 Slack으로 보내는데, Slack 메시지의 최대 길이는 40,000자이므로 이 사항을 확인하여 건별로 보내는 것도 고려할 것.
+# Truncating content
+# ===
+# For best results, limit the number of characters in the text field to 4,000 characters. Ideally, messages should be short and human-readable. Slack will truncate messages containing more than 40,000 characters. If you need to post longer messages, please consider uploading a snippet instead.
+# # If using blocks, the limit and truncation of characters will be determined by the specific type of block.
+# ===
+# https://api.slack.com/methods/chat.postMessage
+# For Free and Standard plans: The maximum message size is 1MB, which includes the message text, any attachments, and inline images.
+# For Plus and Enterprise Grid plans: The maximum message size is 2GB.
+slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
+slack_channel = os.environ.get("SLACK_CHANNEL", None)
+send_to_slack_channel(
+    webhook_url=slack_webhook_url,
+    channel=slack_channel,
+    icon_emoji=":warning:",
+    text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
+    vulnerability_infos=vulnerability_infos
+)

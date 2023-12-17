@@ -24,6 +24,7 @@ phases:
       - unzip -q -o post-process.zip -d .
       - ls -al
       - mv src post-process/review
+      - mv spotbugs.json post-process/review
       - cd post-process/review
       # Install python dependencies.
       - pip install -r requirements.txt
@@ -32,10 +33,9 @@ phases:
     commands:
       - |
         echo "### Post processing main phase... ###"
-        cd post-process/review
-        # Call to python script, redirecting output to postprocess_review_output.txt
-        python review_security_findings.py spotbugs.json > review_output.txt
-        cat review_output.txt
+        cd $CODEBUILD_SRC_DIR/post-process/review
+        # Call to python script, redirecting output to postprocess_review_output.txt without buffering output.
+        python -u review_security_findings.py spotbugs.json | tee $CODEBUILD_SRC_DIR/review_output.txt
   post_build:
     commands:
       - |

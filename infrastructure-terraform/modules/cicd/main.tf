@@ -8,6 +8,8 @@ module "ci_pipeline" {
   name = var.name
   ecr_repository_arn = module.ecr.repository_arn
   ecr_repository_url = module.ecr.repository_url
+  slack_webhook_url = var.cicd_appsec_slack_webhook_url
+  slack_channel = var.cicd_appsec_slack_channel
 }
 
 module "cd_pipeline" {

@@ -90,6 +90,7 @@ phases:
         git remote -v
         git push -u origin main
       ### Archive files to post-process including review with Amazon Bedrock.
+      - cd $CODEBUILD_SRC_DIR
       # src
       - zip -q -r src.zip src/
       # post-process
