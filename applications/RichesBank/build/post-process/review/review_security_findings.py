@@ -1,15 +1,10 @@
-from sarif import loader
-import json
-
-import attrs
-import sarif_om
-
 import json
 import os
 import sys
 
-import boto3
 import botocore
+import sarif_om
+from sarif import loader
 
 # module_path = ".."
 # sys.path.append(os.path.abspath(module_path))
@@ -105,7 +100,7 @@ for index, sarif_result in sarif_results:
     body = json.dumps({
         "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
         "max_tokens_to_sample": 1024,
-        "temperature": 0.05,
+        "temperature": 0.1,
         "top_p": 0.9,
         "stop_sequences": ["\n\nHuman:"]
     })
@@ -128,7 +123,7 @@ for index, sarif_result in sarif_results:
 
         vulnerability_infos.append({
             "pretext": f"보안 취약점 정보 [{index}]: {artifact_location_uri}: [line {relevant_code_line}]",
-            "title": f"{target_name}-({target_id}): {message_text}",
+            "title": f"{target_name}-{target_id}: {message_text}",
             "title_link": rule_help_uri,
             "fields": [
                 {

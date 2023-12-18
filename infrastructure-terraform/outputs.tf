@@ -79,3 +79,17 @@ output "frontend_cloudfront_domain_name" {
   description = "(Frontend) CloudFront Domain Name"
   value = module.frontend.frontend_cloudfront_domain_name
 }
+
+
+###
+### CI/CI
+###
+output "cicd_appsec_slack_webhook_url" {
+  description = "(CICD) Slack webhook URL to notify application vulnerabilities and recommended mitigations (AppSec)"
+  value = module.cicd.ci_slack_webhook_url
+}
+
+output "cicd_appsec_slack_channel" {
+  description = "(CICD) Slack channel to notify application vulnerabilities and recommended mitigations (AppSec)"
+  value = module.cicd.ci_slack_channel
+}
