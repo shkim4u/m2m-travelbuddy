@@ -301,6 +301,11 @@ resource "aws_codebuild_project" "post_process" {
       name = "SLACK_CHANNEL"
       value = var.slack_channel
     }
+
+    environment_variable {
+      name  = "SLACK_SEND_BATCH_SIZE"
+      value = "1"
+    }
   }
 
   source {

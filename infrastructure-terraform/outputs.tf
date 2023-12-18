@@ -86,10 +86,10 @@ output "frontend_cloudfront_domain_name" {
 ###
 output "cicd_appsec_slack_webhook_url" {
   description = "(CICD) Slack webhook URL to notify application vulnerabilities and recommended mitigations (AppSec)"
-  value = module.cicd.ci_slack_webhook_url
+  value = var.cicd_appsec_slack_webhook_url
 }
 
 output "cicd_appsec_slack_channel" {
   description = "(CICD) Slack channel to notify application vulnerabilities and recommended mitigations (AppSec)"
-  value = module.cicd.ci_slack_channel
+  value = var.cicd_appsec_slack_channel
 }

@@ -62,6 +62,12 @@ boto3_bedrock = bedrock.get_bedrock_client(
 # Convert sarif_results to iterable.
 sarif_results = enumerate(sarif_results)
 
+# Check the environment variable integer value "SLACK_SEND_BATCH_SIZE".
+# 0: send all vulnerability infos to Slack at once at last.
+# <N>: send all vulnerability infos to Slack at once at last, but also in batches of <N> vulnerabilities.
+
+slack_send_batch_size = os.environ.get("SLACK_SEND_BATCH_SIZE", 1)
+
 vulnerability_infos = []
 # Iterate over all results.
 for index, sarif_result in sarif_results:
@@ -138,6 +144,21 @@ for index, sarif_result in sarif_results:
                 }
             ]
         })
+
+        # Check if "slack_send_batch_size" is multiple of "index + 1" and not "0".
+        # If so, send the vulnerability infos to Slack.
+        if slack_send_batch_size != 0 and (index + 1) % int(slack_send_batch_size) == 0:
+            slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
+            slack_channel = os.environ.get("SLACK_CHANNEL", None)
+            send_to_slack_channel(
+                webhook_url=slack_webhook_url,
+                channel=slack_channel,
+                icon_emoji=":warning:",
+                text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
+                vulnerability_infos=vulnerability_infos
+            )
+            vulnerability_infos = []
+
     except botocore.exceptions.ClientError as error:
         if error.response['Error']['Code'] == 'AccessDeniedException':
             print(f"\x1b[41m{error.response['Error']['Message']}\
@@ -157,12 +178,14 @@ for index, sarif_result in sarif_results:
 # https://api.slack.com/methods/chat.postMessage
 # For Free and Standard plans: The maximum message size is 1MB, which includes the message text, any attachments, and inline images.
 # For Plus and Enterprise Grid plans: The maximum message size is 2GB.
-slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
-slack_channel = os.environ.get("SLACK_CHANNEL", None)
-send_to_slack_channel(
-    webhook_url=slack_webhook_url,
-    channel=slack_channel,
-    icon_emoji=":warning:",
-    text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
-    vulnerability_infos=vulnerability_infos
-)
+# Check if "vulnerability_infos" has any vulnerability info left.
+if len(vulnerability_infos) > 0:
+    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
+    slack_channel = os.environ.get("SLACK_CHANNEL", None)
+    send_to_slack_channel(
+        webhook_url=slack_webhook_url,
+        channel=slack_channel,
+        icon_emoji=":warning:",
+        text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
+        vulnerability_infos=vulnerability_infos
+    )
