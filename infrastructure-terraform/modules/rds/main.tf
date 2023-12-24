@@ -60,8 +60,17 @@ resource "random_id" "secrets_random_id" {
   byte_length = 4
 }
 
+# Issue when modifying resources: You can't create this secret because a secret with this name is already scheduled for deletion.
+# - How can I immediately delete a Secrets Manager secret so that I can create a new secret with the same name?: https://repost.aws/knowledge-center/delete-secrets-manager-secret
+# aws secretsmanager delete-secret --secret-id your-secret-name --force-delete-without-recovery --region your-region
+# aws secretsmanager describe-secret --secret-id your-secret-name --region your-region
+# An error occurred (ResourceNotFoundException) when calling the DescribeSecret operation: Secrets Manager can't find the specified secret.
+# This error means that the secret is successfully deleted.
 resource "aws_secretsmanager_secret" "flightspecials_db_credentials_test" {
-  name = "flightspecials_db_credentials_test_${local.date}-${random_id.secrets_random_id.hex}"
+#  name = "flightspecials_db_credentials_test_${local.date}-${random_id.secrets_random_id.hex}"
+  # Restore back to the original simple name with "recovery_window_in_days" = 0, which means force deletion without recovery.
+  name = "flightspecials_db_credentials_test"
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "flightspecials_db_credentials_test" {

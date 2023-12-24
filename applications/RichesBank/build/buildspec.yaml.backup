@@ -49,7 +49,7 @@ phases:
       - |
         echo "### Checking quality and security metrics ###"
         echo "# Just printing some crucial metrics for now, with more coming soon..."
-        echo "# Save vulnerability report files SpotBugs-native and SARIF format to be uploaed as artifacts later..." 
+        echo "# Save vulnerability report files SpotBugs-native and SARIF format to be uploaed as artifacts later..."
         docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml > spotbugs.xml
         docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-sarif.json > spotbugs.json
         export LOC=$(cloc src | grep SUM | awk '{print $5}')
@@ -73,9 +73,23 @@ phases:
       # Source files archive will be used to extract some relevant code snippets with which to get remediation action from GenAI.
       - echo "${IMAGE_TAG}" > image_tag.txt
       - echo "${CODEBUILD_RESOLVED_SOURCE_VERSION}" >> source_version.txt
-
-      # [2023-12-24] KSH: GitOps를 위한 Helm Chart 파일에 업데이트하는 부분은 "deploy" 단계로 이동
-
+      - git config --global --replace-all credential.helper '!aws codecommit credential-helper $@'
+      #        [TODO] 아래 클론 시의 Repository URL 값도 CodeBuild의 환경변수 혹은 CloudFormation Output으로부터 주입되면 좋습니다.
+      - |
+        echo "### Update value to manifest repository ###"
+        git clone https://git-codecommit.ap-northeast-2.amazonaws.com/v1/repos/riches-configuration
+        cd riches-configuration
+        ls -al
+        cat values-template.yaml | envsubst > ./values.yaml
+        cat ./values.yaml
+        git status
+        git config user.email "anyone@example.com"
+        git config user.name "RichesBank Developer"
+        git add .
+        git commit -m "Updated image tag to $IMAGE_TAG"
+        git log --oneline
+        git remote -v
+        git push -u origin main
       ### Archive files to post-process including review with Amazon Bedrock.
       - cd $CODEBUILD_SRC_DIR
       # src
@@ -99,7 +113,6 @@ artifacts:
     - postprocess.yaml
     - post-process.zip
     - approval-handler.yaml
-    - deployspec.yaml
   # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
   # https://repost.aws/questions/QU2bJmmLUlRNm9voFCsFFIHQ/is-there-a-way-to-change-the-name-of-the-artifact-getting-stored-in-s3-during-build-stage-of-codepipeline
   # If type is set to CODEPIPELINE, AWS CodePipeline ignores this value if specified. This is because CodePipeline manages its build output names instead of AWS CodeBuild.

@@ -205,10 +205,10 @@ phases:
       - |
         echo "### Pushing container image tag to SSM for reuse ###"
         aws ssm put-parameter --name $IMAGE_TAG_KEY --value $IMAGE_TAG --type String --region $REGION --overwrite
-      - echo "${IMAGE_TAG}" >> build_output.txt
+      - echo "${IMAGE_TAG}" > image_tag.txt
 artifacts:
   files:
-    - build_output.txt
+    - image_tag.txt
 cache:
   paths:
     - '/root/.gradle/caches/**/*'

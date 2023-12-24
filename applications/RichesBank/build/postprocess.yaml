@@ -14,12 +14,10 @@ phases:
   pre_build:
     commands:
       - echo "Print awscli version"
+      - aws --version
       - echo $CODEBUILD_SRC_DIR
       - ls -al $CODEBUILD_SRC_DIR
-      - aws --version
       - env
-      # Unzip src.zip file.
-#      - unzip -q -o $CODEBUILD_SRC_DIR/src.zip -d $CODEBUILD_SRC_DIR
       - unzip -q -o src.zip -d .
       - unzip -q -o post-process.zip -d .
       - ls -al

@@ -62,11 +62,11 @@ boto3_bedrock = bedrock.get_bedrock_client(
 # Convert sarif_results to iterable.
 sarif_results = enumerate(sarif_results)
 
-# Check the environment variable integer value "SLACK_SEND_BATCH_SIZE".
+# Check the environment variable integer value "DEV_SLACK_SEND_BATCH_SIZE".
 # 0: send all vulnerability infos to Slack at once at last.
 # <N>: send all vulnerability infos to Slack at once at last, but also in batches of <N> vulnerabilities.
 
-slack_send_batch_size = os.environ.get("SLACK_SEND_BATCH_SIZE", 1)
+dev_slack_send_batch_size = os.environ.get("DEV_SLACK_SEND_BATCH_SIZE", 1)
 
 vulnerability_infos = []
 # Iterate over all results.
@@ -119,10 +119,22 @@ for index, sarif_result in sarif_results:
     outputText = "\n"
 
     try:
-        response = boto3_bedrock.invoke_model(body=body, modelId=modelId, accept=accept,
-                                              contentType=contentType)
-        response_body = json.loads(response.get('body').read())
-        completion = response_body.get('completion')
+        # Mock boto3_bedrock.invoke_model() for now if "MOCK_BEDROCK" is set to "true".
+        if os.environ.get("MOCK_BEDROCK", "false") == "true":
+            response = {
+                'statusCode': 200,
+                'body': {
+                    'completion': 'This is a mock response.'
+                }
+            }
+            response_body = json.dumps(response.get('body'))
+            # Get "completion" from the response body.
+            completion = json.loads(response_body).get('completion')
+        else:
+            response = boto3_bedrock.invoke_model(body=body, modelId=modelId, accept=accept,
+                                                  contentType=contentType)
+            response_body = json.loads(response.get('body').read())
+            completion = response_body.get('completion')
         print(f"=== [{index}] 답변 시작 ===")
         print_ww(completion)
         print(f"=== [{index}] 답변 끝 ===")
@@ -145,14 +157,14 @@ for index, sarif_result in sarif_results:
             ]
         })
 
-        # Check if "slack_send_batch_size" is multiple of "index + 1" and not "0".
+        # Check if "dev_slack_send_batch_size" is multiple of "index + 1" and not "0".
         # If so, send the vulnerability infos to Slack.
-        if slack_send_batch_size != 0 and (index + 1) % int(slack_send_batch_size) == 0:
-            slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
-            slack_channel = os.environ.get("SLACK_CHANNEL", None)
+        if dev_slack_send_batch_size != 0 and (index + 1) % int(dev_slack_send_batch_size) == 0:
+            dev_slack_webhook_url = os.environ.get("DEV_SLACK_WEBHOOK_URL", None)
+            dev_slack_channel = os.environ.get("DEV_SLACK_CHANNEL", None)
             send_to_slack_channel(
-                webhook_url=slack_webhook_url,
-                channel=slack_channel,
+                webhook_url=dev_slack_webhook_url,
+                channel=dev_slack_channel,
                 icon_emoji=":warning:",
                 text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
                 vulnerability_infos=vulnerability_infos
@@ -180,11 +192,11 @@ for index, sarif_result in sarif_results:
 # For Plus and Enterprise Grid plans: The maximum message size is 2GB.
 # Check if "vulnerability_infos" has any vulnerability info left.
 if len(vulnerability_infos) > 0:
-    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
-    slack_channel = os.environ.get("SLACK_CHANNEL", None)
+    dev_slack_webhook_url = os.environ.get("DEV_SLACK_WEBHOOK_URL", None)
+    dev_slack_channel = os.environ.get("DEV_SLACK_CHANNEL", None)
     send_to_slack_channel(
-        webhook_url=slack_webhook_url,
-        channel=slack_channel,
+        webhook_url=dev_slack_webhook_url,
+        channel=dev_slack_channel,
         icon_emoji=":warning:",
         text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",
         vulnerability_infos=vulnerability_infos

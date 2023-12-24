@@ -182,9 +182,9 @@ Process process = processBuilder.start();
         }
     ]
 
-    slack_webhook_url = os.environ.get("SLACK_WEBHOOK_URL", None)
+    dev_slack_webhook_url = os.environ.get("DEV_SLACK_WEBHOOK_URL", None)
     send_to_slack_channel(
-        webhook_url=slack_webhook_url,
+        webhook_url=dev_slack_webhook_url,
         channel="sanghyoun-security-alerts",
         icon_emoji=":warning:",
         text="어플리케이션 보안 취약점: (TODO) 스캔 시간, Application 이름, Committer, CommitId 등",

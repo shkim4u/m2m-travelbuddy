@@ -31,15 +31,18 @@ module "cicd" {
   for_each = {
     "cicd-travelbuddy" = "travelbuddy"
     "cicd-flightspecials" = "flightspecials"
-    "cide-riches" = "riches"
+    # TODO: Fix typo in the following line.
+    "cicd-riches" = "riches"
   }
 
   name = each.value
   eks_cluster_admin_role_arn = module.eks.cluster_admin_role_arn
   eks_cluster_deploy_role_arn = module.eks.cluster_deploy_role_arn
   eks_cluster_name = module.eks.cluster_name
-  cicd_appsec_slack_webhook_url = var.cicd_appsec_slack_webhook_url
-  cicd_appsec_slack_channel = var.cicd_appsec_slack_channel
+  cicd_appsec_dev_slack_webhook_url = var.cicd_appsec_dev_slack_webhook_url
+  cicd_appsec_dev_slack_channel = var.cicd_appsec_dev_slack_channel
+  cicd_appsec_sec_slack_webhook_url = var.cicd_appsec_sec_slack_webhook_url
+  cicd_appsec_sec_slack_channel = var.cicd_appsec_sec_slack_channel
 }
 
 ###

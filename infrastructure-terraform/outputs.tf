@@ -84,12 +84,22 @@ output "frontend_cloudfront_domain_name" {
 ###
 ### CI/CI
 ###
-output "cicd_appsec_slack_webhook_url" {
-  description = "(CICD) Slack webhook URL to notify application vulnerabilities and recommended mitigations (AppSec)"
-  value = var.cicd_appsec_slack_webhook_url
+output "cicd_appsec_dev_slack_webhook_url" {
+  description = "(CICD) Slack webhook URL to notify application vulnerabilities and recommended mitigations for developers (AppSec)"
+  value = var.cicd_appsec_dev_slack_webhook_url
 }
 
-output "cicd_appsec_slack_channel" {
-  description = "(CICD) Slack channel to notify application vulnerabilities and recommended mitigations (AppSec)"
-  value = var.cicd_appsec_slack_channel
+output "cicd_appsec_dev_slack_channel" {
+  description = "(CICD) Slack channel to notify application vulnerabilities and recommended mitigations for developers (AppSec)"
+  value = var.cicd_appsec_dev_slack_channel
+}
+
+output "cicd_appsec_sec_slack_webhook_url" {
+  description = "(CICD) Slack webhook URL to notify high NVS (Normalized Vulnerability Score) alert for security staffs (AppSec)"
+  value = var.cicd_appsec_sec_slack_webhook_url
+}
+
+output "cicd_appsec_sec_slack_channel" {
+  description = "(CICD) Slack channel to notify high NVS (Normalized Vulnerability Score) alert for security staffs (AppSec)"
+  value = var.cicd_appsec_sec_slack_channel
 }
