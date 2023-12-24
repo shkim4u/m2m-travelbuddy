@@ -22,6 +22,7 @@ module "deploy" {
   phase                       = local.phase
   pipeline_artifact_bucket_arn    = aws_s3_bucket.pipeline_artifact.arn
   application_configuration_repo_url = var.application_configuration_repo_url
+  ecr_repository_url = var.ecr_repository_url
 }
 
 ###

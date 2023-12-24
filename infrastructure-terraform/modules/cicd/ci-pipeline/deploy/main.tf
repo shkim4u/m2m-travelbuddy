@@ -93,6 +93,14 @@ data "aws_iam_policy_document" "deploy_role_policy" {
   statement {
     effect = "Allow"
     actions = [
+      "acm:ListCertificates"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
       "sts:AssumeRole"
     ]
     resources = [
@@ -123,7 +131,6 @@ resource "aws_iam_role_policy_attachment" "this" {
   role = aws_iam_role.this.name
 }
 
-
 resource "aws_codebuild_project" "deploy" {
   name = "${var.name}-${var.phase}-deploy"
   service_role = aws_iam_role.this.arn
@@ -146,6 +153,11 @@ resource "aws_codebuild_project" "deploy" {
     environment_variable {
       name = "CLUSTER_NAME"
       value = var.eks_cluster_name
+    }
+
+    environment_variable {
+      name = "ECR_REPO_URI"
+      value = var.ecr_repository_url
     }
 
     environment_variable {

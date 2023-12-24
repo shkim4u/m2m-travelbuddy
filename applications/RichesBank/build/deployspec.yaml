@@ -20,6 +20,10 @@ phases:
     commands:
       - echo "AWSCLI version..."
       - aws --version
+      # [2023-12-24] KSH: GitOps를 위한 Helm Chart 파일에 업데이트하는 부분은 "deploy" 단계로 이동
+      - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text`
+      - echo "## CERTIFICATE_ARN-> ${CERTIFICATE_ARN}"
+      # [2023-12-24] KSH: Access to EKS cluster.
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output=text) && echo $AWS_ACCOUNT_ID
       - export CREDENTIALS=$(aws sts assume-role --role-arn $ASSUME_ROLE_ARN --role-session-name codebuild-deploy-eks-role) && echo $CREDENTIALS
       - export AWS_ACCESS_KEY_ID=$(echo "${CREDENTIALS}" | jq -r '.Credentials.AccessKeyId')

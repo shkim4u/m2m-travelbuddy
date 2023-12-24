@@ -341,3 +341,5 @@ terraform.log
 
 acat_report/
 riches-analysis/
+
+set-terraform-default-variables.sh

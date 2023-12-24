@@ -167,6 +167,7 @@ resource "aws_codebuild_project" "deploy" {
 ## S3 bucket for CodePipeline artifact.
 resource "aws_s3_bucket" "pipeline_artifact" {
   bucket = "pipeline-artifact-${var.name}-${local.phase}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  force_destroy = true
 }
 
 ###

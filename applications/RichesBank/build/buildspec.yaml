@@ -33,8 +33,10 @@ phases:
 #      - export DATABASE_ENDPOINT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Address" --output text) && echo $DATABASE_ENDPOINT
 #      - export DATABASE_PORT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Port" --output text) && echo $DATABASE_PORT
 #      - export DATABASE_USERNAME=$(aws secretsmanager list-secrets --filters Key=tag-value,Values="arn:aws:rds:ap-northeast-2:${AWS_ACCOUNT_ID}:db:riches-test-postgres-db" --query "SecretList[0].Name" --output text) && echo $DATABASE_USERNAME
-      - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text`
-      - echo "## CERTIFICATE_ARN-> ${CERTIFICATE_ARN}"
+
+      # [2023-12-24] KSH: GitOps를 위한 Helm Chart 파일에 업데이트하는 부분은 "deploy" 단계로 이동
+#      - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text`
+#      - echo "## CERTIFICATE_ARN-> ${CERTIFICATE_ARN}"
       - env
   build:
     commands:

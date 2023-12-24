@@ -78,6 +78,12 @@ echo $TF_VAR_ca_arn
 아래와 같이 Private CA가 활성 상태인 것을 확인합니다.<br>
 ![Private CA Active](./assets/private-ca-active.png)
 
+> (주의)<br>
+> [2023-12-25] 현재 아래 사항을 환경 변수에 추가로 설정해야 합니다. 해당 내용에 대해서는 `sanghyou@amazon.com`에 문의하세요.
+> * EKS 클러스 이름
+> * 개발자 슬랙 채널 이름과 웹훅 URL
+> * 보안 담당자 슬랙 채널과 휍훅 URL
+
 
 이제 아래 명령어를 통해 ```Amazon EKS ``` 클러스터 및 기타 자원을 생성합니다. 15 ~ 20분 정도 소요됩니다.<br>
 ```bash
@@ -92,6 +98,14 @@ terraform plan
 
 # terraform apply
 terraform apply -var='exclude_msk=true' -auto-approve
+```
+
+모든 자원의 생성이 완료되면 아래와 같이 ArgoCD Admin 암호를 설정합니다.<br>
+```bash
+# 아래 명령을 수행하면 ArgoCD 서버의 Admin 암호를 설정하고 이를 AWS Secrets Manager에 동기화 저장합니다.
+# AWS Secrets Manager에 동기화 저장된 암호는 어플리케이션의 배포 파이프라인에서 배포 단계에 사용됩니다.
+cd ~/environment/cloud9
+./set-argocd-admin-password.sh <선호하는 ArgoCD Admin 암호> <AWS Secrets Manager Secrets ID: (예) riches-ci-argocd-admin-password>
 ```
 
 ## 5. 취약 어플리케이션 배포
@@ -222,6 +236,7 @@ git push --set-upstream ccorigin main
 export ARGOCD_SERVER=`kubectl get ingress/argocd-server -n argocd -o json | jq --raw-output '.status.loadBalancer.ingress[0].hostname'`
 echo https://$ARGOCD_SERVER
 
+# 아래는 위에서 ArgoCD Admin 사용자의 암호를 변경하였으므로 더 이상 유효하지 않습니다만, 기록을 위해 남겨둡니다.
 # ArgoCD의 기본 사용자 (admin) 패스워드 확인
 ARGO_PWD=`kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d`
 echo $ARGO_PWD
