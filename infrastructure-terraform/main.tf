@@ -33,6 +33,7 @@ module "cicd" {
     "cicd-flightspecials" = "flightspecials"
     # TODO: Fix typo in the following line.
     "cicd-riches" = "riches"
+    "cicd-webgoat" = "webgoat"
   }
 
   name = each.value

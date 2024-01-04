@@ -33,8 +33,12 @@ phases:
             if [ $(echo "$NVS >= $NVS_THRESHOLD" | bc) -eq 1 ]; then
                 # Send approval request to Slack via REST API.
                 echo "### Sending approval request to collaboration channel of security staff via REST API... ###"
+                # Get AWS CodePipeline manual approval URL.
+                # Not working when without SNS notification.
+                APPROVAL_URL=$(aws codepipeline get-pipeline-state --name ${PIPELINE_NAME} --query "stageStates[?stageName=='${STAGE_NAME}'].actionStates[?actionName=='${ACTION_NAME}'].latestExecution[?status=='InProgress'].externalExecutionUrl" --output text)
+                TEXT="Application 배포 진행 중 검출된 취약점이 기준을 초과하였습니다 (NVS: ${NVS} >= NVS_THRESHOLD: ${NVS_THRESHOLD}). 현황을 살펴보시고 배포를 승인하거나 반려하시기 바랍니다 - ${APPROVAL_URL}."
                 curl --location ${SEC_SLACK_WEBHOOK_URL} \
-                --header "Content-Type: application/json" --data "{\"channel\": \"${SEC_SLACK_CHANNEL}\", \"icon-emoji\": \":warning:\", \"text\": \"Application 배포 진행 중 검출된 취약점이 기준을 초과하였습니다. 현황을 살펴보시고 배포를 승인하거나 반려하시기 바랍니다.\"}"
+                --header "Content-Type: application/json" --data "{\"channel\": \"${SEC_SLACK_CHANNEL}\", \"icon-emoji\": \":warning:\", \"text\": \"${TEXT}\"}"
             else
                 echo "### Setting CodePipeline approval status to Approved ###"
                 # CodePipeline Name: Predefined ${CODEBUILD_INITIATOR} or ${PIPELINE_NAME}

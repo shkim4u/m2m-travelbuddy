@@ -53,6 +53,7 @@ sarif_results = sarif_run.results
 
 # Initialize Bedrock client.
 # ---- ⚠️ Un-comment and edit the below lines as needed for your AWS setup ⚠️ ----
+# os.environ["AWS_DEFAULT_REGION"] = "ap-northeast-1"  # E.g. "us-east-1"
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"  # E.g. "us-east-1"
 boto3_bedrock = bedrock.get_bedrock_client(
     assumed_role=os.environ.get("BEDROCK_ASSUME_ROLE", None),
