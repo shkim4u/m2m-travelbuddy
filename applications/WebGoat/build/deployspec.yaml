@@ -48,7 +48,7 @@ phases:
         cat ./values.yaml
         git status
         git config user.email "anyone@example.com"
-        git config user.name "RichesBank Developer"
+        git config user.name "WebGoat Developer"
         git add .
         git commit -m "Updated image tag to $IMAGE_TAG"
         git log --oneline

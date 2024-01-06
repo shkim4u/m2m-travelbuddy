@@ -1,0 +1,5 @@
+boto3
+sarif-tools
+attrs
+sarif_om
+requests

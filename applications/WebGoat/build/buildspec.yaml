@@ -5,10 +5,11 @@ env:
   variables:
     REGION: "ap-northeast-2"
     ENVIRONMENT: test
+#run-as: root
 phases:
   install:
-    # runtime-versions:
-    #   java: corretto11
+    runtime-versions:
+      java: corretto17
     commands:
       - apt-get update
       - apt-get install -y jq
@@ -29,17 +30,12 @@ phases:
       - export TAG=$(echo "${TAG:0:8}")
       - export IMAGE_TAG="${TAG}"
       - echo "## TAG-> ${TAG}"
-#      - echo "### Retrieving database information..."
-#      - export DATABASE_ENDPOINT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Address" --output text) && echo $DATABASE_ENDPOINT
-#      - export DATABASE_PORT=$(aws rds describe-db-instances --query "DBInstances[?DBInstanceIdentifier=='riches-test-postgres-db'].Endpoint.Port" --output text) && echo $DATABASE_PORT
-#      - export DATABASE_USERNAME=$(aws secretsmanager list-secrets --filters Key=tag-value,Values="arn:aws:rds:ap-northeast-2:${AWS_ACCOUNT_ID}:db:riches-test-postgres-db" --query "SecretList[0].Name" --output text) && echo $DATABASE_USERNAME
-
-      # [2023-12-24] KSH: GitOps를 위한 Helm Chart 파일에 업데이트하는 부분은 "deploy" 단계로 이동
-#      - export CERTIFICATE_ARN=`aws acm list-certificates --query "CertificateSummaryList[?DomainName=='www.mydemo.co.kr'].CertificateArn" --output text`
-#      - echo "## CERTIFICATE_ARN-> ${CERTIFICATE_ARN}"
       - env
   build:
     commands:
+      - |
+        echo "### Building sources ###"
+        ./mvnw -q clean compile spotbugs:spotbugs install
       - |
         echo "### Building Container Image ###"
         echo $CODEBUILD_SRC_DIR
@@ -52,8 +48,8 @@ phases:
         echo "### Checking quality and security metrics ###"
         echo "# Just printing some crucial metrics for now, with more coming soon..."
         echo "# Save vulnerability report files SpotBugs-native and SARIF format to be uploaded as artifacts later..." 
-        docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-xml.xml > spotbugs.xml
-        docker run --rm -t $ECR_REPO_URI:latest cat /usr/local/tomcat/webapps/spotbugs-sarif.json > spotbugs.json
+        cp target/spotbugsXml.xml spotbugs.xml
+        cp target/spotbugsSarif.json spotbugs.json
         export LOC=$(cloc src | grep SUM | awk '{print $5}')
         echo "# LOC: "
         echo ${LOC}
@@ -102,15 +98,3 @@ artifacts:
     - post-process.zip
     - approval-handler.yaml
     - deployspec.yaml
-  # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
-  # https://repost.aws/questions/QU2bJmmLUlRNm9voFCsFFIHQ/is-there-a-way-to-change-the-name-of-the-artifact-getting-stored-in-s3-during-build-stage-of-codepipeline
-  # If type is set to CODEPIPELINE, AWS CodePipeline ignores this value if specified. This is because CodePipeline manages its build output names instead of AWS CodeBuild.
-  # name: build/${CODEBUILD_RESOLVED_SOURCE_VERSION}
-
-  # Semantic Versioning도 Pipeline에 속한 CodeBuild에서는 활성화 불가하므로 사용되지 않음
-  # name: riches-artifact-$(date '+%Y-%m-%d-%H-%M-%S')
-  # Following is not used the artifact namespace type is CodePipeline.
-  # s3-prefix: $CODEBUILD_RESOLVED_SOURCE_VERSION
-#cache:
-#  paths:
-#    - '/root/.gradle/caches/**/*'

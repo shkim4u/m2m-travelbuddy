@@ -147,14 +147,14 @@ git push --set-upstream origin main
 ```bash
 # 1. 어플리케이션 Helm Artifact 경로로 이동
 # (참고) 소스를 다운로드 받을 위치에 따라 아래의 경로를 적절하게 수정합니다.  
-cd ~/environment/appsec/applications/RichesBank/helm
+cd ~/environment/appsec/applications/WebGoat/helm
 
 # 2. git 연결
 # 우리는 Git 리포지터리를 초기화하지 않았으므로, 아래와 같이 하면 Outer git 저장소 내에 Inner git 저장소를 Tracking하게 됩니다. 이와 유사하지만 Git 저장소 내에서 Nested Git 저장소를 좀 더 체계적으로 운영하는 방법은 Git Submodule이 있습니다.
 git init
 git branch -M main
 
-export HELM_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name riches-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
+export HELM_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name webgoat-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
 echo $HELM_CODECOMMIT_URL
 
 # CodeCommit 배포 리포지터리와 연결
@@ -175,14 +175,14 @@ git push --set-upstream ccorigin main
 # 0. Git 초기화는 위에서 수행하였으므로 다시 수행하지 않아도 됩니다.
 
 # 1. 어플리케이션 소스 경로로 이동
-cd ~/environment/appsec/applications/RichesBank/build
+cd ~/environment/appsec/applications/WebGoat/build
 
 # 2. git 연결
 git init
 git branch -M main
 
 # AWS CLI를 통해서도 HTTPS URL을 바로 확인할 수 있습니다.
-export APP_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name riches-application --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
+export APP_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name webgoat-application --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*' | grep -o '[^"]*$')
 echo $APP_CODECOMMIT_URL
 
 # CodeCommit 소스 리포지터리와 연결

@@ -338,7 +338,7 @@ resource "aws_codebuild_project" "build" {
 
   environment {
     compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:5.0"
+    image = "aws/codebuild/standard:7.0"
     type = "LINUX_CONTAINER"
     privileged_mode = true
     environment_variable {
@@ -393,7 +393,7 @@ resource "aws_codebuild_project" "post_process" {
 
   environment {
     compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:5.0"
+    image = "aws/codebuild/standard:7.0"
     type = "LINUX_CONTAINER"
     privileged_mode = true
 
@@ -444,7 +444,7 @@ resource "aws_codebuild_project" "approval_handler" {
 
   environment {
     compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:5.0"
+    image = "aws/codebuild/standard:7.0"
     type = "LINUX_CONTAINER"
     privileged_mode = true
 

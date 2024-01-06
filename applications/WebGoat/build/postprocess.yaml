@@ -1,0 +1,46 @@
+version: 0.2
+env:
+  shell: bash
+  git-credential-helper: yes
+  variables:
+    REGION: "ap-northeast-2"
+    ENVIRONMENT: test
+phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get install -y jq
+      - python -m pip install --upgrade pip
+  pre_build:
+    commands:
+      - echo "Print awscli version"
+      - aws --version
+      - echo $CODEBUILD_SRC_DIR
+      - ls -al $CODEBUILD_SRC_DIR
+      - env
+      - unzip -q -o src.zip -d .
+      - unzip -q -o post-process.zip -d .
+      - ls -al
+      - mv src post-process/review
+      - mv spotbugs.json post-process/review
+      - cd post-process/review
+      # Install python dependencies.
+      - pip install -r requirements.txt
+      - sarif --version
+  build:
+    commands:
+      - |
+        echo "### Post processing main phase... ###"
+        cd $CODEBUILD_SRC_DIR/post-process/review
+        # Call to python script, redirecting output to postprocess_review_output.txt without buffering output.
+        python -u review_security_findings.py spotbugs.json | tee $CODEBUILD_SRC_DIR/review_output.txt
+  post_build:
+    commands:
+      - |
+        echo "### Post process post_build phase... ###"
+    finally:
+      - |
+        echo "### post_build finally ###"
+artifacts:
+  files:
+    - review_output.txt

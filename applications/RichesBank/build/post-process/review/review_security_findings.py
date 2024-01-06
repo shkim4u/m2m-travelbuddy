@@ -53,6 +53,7 @@ sarif_results = sarif_run.results
 
 # Initialize Bedrock client.
 # ---- ⚠️ Un-comment and edit the below lines as needed for your AWS setup ⚠️ ----
+# os.environ["AWS_DEFAULT_REGION"] = "ap-northeast-1"  # E.g. "us-east-1"
 os.environ["AWS_DEFAULT_REGION"] = "us-east-1"  # E.g. "us-east-1"
 boto3_bedrock = bedrock.get_bedrock_client(
     assumed_role=os.environ.get("BEDROCK_ASSUME_ROLE", None),
@@ -87,9 +88,16 @@ for index, sarif_result in sarif_results:
     # CWE-353: Missing Support for Integrity Check: https://cwe.mitre.org/data/definitions/353.html
 
     # Consider only the first relationship for now (eg. CWE).
-    relationship = rule.relationships[0]
-    target_id = relationship.target.id
-    target_name = relationship.target.tool_component.name
+    # Assign "rule.id" to "relationship" if rule.relationships is empty or None.
+    if rule.relationships is None or len(rule.relationships) == 0:
+        # relationship = rule.id
+        target_id = rule.id
+        # Set empty string to "target_name".
+        target_name = ""
+    else:
+        relationship = rule.relationships[0]
+        target_id = relationship.target.id
+        target_name = relationship.target.tool_component.name
 
     # Consider the first location for now.
     location = sarif_result.locations[0]
