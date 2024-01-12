@@ -266,36 +266,37 @@ aws iam create-service-specific-credential --user-name argocd --service-name cod
 
 - Repository URL에는 앞서 확인한 배포 CodeCommit Repository의 HTTPS 주소를, Username 및 Password에는 메모해 둔 정보를 입력합니다.<br>
    ```bash
-   export HELM_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name riches-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
+   export HELM_CODECOMMIT_URL=$(aws codecommit get-repository --repository-name webgoat-configuration --region ap-northeast-2 | grep -o '"cloneUrlHttp": "[^"]*'|grep -o '[^"]*$')
    echo $HELM_CODECOMMIT_URL
    ```
 ![ArgoCD Repository Connect](./assets/argocd-repository-information-riches-01.png)<br>
 ![ArgoCD Repository Connect](./assets/argocd-repository-information-riches-success.png)
 
-- Application 텝에서 ```NewApp```버튼을 클릭합니다. Application Name 에는 ```riches```를, Project는 ```default```를 입력합니다. Sync Policy에는 "Manual"을, Repository URL에는 앞서 설정한 배포 리포지터리를, PATH에는 ```.```을 각각 입력합니다. Destination 섹션의 Cluster URL에는 ```https://kubernetes.default.svc```, Namespace에는 ```riches```를 입력하고 상단의 Create를 클릭합니다.<br>
-  ![ArgoCD Riches App](./assets/argocd-app-riches.png)
+- Application 텝에서 ```NewApp```버튼을 클릭합니다. Application Name 에는 ```webgoat```을, Project는 ```default```를 입력합니다. Sync Policy에는 "Manual"을, Repository URL에는 앞서 설정한 배포 리포지터리를, PATH에는 ```.```을 각각 입력합니다. Destination 섹션의 Cluster URL에는 ```https://kubernetes.default.svc```, Namespace에는 ```webgoat```을 입력하고 상단의 Create를 클릭합니다.<br>
+- (참고) 아래 그림에서는 ```riches```라고 표기되어 있지만 ```webgoat```으로 입력합니다.<br>
+  ![ArgoCD WebGoat App](./assets/argocd-app-riches.png)
 
 > (참고)<br>
 > Application 생성 시 화면 하단에 Helm Setting 값들이 정상적으로 표시되는지 확인합니다.
 
 ## 5. ArgoCD 배포 상태 확인<br>
-1. ```Sync``` 버턴을 누르고 ArgoCD 화면에서 ```리치웰쓰 뱅킹``` 어플리케이션의 배포 상태를 확인합니다.<br>
-   ![ArgoCD Riches App Status](./assets/argocd-riches-app-status.png)<br>
-   ![ArgoCD Riches App Status](./assets/argocd-riches-app-status-sync.png)<br>
+1. ```Sync``` 버턴을 누르고 ArgoCD 화면에서 ```WebGoat``` 어플리케이션의 배포 상태를 확인합니다.<br>
+   ![ArgoCD WebGoat App Status](./assets/argocd-riches-app-status.png)<br>
+   ![ArgoCD WebGoat App Status](./assets/argocd-riches-app-status-sync.png)<br>
 
 > (참고)<br>
 > Helm Chart를 통해 배포되면 Ingress를 통해 AWS Application Load Balancer가 Provisioning됩니다.<br>
 > ![](./assets/argocd-application-riches-alb-provisioning.png)
 
-2. ```리치웰쓰 뱅킹``` 어플리케이션에 접속해 봅니다.<br>
+2. ```WebGoat``` 어플리케이션에 접속해 봅니다.<br>
 
 ```bash
-export API_URL=https://$(kubectl get ingress/riches-ingress -n riches -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')
-echo ${API_URL}/riches/
+export API_URL=https://$(kubectl get ingress/webgoat-ingress -n webgoat -o jsonpath='{.status.loadBalancer.ingress[*].hostname}')
+echo ${API_URL}/WebGoat/
 
-curl -fsSL --insecure ${API_URL}/riches/
+curl -fsSL --insecure ${API_URL}/WebGoat/
 
-echo ${API_URL}/riches/
+echo ${API_URL}/WebGoat/
 ```
 
 ![Riches in Action](./assets/riches-in-action.png)
