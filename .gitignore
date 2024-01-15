@@ -343,3 +343,5 @@ acat_report/
 riches-analysis/
 
 set-terraform-default-variables.sh
+
+amazon-bedrock-chatbot-terraform/builds

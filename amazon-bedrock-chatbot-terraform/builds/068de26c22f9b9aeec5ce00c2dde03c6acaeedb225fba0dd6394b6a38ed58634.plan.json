@@ -1,1 +1,0 @@
-{"filename": "builds/068de26c22f9b9aeec5ce00c2dde03c6acaeedb225fba0dd6394b6a38ed58634.zip", "runtime": "nodejs16.x", "artifacts_dir": "builds", "build_plan": [["zip", "modules/lambda/delete-log/lambda-function", null]]}

@@ -1,1 +1,0 @@
-{"filename": "builds/1fbde3d06ef5026b4c74c09f6f02a7aea8e1ca17695c5ea345927abcbdc29daa.zip", "runtime": "nodejs16.x", "artifacts_dir": "builds", "build_plan": [["zip", "modules/lambda/query-result/lambda-function", null]]}
