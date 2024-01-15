@@ -1,5 +1,6 @@
 resource "aws_s3_bucket" "travelbuddy_frontend" {
   bucket = "travelbuddy-frontend-${data.aws_caller_identity.current.account_id}"
+  force_destroy = true
 }
 
 # Buket policy.

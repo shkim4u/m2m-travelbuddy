@@ -1,0 +1,1 @@
+{"filename": "builds/0673b152fc07add481c99f9d6ad5138f9e07d128b9bc2ab172f5d2c1bf201a02.zip", "runtime": "nodejs16.x", "artifacts_dir": "builds", "build_plan": [["zip", "modules/lambda/upload/lambda-function", null]]}

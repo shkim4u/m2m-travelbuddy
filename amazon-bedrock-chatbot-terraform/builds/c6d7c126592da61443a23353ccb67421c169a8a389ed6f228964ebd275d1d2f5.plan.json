@@ -1,0 +1,1 @@
+{"filename": "builds/c6d7c126592da61443a23353ccb67421c169a8a389ed6f228964ebd275d1d2f5.zip", "runtime": "nodejs16.x", "artifacts_dir": "builds", "build_plan": [["zip", "modules/lambda/history/lambda-function", null]]}
