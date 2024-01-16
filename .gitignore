@@ -345,3 +345,4 @@ riches-analysis/
 set-terraform-default-variables.sh
 
 amazon-bedrock-chatbot-terraform/builds
+!amazon-bedrock-chatbot-terraform/modules/cloudfront/html/*.js

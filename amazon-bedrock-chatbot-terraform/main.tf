@@ -1,6 +1,7 @@
 module "cloudfront" {
   source = "./modules/cloudfront"
   bucket_name = "${var.project_name}-${data.aws_region.current.name}-${data.aws_caller_identity.current.account_id}"
+  wss_connection_url = module.apigateway.wss_connection_url
 }
 
 module "dynamodb" {
@@ -12,7 +13,8 @@ module "lambda" {
   s3_bucket_name = module.cloudfront.s3_bucket_name
   call_log_table_name = module.dynamodb.call_log_table_name
   call_log_index_name = module.dynamodb.call_log_table_name
-  ws_connection_url = module.apigateway.ws_connection_url
+  wss_connection_url = module.apigateway.wss_connection_url
+  https_connection_url = module.apigateway.https_connection_url
 }
 
 module "apigateway" {

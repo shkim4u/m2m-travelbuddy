@@ -23,7 +23,8 @@ module "lambda_chat_ws" {
     s3_prefix: var.s3_prefix,
     callLogTableName: var.call_log_table_name,
     conversationMode: true,
-    connection_url: var.connection_url
+#    connection_url: var.wss_connection_url
+    connection_url: var.https_connection_url
   }
 
   depends_on = [null_resource.build_push_dkr_img]

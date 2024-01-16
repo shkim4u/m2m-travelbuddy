@@ -48,3 +48,12 @@ resource "aws_cloudfront_distribution" "this" {
     cloudfront_default_certificate = true
   }
 }
+
+#resource "aws_s3_bucket_object" "object" {
+#  for_each = fileset("${path.module}/your-directory", "*") # replace 'your-directory' with your directory name
+#
+#  bucket       = aws_s3_bucket.bucket.bucket
+#  key          = each.value
+#  source       = "${path.module}/your-directory/${each.value}" # replace 'your-directory' with your directory name
+#  acl          = "private"
+#}

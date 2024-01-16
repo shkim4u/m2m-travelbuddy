@@ -7,7 +7,8 @@ module "lambda_chat_ws" {
   s3_bucket_name = var.s3_bucket_name
   s3_prefix = "docs"
   call_log_table_name = var.call_log_table_name
-  connection_url = var.ws_connection_url
+  wss_connection_url = var.wss_connection_url
+  https_connection_url = var.https_connection_url
 }
 
 module "lambda_upload" {
