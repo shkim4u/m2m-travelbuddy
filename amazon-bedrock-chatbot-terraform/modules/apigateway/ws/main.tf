@@ -69,7 +69,8 @@ resource "aws_apigatewayv2_deployment" "ws_api_deployment" {
 
   depends_on = [aws_apigatewayv2_route.connect,
     aws_apigatewayv2_route.default,
-    aws_apigatewayv2_route.disconnect
+    aws_apigatewayv2_route.disconnect,
+    aws_apigatewayv2_integration.ws_api_integration
   ]
 }
 
