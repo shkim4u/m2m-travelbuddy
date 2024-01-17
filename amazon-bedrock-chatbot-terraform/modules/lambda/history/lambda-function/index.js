@@ -4,8 +4,8 @@ var dynamo = new aws.DynamoDB();
 const tableName = process.env.tableName;
 
 exports.handler = async (event, context) => {
-    //console.log('## ENVIRONMENT VARIABLES: ' + JSON.stringify(process.env));
-    //console.log('## EVENT: ' + JSON.stringify(event));
+    console.log('## ENVIRONMENT VARIABLES: ' + JSON.stringify(process.env));
+    console.log('## EVENT: ' + JSON.stringify(event));
 
     const userId = event['userId'];
     const allowTime = event['allowTime'];
@@ -21,11 +21,11 @@ exports.handler = async (event, context) => {
             ":allowTime": {'S': allowTime}
         }
     };
-    
+
     try {
         let result = await dynamo.query(queryParams).promise();
-    
-        console.log('History: ', JSON.stringify(result));    
+
+        console.log('History: ', JSON.stringify(result));
 
         let history = [];
         for(let item of result['Items']) {
@@ -50,8 +50,8 @@ exports.handler = async (event, context) => {
             statusCode: 200,
             msg: JSON.stringify(history)
         };
-        return response;  
-          
+        return response;
+
     } catch (error) {
         console.log(error);
 
@@ -59,6 +59,6 @@ exports.handler = async (event, context) => {
             statusCode: 500,
             msg: error
         };
-        return response;  
-    } 
+        return response;
+    }
 };

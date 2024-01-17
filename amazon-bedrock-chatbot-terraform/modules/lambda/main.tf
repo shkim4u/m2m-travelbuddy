@@ -1,5 +1,9 @@
 module "lambda_chat_api" {
   source = "./chat-api"
+  s3_bucket_name = var.s3_bucket_name
+  s3_prefix = "docs"
+  call_log_table_name = var.call_log_table_name
+  call_log_index_name = var.call_log_index_name
 }
 
 module "lambda_chat_ws" {
@@ -13,7 +17,7 @@ module "lambda_chat_ws" {
 
 module "lambda_upload" {
   source = "./upload"
-  bucket_name = var.s3_bucket_name
+  s3_bucket_name = var.s3_bucket_name
   s3_prefix = "docs"
 }
 

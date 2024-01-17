@@ -22,6 +22,8 @@ resource "aws_dynamodb_table" "chatbot_call_log" {
     type = "S"
   }
 
+  # Terraform does not support removal policy for DynamoDB at this time.
+
   global_secondary_index {
     name               = "${local.table_name}-gsi"
     hash_key           = "request_id"

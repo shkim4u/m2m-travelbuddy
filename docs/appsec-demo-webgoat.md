@@ -104,7 +104,7 @@ terraform apply -var='exclude_msk=true' -auto-approve
 ```bash
 # 아래 명령을 수행하면 ArgoCD 서버의 Admin 암호를 설정하고 이를 AWS Secrets Manager에 동기화 저장합니다.
 # AWS Secrets Manager에 동기화 저장된 암호는 어플리케이션의 배포 파이프라인에서 배포 단계에 사용됩니다.
-cd ~/environment/cloud9
+cd ~/environment/appsec/cloud9
 ./set-argocd-admin-password.sh <선호하는 ArgoCD Admin 암호> <AWS Secrets Manager Secrets ID: (예) riches-ci-argocd-admin-password>
 ```
 

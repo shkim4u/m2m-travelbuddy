@@ -273,3 +273,43 @@ resource "aws_api_gateway_deployment" "this" {
   stage_name  = local.stage_name
   description = local.stage_description
 }
+
+resource "aws_lambda_permission" "allow_api_gateway_chat" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-chat"
+  action        = "lambda:InvokeFunction"
+  function_name = var.chat_api_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/chat"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_upload" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-upload"
+  action        = "lambda:InvokeFunction"
+  function_name = var.upload_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/upload"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_query_result" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-query-result"
+  action        = "lambda:InvokeFunction"
+  function_name = var.query_result_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/query"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_history" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-history"
+  action        = "lambda:InvokeFunction"
+  function_name = var.history_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/history"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_delete_log" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-delete-log"
+  action        = "lambda:InvokeFunction"
+  function_name = var.delete_log_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/delete"
+}
