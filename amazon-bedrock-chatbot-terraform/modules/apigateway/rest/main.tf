@@ -267,11 +267,29 @@ resource "aws_api_gateway_integration_response" "delete_log" {
 #<< End of delete log.
 #<<
 
+resource "aws_api_gateway_stage" "this" {
+  deployment_id = aws_api_gateway_deployment.this.id
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  stage_name    = local.stage_name
+}
+
 resource "aws_api_gateway_deployment" "this" {
   depends_on  = [aws_api_gateway_integration.chat]
   rest_api_id = aws_api_gateway_rest_api.this.id
+
   stage_name  = local.stage_name
   description = local.stage_description
+}
+
+resource "aws_api_gateway_method_settings" "this" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  stage_name  = aws_api_gateway_stage.this.stage_name
+  method_path = "*/*"
+
+  settings {
+    metrics_enabled = true
+    logging_level   = "INFO"
+  }
 }
 
 resource "aws_lambda_permission" "allow_api_gateway_chat" {
