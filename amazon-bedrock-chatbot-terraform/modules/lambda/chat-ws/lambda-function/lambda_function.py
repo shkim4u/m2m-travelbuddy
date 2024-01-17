@@ -35,13 +35,19 @@ client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
 print('connection_url: ', connection_url)
 
 def sendMessage(id, body):
-    try:
-        client.post_to_connection(
-            ConnectionId=id,
-            Data=json.dumps(body)
-        )
-    except:
-        raise Exception ("Not able to send a message")
+    # try:
+    #     client.post_to_connection(
+    #         ConnectionId=id,
+    #         Data=json.dumps(body)
+    #     )
+    # except:
+    #     # Tell what kind of error it was.
+    #     err_msg = traceback.format_exc()
+    #     raise Exception ("Not able to send a message: "+err_msg)
+    client.post_to_connection(
+        ConnectionId=id,
+        Data=json.dumps(body)
+    )
 
 # bedrock
 boto3_bedrock = boto3.client(
@@ -388,6 +394,13 @@ def getResponse(connectionId, jsonBody):
 
 def lambda_handler(event, context):
     print('event: ', event)
+
+    # (For debug) Get all environment variables
+    env_vars = os.environ
+
+    # Print each environment variable
+    for key, value in env_vars.items():
+        print(f'{key}: {value}')
 
     msg = ""
     if event['requestContext']:

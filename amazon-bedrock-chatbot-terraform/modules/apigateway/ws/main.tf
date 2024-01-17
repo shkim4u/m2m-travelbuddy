@@ -62,11 +62,84 @@ resource "aws_apigatewayv2_deployment" "ws_api_deployment" {
   lifecycle {
     create_before_destroy = true
   }
+
+  triggers = {
+    redeployment = sha1(jsonencode(aws_apigatewayv2_api.this.body))
+  }
 }
 
 resource "aws_apigatewayv2_stage" "ws_api_stage" {
   api_id = aws_apigatewayv2_api.this.id
   name   = "dev"
-#  deployment_id = aws_apigatewayv2_deployment.ws_api_deployment.id
-  auto_deploy   = true
+  deployment_id = aws_apigatewayv2_deployment.ws_api_deployment.id
+#  auto_deploy   = true
+
+  default_route_settings {
+    data_trace_enabled = true
+    logging_level = "INFO"
+#    custom_access_log_settings {
+#      format = jsonencode({
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        httpMethod              = "$context.httpMethod"
+#        path                    = "$context.path"
+#        routeKey                = "$context.routeKey"
+#        status                  = "$context.status"
+#        protocol                = "$context.protocol"
+#        responseLength          = "$context.responseLength"
+#        integrationLatency      = "$context.integrationLatency"
+#        integrationStatus       = "$context.integrationStatus"
+#        integrationErrorMessage = "$context.integrationErrorMessage"
+#        integrationErrorCode    = "$context.integrationErrorCode"
+#        integrationResponseCode = "$context.integrationResponseCode"
+#        integrationProtocol     = "$context.integrationProtocol"
+#        integrationDataTrace    = "$context.integrationDataTrace"
+#        apiId                   = "$context.apiId"
+#        connectedAt             = "$context.connectedAt"
+#        connectionId            = "$context.connectionId"
+#        domainName              = "$context.domainName"
+#        domainPrefix            = "$context.domainPrefix"
+#        error                   = "$context.error"
+#        eventType               = "$context.eventType"
+#        extendedRequestId       = "$context.extendedRequestId"
+#        messageDirection        = "$context.messageDirection"
+#        messagePayload          = "$context.messagePayload"
+#        messageRouteKey         = "$context.messageRouteKey"
+#        messageId               = "$context.messageId"
+#        requestTimeEpoch        = "$context.requestTimeEpoch"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#        requestTime             = "$context.requestTime"
+#        routeKey                = "$context.routeKey"
+#        stage                   = "$context.stage"
+#        status                  = "$context.status"
+#        requestId               = "$context.requestId"
+#      })
+#    }
+
+    throttling_burst_limit = 50
+    throttling_rate_limit = 100
+  }
 }

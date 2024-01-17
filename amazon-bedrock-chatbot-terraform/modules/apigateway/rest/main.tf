@@ -56,6 +56,8 @@ resource "aws_api_gateway_integration_response" "chat" {
   resource_id = aws_api_gateway_resource.chat.id
   http_method = aws_api_gateway_method.chat.http_method
   status_code = aws_api_gateway_method_response.chat.status_code
+
+  depends_on = [aws_api_gateway_integration.chat]
 }
 
 #<<
@@ -108,6 +110,8 @@ resource "aws_api_gateway_integration_response" "upload" {
   resource_id = aws_api_gateway_resource.upload.id
   http_method = aws_api_gateway_method.upload.http_method
   status_code = aws_api_gateway_method_response.upload.status_code
+
+  depends_on = [aws_api_gateway_integration.upload]
 }
 
 #<<
@@ -160,6 +164,8 @@ resource "aws_api_gateway_integration_response" "query_result" {
   resource_id = aws_api_gateway_resource.query_result.id
   http_method = aws_api_gateway_method.query_result.http_method
   status_code = aws_api_gateway_method_response.query_result.status_code
+
+  depends_on = [aws_api_gateway_integration.query_result]
 }
 #<<
 #<< End of Query Result.
@@ -198,6 +204,7 @@ resource "aws_api_gateway_integration" "history" {
   http_method = aws_api_gateway_method.history.http_method
 
   integration_http_method = "POST"
+  # Possible values: HTTP, MOCK, AWS, AWS_PROXY, HTTP_PROXY, MOCK_PROXY
   type                    = "AWS"
   passthrough_behavior = "WHEN_NO_TEMPLATES"
 
@@ -211,6 +218,8 @@ resource "aws_api_gateway_integration_response" "history" {
   resource_id = aws_api_gateway_resource.history.id
   http_method = aws_api_gateway_method.history.http_method
   status_code = aws_api_gateway_method_response.history.status_code
+
+  depends_on = [aws_api_gateway_integration.history]
 }
 #<<
 #<< End of history.
@@ -262,24 +271,36 @@ resource "aws_api_gateway_integration_response" "delete_log" {
   resource_id = aws_api_gateway_resource.delete_log.id
   http_method = aws_api_gateway_method.delete_log.http_method
   status_code = aws_api_gateway_method_response.delete_log.status_code
+
+  depends_on = [aws_api_gateway_integration.delete_log]
 }
 #<<
 #<< End of delete log.
 #<<
 
+resource "aws_api_gateway_deployment" "this" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+
+#  stage_name  = local.stage_name
+  description = local.stage_description
+
+  triggers = {
+    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.this.body))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  depends_on  = [aws_api_gateway_integration.chat]
+}
+
 resource "aws_api_gateway_stage" "this" {
-  deployment_id = aws_api_gateway_deployment.this.id
   rest_api_id   = aws_api_gateway_rest_api.this.id
+  deployment_id = aws_api_gateway_deployment.this.id
   stage_name    = local.stage_name
 }
 
-resource "aws_api_gateway_deployment" "this" {
-  depends_on  = [aws_api_gateway_integration.chat]
-  rest_api_id = aws_api_gateway_rest_api.this.id
-
-  stage_name  = local.stage_name
-  description = local.stage_description
-}
 
 resource "aws_api_gateway_method_settings" "this" {
   rest_api_id = aws_api_gateway_rest_api.this.id
@@ -288,8 +309,18 @@ resource "aws_api_gateway_method_settings" "this" {
 
   settings {
     metrics_enabled = true
-    logging_level   = "INFO"
+    data_trace_enabled     = true
+    logging_level          = "INFO"
+
+    # Limit the rate of calls to prevent abuse and unwanted charges
+    throttling_rate_limit  = 100
+    throttling_burst_limit = 50
   }
+}
+
+resource "aws_cloudwatch_log_group" "this" {
+  name              = "amazon-bedrock-chatbot-api-${aws_api_gateway_rest_api.this.id}/${local.stage_name}"
+  retention_in_days = 7
 }
 
 resource "aws_lambda_permission" "allow_api_gateway_chat" {

@@ -72,7 +72,7 @@ module "lambda_chat_ws" {
           "execute-api:ManageConnections"
         ],
         "Effect": "Allow"
-        "Resource": ["*"]
+        "Resource": "*"
       },
     ]
   })
