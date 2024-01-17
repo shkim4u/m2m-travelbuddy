@@ -66,6 +66,11 @@ resource "aws_apigatewayv2_deployment" "ws_api_deployment" {
   triggers = {
     redeployment = sha1(jsonencode(aws_apigatewayv2_api.this.body))
   }
+
+  depends_on = [aws_apigatewayv2_route.connect,
+    aws_apigatewayv2_route.default,
+    aws_apigatewayv2_route.disconnect
+  ]
 }
 
 resource "aws_apigatewayv2_stage" "ws_api_stage" {
