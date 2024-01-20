@@ -18,5 +18,5 @@ variable "s3_prefix" {}
 
 variable "call_log_table_name" {}
 
-variable "wss_connection_url" {}
+#variable "wss_connection_url" {}
 variable "https_connection_url" {}

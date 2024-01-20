@@ -81,7 +81,7 @@ module "lambda_chat_api" {
     conversationMode: true
   }
 
-  depends_on = [null_resource.build_push_dkr_img]
+  depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {

@@ -144,6 +144,10 @@ curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/lat
 sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 
+echo "11. Installing wscat and awscurl..."
+npm install -g wscat
+pip3 install awscurl
+
 ## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
 . ~/.bashrc

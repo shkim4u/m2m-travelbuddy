@@ -6,3 +6,8 @@ variable "cicd_appsec_dev_slack_webhook_url" {}
 variable "cicd_appsec_dev_slack_channel" {}
 variable "cicd_appsec_sec_slack_webhook_url" {}
 variable "cicd_appsec_sec_slack_channel" {}
+
+variable "bedrock_region" {
+  description = "Bedrock region to use"
+  default     = "us-east-1"
+}

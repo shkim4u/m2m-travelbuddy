@@ -1,5 +1,5 @@
 const protocol = 'WEBSOCKET'; // WEBSOCKET or HTTP
-const endpoint = 'wss://z7aqfmpd0c.execute-api.ap-northeast-2.amazonaws.com/dev/'; // WSS endpoint
+const endpoint = 'wss://ibq8wmzt70.execute-api.ap-northeast-2.amazonaws.com/dev/'; // WSS endpoint
 const langstate = 'korean'; // korean or english
 let webSocket
 let isConnected = false;
@@ -13,7 +13,7 @@ function sendMessage(message) {
         webSocket = connect(endpoint, 'reconnect');
 
         if(langstate=='korean') {
-            addNotifyMessage("연결중입니다. 잠시후 다시시도하세요.");
+            addNotifyMessage("연결 중입니다. 잠시 후 다시 시도하세요.");
         }
         else {
             addNotifyMessage("We are connecting again. Please wait a few seconds.");
@@ -166,7 +166,8 @@ calleeId.textContent = "AWS";
 
 if(langstate=='korean') {
     addNotifyMessage("Amazon Bedrock을 이용하여 채팅을 시작합니다.");
-    addReceivedMessage(uuidv4(), "아마존 베드락을 이용하여 주셔서 감사합니다. 편안한 대화를 즐기실수 있으며, 파일을 업로드하면 요약을 할 수 있습니다.")
+    // addReceivedMessage(uuidv4(), "아마존 베드락을 이용하여 주셔서 감사합니다. 채팅 기반으로 대화를 이어나갈 수 있으며, 파일을 업로드하면 요약을 할 수 있습니다.")
+    addReceivedMessage(uuidv4(), "아마존 베드록 기반 챗봇에 오신 것을 환영합니다.")
 }
 else {
     addNotifyMessage("Start chat with Amazon Bedrock");

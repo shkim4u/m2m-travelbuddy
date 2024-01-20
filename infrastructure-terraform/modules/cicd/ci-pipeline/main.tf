@@ -416,6 +416,11 @@ resource "aws_codebuild_project" "post_process" {
       name = "MOCK_BEDROCK"
       value = "false"
     }
+
+    environment_variable {
+      name  = "BEDROCK_REGION"
+      value = var.bedrock_region
+    }
   }
 
   source {

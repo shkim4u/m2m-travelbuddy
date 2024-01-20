@@ -13,3 +13,8 @@ variable "sec_slack_webhook_url" {}
 variable "sec_slack_channel" {}
 
 variable "application_configuration_repo_url" {}
+
+variable "bedrock_region" {
+  description = "Bedrock region to use"
+  default     = "us-east-1"
+}

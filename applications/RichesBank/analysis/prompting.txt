@@ -1,0 +1,100 @@
+1. Command Injection
+
+SAST 툴이 아래 자바 코드가 "CWE-78: Potential Command Injection" 취약점을 가지고 있다고 진단하였습니다:
+---
+            if(cmd!=null){
+                System.out.println(cmd[0]);
+                System.out.println(cmd[1]);
+                System.out.println(cmd[2]);
+            }
+            else{
+                System.out.println("cmd is empty!");
+            }
+
+            proc = rt.exec(cmd);
+
+            InputStream is = proc.getInputStream();
+            int read;
+            while( (read = is.read()) > 0)
+            {
+                message.append((char)read);
+            }
+        }
+        catch(Exception e)
+        {
+
+---
+
+이 코드가 실제로 취약한가요?
+만약 이 취약점이 실제로 취약하고 실제로 해커에게 노출된다면 어떠한 비즈니스 영향이 있을까요?
+그리고 조치할 수 있는 방법과 조치된 코드를 제시해 주세요.
+
+
+답변은 한국어로 해주세요.
+
+
+2. XML Parsing
+SAST 툴이 아래 자바 코드가 "CWE-611: XML parsing vulnerable to XXE (DocumentBuilder)" 취약점을 가지고 있다고 진단하였습니다:
+---
+    }
+
+    private static Document getDocument(String xml)
+    {
+      try
+        {
+            DocumentBuilderFactory factory;
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            return factory.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+        }
+        catch (SAXException ex)
+        {
+            return null;
+        }
+        catch (ParserConfigurationException ex)
+        {
+            return null;
+        }
+        catch (IOException ex)
+
+---
+
+이 코드가 실제로 취약한가요?
+만약 이 취약점이 실제로 취약하고 실제로 해커에게 노출된다면 어떠한 비즈니스 영향이 있을까요?
+그리고 조치할 수 있는 방법과 조치된 코드를 제시해 주세요.
+
+
+답변은 한국어로 해주세요.
+
+3. Potentionl Path Traversal
+SAST 툴이 아래 자바 코드가 "CWE-22: Potential Path Traversal (file read)" 취약점을 가지고 있다고 진단하였습니다:
+---
+    public static void main(String[] args)
+  {
+
+  String host = (args.length < 1) ? null : args[0];
+  try
+  {
+      Registry registry = LocateRegistry.getRegistry(host);
+      BannerAdSource stub = (BannerAdSource) registry.lookup("BannerAdSource");
+      File bannerAd = stub.retrieveBannerAd("0.jpg");
+    File targetBannerAdFile = new File(imageRepositoryBasepath + bannerAd.getName());
+    copy(bannerAd, targetBannerAdFile);
+
+      System.out.println("file copied to :"+targetBannerAdFile.getAbsolutePath());
+  }
+  catch (Exception e)
+  {
+      System.err.println("Client exception: " + e.toString());
+      e.printStackTrace();
+  }
+
+
+---
+
+이 코드가 실제로 취약한가요?
+만약 이 취약점이 실제로 취약하고 실제로 해커에게 노출된다면 어떠한 비즈니스 영향이 있을까요?
+그리고 조치할 수 있는 방법과 조치된 코드를 제시해 주세요.
+
+
+답변은 한국어로 해주세요.

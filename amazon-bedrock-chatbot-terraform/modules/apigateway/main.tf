@@ -16,5 +16,6 @@ module "apigateway_rest" {
 module "apigateway_ws" {
   source = "./ws"
   chat_ws_lambda_function_invoke_arn = var.chat_ws_lambda_function_invoke_arn
+  chat_ws_lambda_function_name = var.chat_ws_lambda_function_name
   role_arn = aws_iam_role.apigateway_role.arn
 }

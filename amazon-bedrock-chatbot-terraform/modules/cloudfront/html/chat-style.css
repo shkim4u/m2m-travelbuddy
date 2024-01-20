@@ -1,5 +1,5 @@
 body {
-  /* background-image: : url('https://image... '); */
+   background-image: url('https://insights.som.yale.edu/sites/default/files/styles/rectangle_lg/public/2023-06/AI%20possible%20futures.webp');
   background-color: #3498db;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -7,9 +7,10 @@ body {
 }
 
 .container {
-  max-height: 800px;
+  max-width: 1480px;
   /* added for height */
-  max-width: 900px;
+  max-height: 1680px;
+
   margin: 30px auto;
   /* top margin of chat room */
   background: #fff;
@@ -285,7 +286,7 @@ hr {
 }
 
 .chat-panel {
-  height: 30em;
+  height: 45em;
   overflow: auto;
 }
 

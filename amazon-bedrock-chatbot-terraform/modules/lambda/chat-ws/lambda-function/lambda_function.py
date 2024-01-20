@@ -20,6 +20,15 @@ from langchain.memory import ConversationBufferMemory
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from botocore.config import Config
 
+import dns.resolver
+import dns.query
+
+from urllib.parse import urlparse
+
+def extract_dns(url):
+    parsed_url = urlparse(url)
+    return parsed_url.netloc
+
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
@@ -31,23 +40,47 @@ conversationMode = os.environ.get('conversationMode', 'false')
 
 # websocket
 connection_url = os.environ.get('connection_url')
-client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
 print('connection_url: ', connection_url)
 
+dns_name = extract_dns(connection_url)
+print('dns_name: ', dns_name)
+
+my_resolver = dns.resolver.Resolver()
+my_resolver.nameservers = ['8.8.8.8']
+print("nameservers: ", my_resolver.nameservers)
+# a = my_resolver.query(dns_name)
+# print('a: ', a)
+
+client = None
+
 def sendMessage(id, body):
-    # try:
-    #     client.post_to_connection(
-    #         ConnectionId=id,
-    #         Data=json.dumps(body)
-    #     )
-    # except:
-    #     # Tell what kind of error it was.
-    #     err_msg = traceback.format_exc()
-    #     raise Exception ("Not able to send a message: "+err_msg)
-    client.post_to_connection(
-        ConnectionId=id,
-        Data=json.dumps(body)
-    )
+    # Connect to the client if client is none.
+    global client
+    if client is None:
+        # client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
+        client = boto3.client(
+            service_name='apigatewaymanagementapi',
+            endpoint_url=connection_url,
+            # config=Config(
+            #     retries = {
+            #         'max_attempts': 30
+            #     }
+            # )
+        )
+
+    try:
+        client.post_to_connection(
+            ConnectionId=id,
+            Data=json.dumps(body)
+        )
+    except:
+        # Tell what kind of error it was.
+        err_msg = traceback.format_exc()
+        raise Exception ("Not able to send a message: " + err_msg)
+    # client.post_to_connection(
+    #     ConnectionId=id,
+    #     Data=json.dumps(body)
+    # )
 
 # bedrock
 boto3_bedrock = boto3.client(

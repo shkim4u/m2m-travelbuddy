@@ -14,6 +14,7 @@ module "lambda_chat_ws" {
   timeout = 300
   package_type = "Image"
   architectures = ["x86_64"]
+  memory_size = 512
 
   image_uri = format("%v/%v:%v", local.ecr_reg, local.ecr_repo, local.image_tag)
 
@@ -68,8 +69,9 @@ module "lambda_chat_ws" {
       },
       {
         "Action": [
-          "execute-api:Invoke",
-          "execute-api:ManageConnections"
+#          "execute-api:Invoke",
+#          "execute-api:ManageConnections"
+          "execute-api:*"
         ],
         "Effect": "Allow"
         "Resource": "*"
@@ -87,11 +89,10 @@ module "lambda_chat_ws" {
     s3_prefix: var.s3_prefix,
     callLogTableName: var.call_log_table_name,
     conversationMode: true,
-#    connection_url: var.wss_connection_url
     connection_url: var.https_connection_url
   }
 
-  depends_on = [null_resource.build_push_dkr_img]
+  depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {

@@ -9,3 +9,4 @@ variable "history_lambda_function_name" {}
 variable "delete_log_lambda_function_invoke_arn" {}
 variable "delete_log_lambda_function_name" {}
 variable "chat_ws_lambda_function_invoke_arn" {}
+variable "chat_ws_lambda_function_name" {}
