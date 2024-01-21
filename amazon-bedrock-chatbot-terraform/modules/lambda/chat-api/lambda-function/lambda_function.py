@@ -237,18 +237,19 @@ def lambda_handler(event, context):
     global modelId, llm, parameters, conversation, conversationMode, map, chat_memory
 
     # create chat_memory
-    if userId in map:
-        chat_memory = map[userId]
-        print('chat_memory exist. reuse it!')
-    else:
-        chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
-        map[userId] = chat_memory
-        print('chat_memory does not exist. create new one!')
+    if conversationMode == 'true':
+        if userId in map:
+            chat_memory = map[userId]
+            print('chat_memory exist. reuse it!')
+        else:
+            chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
+            map[userId] = chat_memory
+            print('chat_memory does not exist. create new one!')
 
-        allowTime = getAllowTime()
-        load_chatHistory(userId, allowTime, chat_memory)
+            allowTime = getAllowTime()
+            load_chatHistory(userId, allowTime, chat_memory)
 
-        conversation = ConversationChain(llm=llm, verbose=False, memory=chat_memory)
+            conversation = ConversationChain(llm=llm, verbose=False, memory=chat_memory)
 
     start = int(time.time())
 

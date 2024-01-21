@@ -1,31 +1,31 @@
 const protocol = 'WEBSOCKET'; // WEBSOCKET or HTTP
+// const protocol = 'HTTP'; // WEBSOCKET or HTTP
 const endpoint = 'WSS_ENDPOINT'; // WSS endpoint
 const langstate = 'korean'; // korean or english
 let webSocket
 let isConnected = false;
-if(protocol == 'WEBSOCKET') {
+if (protocol == 'WEBSOCKET') {
     webSocket = connect(endpoint, 'initial');
 }
 
 function sendMessage(message) {
-    if(!isConnected) {
+    if (!isConnected) {
         console.log('reconnect...');
         webSocket = connect(endpoint, 'reconnect');
 
-        if(langstate=='korean') {
+        if (langstate == 'korean') {
             addNotifyMessage("연결 중입니다. 잠시 후 다시 시도하세요.");
-        }
-        else {
+        } else {
             addNotifyMessage("We are connecting again. Please wait a few seconds.");
         }
-    }
-    else {
+    } else {
         webSocket.send(JSON.stringify(message));
         console.log('message: ', message);
     }
 }
 
 let tm;
+
 function ping() {
     console.log('->ping');
     webSocket.send('__ping__');
@@ -35,6 +35,7 @@ function ping() {
         webSocket = connect(endpoint, 'reconnect');
     }, 5000);
 }
+
 function pong() {
     clearTimeout(tm);
 }
@@ -47,25 +48,23 @@ function connect(endpoint, type) {
         console.log('connected...');
         isConnected = true;
 
-        if(type == 'initial')
+        if (type == 'initial')
             setInterval(ping, 57000);  // ping interval: 57 seconds
     };
 
     // message
     ws.onmessage = function (event) {
-        if (event.data.substr(1,8) == "__pong__") {
+        if (event.data.substr(1, 8) == "__pong__") {
             console.log('<-pong');
             pong();
             return;
-        }
-        else {
+        } else {
             response = JSON.parse(event.data)
 
-            if(response.request_id) {
+            if (response.request_id) {
                 console.log('received message: ', response.msg);
                 addReceivedMessage(response.request_id, response.msg);
-            }
-            else {
+            } else {
                 console.log('system message: ', event.data);
             }
         }
@@ -97,32 +96,32 @@ const sendBtn = document.querySelector('#sendBtn');
 const message = document.querySelector('#chatInput')
 const chatPanel = document.querySelector('#chatPanel');
 
-HashMap = function() {
+HashMap = function () {
     this.map = new Array();
 };
 
 HashMap.prototype = {
-    put: function(key, value) {
+    put: function (key, value) {
         this.map[key] = value;
     },
-    get: function(key) {
+    get: function (key) {
         return this.map[key];
     },
-    getAll: function() {
+    getAll: function () {
         return this.map;
     },
-    clear: function() {
+    clear: function () {
         return this.map;
     },
-    isEmpty: function() {
-        return (this.map.size()==0);
+    isEmpty: function () {
+        return (this.map.size() == 0);
     },
-    remove: function(key) {
+    remove: function (key) {
         delete this.map[key];
     },
-    getKeys: function() {
+    getKeys: function () {
         var keys = new Array();
-        for(i in this.map) {
+        for (i in this.map) {
             keys.push(i);
         }
         return keys;
@@ -138,24 +137,24 @@ let msglist = [];
 let maxMsgItems = 200;
 let msgHistory = new HashMap();
 let callee = "AWS";
-let index=0;
+let index = 0;
 
 let userId = localStorage.getItem('userId'); // set userID if exists
-if(userId=="") {
+if (userId == "") {
     userId = uuidv4();
 }
 console.log('userId: ', userId);
 
-for (i=0;i<maxMsgItems;i++) {
-    msglist.push(document.getElementById('msgLog'+i));
+for (i = 0; i < maxMsgItems; i++) {
+    msglist.push(document.getElementById('msgLog' + i));
 
     // add listener
-    (function(index) {
-        msglist[index].addEventListener("click", function() {
-            if(msglist.length < maxMsgItems) i = index;
+    (function (index) {
+        msglist[index].addEventListener("click", function () {
+            if (msglist.length < maxMsgItems) i = index;
             else i = index + maxMsgItems;
 
-            console.log('click! index: '+index);
+            console.log('click! index: ' + index);
         })
     })(i);
 }
@@ -164,12 +163,11 @@ calleeName.textContent = "Chatbot";
 calleeId.textContent = "AWS";
 
 
-if(langstate=='korean') {
+if (langstate == 'korean') {
     addNotifyMessage("Amazon Bedrock을 이용하여 채팅을 시작합니다.");
     // addReceivedMessage(uuidv4(), "아마존 베드락을 이용하여 주셔서 감사합니다. 채팅 기반으로 대화를 이어나갈 수 있으며, 파일을 업로드하면 요약을 할 수 있습니다.")
     addReceivedMessage(uuidv4(), "아마존 베드록 기반 챗봇에 오신 것을 환영합니다.")
-}
-else {
+} else {
     addNotifyMessage("Start chat with Amazon Bedrock");
     addReceivedMessage(uuidv4(), "Welcome to Amazon Bedrock. Use the conversational chatbot and summarize documents, TXT, PDF, and CSV. ")
 }
@@ -179,61 +177,69 @@ function getAllowTime() {
     let allowableDays = 2; // two day's history
 
     let current = new Date();
-    let allowable = new Date(current.getTime() - 24*60*60*1000*allowableDays);
-    let allowTime = getDate(allowable)+' '+getTime(current);
-    console.log('Current Time: ', getDate(current)+' '+getTime(current));
+    let allowable = new Date(current.getTime() - 24 * 60 * 60 * 1000 * allowableDays);
+    let allowTime = getDate(allowable) + ' ' + getTime(current);
+    console.log('Current Time: ', getDate(current) + ' ' + getTime(current));
     console.log('Allow Time: ', allowTime);
 
     return allowTime;
 }
+
 let allowTime = getAllowTime();
 getHistory(userId, allowTime);
 
 // Listeners
-message.addEventListener('keyup', function(e){
+message.addEventListener('keyup', function (e) {
     if (e.keyCode == 13) {
         onSend(e);
     }
 });
 
 // refresh button
-refreshChatWindow.addEventListener('click', function(){
+refreshChatWindow.addEventListener('click', function () {
     console.log('go back user input menu');
     window.location.href = "index.html";
 });
 
 // depart button
-depart.addEventListener('click', function(){
+depart.addEventListener('click', function () {
     console.log('depart icon');
 
     deleteItems(userId);
 });
 
 sendBtn.addEventListener('click', onSend);
+
 function onSend(e) {
     e.preventDefault();
 
-    if(message.value != '') {
+    if (message.value != '') {
         console.log("msg: ", message.value);
 
         let current = new Date();
         let datastr = getDate(current);
         let timestr = getTime(current);
-        let requestTime = datastr+' '+timestr
+        let requestTime = datastr + ' ' + timestr
 
         let requestId = uuidv4();
         addSentMessage(requestId, timestr, message.value);
 
-        if(protocol == 'WEBSOCKET') {
+        if (protocol == 'WEBSOCKET') {
             sendMessage({
                 "user_id": userId,
                 "request_id": requestId,
                 "request_time": requestTime,
                 "type": "text",
                 "body": message.value
-            })
-        }
-        else {
+            });
+
+            // [2024-01-20] KSH: Update the "input-status" element to so that he/she waits with patience.
+            let inputStatus = document.getElementById("input-status");
+            // inputStatus.innerHTML = "thinking...";
+            inputStatus.innerHTML = "&nbsp;<img src=\"thinking.gif\" width=\"40\" height=\"40\" alt=\"thinking\" border='5' /> &nbsp;";
+            // Set flag to wait for the response from the websocket.
+            isResponsed.put(requestId, false);
+        } else {
             sendRequest(message.value, requestId, requestTime);
         }
     }
@@ -243,74 +249,65 @@ function onSend(e) {
 }
 
 function uuidv4() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+        (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
 }
 
-(function() {
-    window.addEventListener("focus", function() {
+(function () {
+    window.addEventListener("focus", function () {
 //        console.log("Back to front");
 
-        if(msgHistory.get(callee))
+        if (msgHistory.get(callee))
             updateCallLogToDisplayed();
     })
 })();
 
 function getDate(current) {
-    return current.toISOString().slice(0,10);
+    return current.toISOString().slice(0, 10);
 }
 
 function getTime(current) {
-    let time_map = [current.getHours(), current.getMinutes(), current.getSeconds()].map((a)=>(a < 10 ? '0' + a : a));
+    let time_map = [current.getHours(), current.getMinutes(), current.getSeconds()].map((a) => (a < 10 ? '0' + a : a));
     return time_map.join(':');
 }
 
 function addSentMessage(requestId, timestr, text) {
-    if(!indexList.get(requestId+':send')) {
-        indexList.put(requestId+':send', index);
-    }
-    else {
-        index = indexList.get(requestId+':send');
-        console.log("reused index="+index+', id='+requestId+':send');
+    if (!indexList.get(requestId + ':send')) {
+        indexList.put(requestId + ':send', index);
+    } else {
+        index = indexList.get(requestId + ':send');
+        console.log("reused index=" + index + ', id=' + requestId + ':send');
     }
     console.log("index:", index);
 
     var length = text.length;
     console.log('length: ', length);
-    if(length < 10) {
+    if (length < 10) {
         msglist[index].innerHTML =
             `<div class="chat-sender20 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 14) {
+    } else if (length < 14) {
         msglist[index].innerHTML =
             `<div class="chat-sender25 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 17) {
+    } else if (length < 17) {
         msglist[index].innerHTML =
             `<div class="chat-sender30 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 21) {
+    } else if (length < 21) {
         msglist[index].innerHTML =
             `<div class="chat-sender35 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 26) {
+    } else if (length < 26) {
         msglist[index].innerHTML =
             `<div class="chat-sender40 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 35) {
+    } else if (length < 35) {
         msglist[index].innerHTML =
             `<div class="chat-sender50 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 80) {
+    } else if (length < 80) {
         msglist[index].innerHTML =
             `<div class="chat-sender60 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else if(length < 145) {
+    } else if (length < 145) {
         msglist[index].innerHTML =
             `<div class="chat-sender70 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else {
+    } else {
         msglist[index].innerHTML =
             `<div class="chat-sender80 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
     }
@@ -320,23 +317,21 @@ function addSentMessage(requestId, timestr, text) {
 }
 
 function addSentMessageForSummary(requestId, timestr, text) {
-    console.log("sent message: "+text);
+    console.log("sent message: " + text);
 
-    if(!indexList.get(requestId+':send')) {
-        indexList.put(requestId+':send', index);
-    }
-    else {
-        index = indexList.get(requestId+':send');
-        console.log("reused index="+index+', id='+requestId+':send');
+    if (!indexList.get(requestId + ':send')) {
+        indexList.put(requestId + ':send', index);
+    } else {
+        index = indexList.get(requestId + ':send');
+        console.log("reused index=" + index + ', id=' + requestId + ':send');
     }
     console.log("index:", index);
 
     let length = text.length;
-    if(length < 100) {
+    if (length < 100) {
         msglist[index].innerHTML =
             `<div class="chat-sender60 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
-    }
-    else {
+    } else {
         msglist[index].innerHTML =
             `<div class="chat-sender80 chat-sender--right"><h1>${timestr}</h1>${text}&nbsp;<h2 id="status${index}"></h2></div>`;
     }
@@ -349,12 +344,11 @@ function addReceivedMessage(requestId, msg) {
     // console.log("add received message: "+msg);
     sender = "Chatbot"
 
-    if(!indexList.get(requestId+':receive')) {
-        indexList.put(requestId+':receive', index);
-    }
-    else {
-        index = indexList.get(requestId+':receive');
-        console.log("reused index="+index+', id='+requestId+':receive');
+    if (!indexList.get(requestId + ':receive')) {
+        indexList.put(requestId + ':receive', index);
+    } else {
+        index = indexList.get(requestId + ':receive');
+        console.log("reused index=" + index + ', id=' + requestId + ':receive');
     }
     console.log("index:", index);
 
@@ -363,36 +357,36 @@ function addReceivedMessage(requestId, msg) {
     var length = msg.length;
     // console.log("length: ", length);
 
-    if(length < 10) {
+    if (length < 10) {
         msglist[index].innerHTML = `<div class="chat-receiver20 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 14) {
+    } else if (length < 14) {
         msglist[index].innerHTML = `<div class="chat-receiver25 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 17) {
+    } else if (length < 17) {
         msglist[index].innerHTML = `<div class="chat-receiver30 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 21) {
+    } else if (length < 21) {
         msglist[index].innerHTML = `<div class="chat-receiver35 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 25) {
+    } else if (length < 25) {
         msglist[index].innerHTML = `<div class="chat-receiver40 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 35) {
+    } else if (length < 35) {
         msglist[index].innerHTML = `<div class="chat-receiver50 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 80) {
+    } else if (length < 80) {
         msglist[index].innerHTML = `<div class="chat-receiver60 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else if(length < 145) {
+    } else if (length < 145) {
         msglist[index].innerHTML = `<div class="chat-receiver70 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
-    }
-    else {
+    } else {
         msglist[index].innerHTML = `<div class="chat-receiver80 chat-receiver--left"><h1>${sender}</h1>${msg}&nbsp;</div>`;
     }
 
     chatPanel.scrollTop = chatPanel.scrollHeight;  // scroll needs to move bottom
     index++;
+
+    // [2024-01-20] KSH: Set isResponsed flag to true for received request_id.
+    if (isResponsed.get(requestId) == false) {
+        isResponsed.put(requestId, true);
+        // Return the "input-status" element to the original status.
+        let inputStatus = document.getElementById("input-status");
+        inputStatus.innerHTML = "&nbsp;😀&nbsp;";
+    }
 }
 
 function addNotifyMessage(msg) {
@@ -406,20 +400,20 @@ function addNotifyMessage(msg) {
     chatPanel.scrollTop = chatPanel.scrollHeight;  // scroll needs to move bottom
 }
 
-refreshChatWindow.addEventListener('click', function(){
+refreshChatWindow.addEventListener('click', function () {
     console.log('update chat window');
     // updateChatWindow(callee);
 });
 
-attachFile.addEventListener('click', function(){
+attachFile.addEventListener('click', function () {
     console.log('click: attachFile');
 
     let input = $(document.createElement('input'));
     input.attr("type", "file");
     input.trigger('click');
 
-    $(document).ready(function() {
-        input.change(function(evt) {
+    $(document).ready(function () {
+        input.change(function (evt) {
             var input = this;
             var url_file = $(this).val();
             var ext = url_file.substring(url_file.lastIndexOf('.') + 1).toLowerCase();
@@ -429,20 +423,18 @@ attachFile.addEventListener('click', function(){
             console.log('filename: ' + filename);
             console.log('ext: ' + ext);
 
-            if(ext == 'pdf') {
+            if (ext == 'pdf') {
                 contentType = 'application/pdf'
-            }
-            else if(ext == 'txt') {
+            } else if (ext == 'txt') {
                 contentType = 'text/plain'
-            }
-            else if(ext == 'csv') {
+            } else if (ext == 'csv') {
                 contentType = 'text/csv'
             }
 
             let current = new Date();
             let datastr = getDate(current);
             let timestr = getTime(current);
-            let requestTime = datastr+' '+timestr
+            let requestTime = datastr + ' ' + timestr
             let requestId = uuidv4();
             addSentMessageForSummary(requestId, timestr, "uploading the selected file in order to summerize...");
 
@@ -469,14 +461,14 @@ attachFile.addEventListener('click', function(){
                     //formData.append("attachFile" , input.files[0]);
                     //console.log('uploading file info: ', formData.get("attachFile"));
 
-                    const blob = new Blob([input.files[0]], { type: contentType });
+                    const blob = new Blob([input.files[0]], {type: contentType});
 
-                    xmlHttp.onreadystatechange = function() {
-                        if (xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status == 200 ) {
+                    xmlHttp.onreadystatechange = function () {
+                        if (xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status == 200) {
                             console.log(xmlHttp.responseText);
 
                             // summary for the upload file
-                            if(protocol == 'WEBSOCKET') {
+                            if (protocol == 'WEBSOCKET') {
                                 sendMessage({
                                     "user_id": userId,
                                     "request_id": requestId,
@@ -484,12 +476,10 @@ attachFile.addEventListener('click', function(){
                                     "type": "document",
                                     "body": filename
                                 })
-                            }
-                            else {
+                            } else {
                                 sendRequestForSummary(filename, requestId, requestTime);
                             }
-                        }
-                        else if(xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status != 200) {
+                        } else if (xmlHttp.readyState == XMLHttpRequest.DONE && xmlHttp.status != 200) {
                             console.log('status' + xmlHttp.status);
                             alert("Try again! The request was failed.");
                         }
@@ -530,9 +520,8 @@ function sendRequest(text, requestId, requestTime) {
             console.log("response: " + JSON.stringify(response));
 
             addReceivedMessage(response.request_id, response.msg)
-        }
-        else if(xhr.readyState ===4 && xhr.status === 504) {
-            console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
+        } else if (xhr.readyState === 4 && xhr.status === 504) {
+            console.log("response: " + xhr.readyState + ', xhr.status: ' + xhr.status);
 
             getResponse(requestId);
         }
@@ -543,7 +532,7 @@ function sendRequest(text, requestId, requestTime) {
         "request_id": requestId,
         "request_time": requestTime,
         "type": "text",
-        "body":text
+        "body": text
     }
     console.log("request: " + JSON.stringify(requestObj));
 
@@ -566,14 +555,12 @@ function sendRequestForSummary(object, requestId, requestTime) {
             console.log("response: " + JSON.stringify(response));
 
             addReceivedMessage(response.request_id, response.msg)
-        }
-        else if(xhr.readyState ===4 && xhr.status === 504) {
-            console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
+        } else if (xhr.readyState === 4 && xhr.status === 504) {
+            console.log("response: " + xhr.readyState + ', xhr.status: ' + xhr.status);
 
             getResponse(requestId);
-        }
-        else {
-            console.log("response: " + xhr.readyState + ', xhr.status: '+xhr.status);
+        } else {
+            console.log("response: " + xhr.readyState + ', xhr.status: ' + xhr.status);
         }
     };
 
@@ -594,17 +581,17 @@ function sendRequestForSummary(object, requestId, requestTime) {
 function delay(ms = 1000) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 async function getResponse(requestId) {
     await delay(5000);
 
     let n = retryNum.get(requestId);
-    if(n == 0) {
+    if (n == 0) {
         console.log('Failed!')
         return;
-    }
-    else {
+    } else {
         console.log('Retry!');
-        retryNum.put(requestId, n-1);
+        retryNum.put(requestId, n - 1);
         sendRequestForRetry(requestId);
     }
 }
@@ -619,13 +606,12 @@ function sendRequestForRetry(requestId) {
             response = JSON.parse(xhr.responseText);
             console.log("response: " + JSON.stringify(response));
 
-            if(response.msg) {
+            if (response.msg) {
                 isResponsed.put(response.request_id, true);
                 addReceivedMessage(response.request_id, response.msg);
 
                 console.log('completed!');
-            }
-            else {
+            } else {
                 console.log('The request is not completed yet.');
 
                 getResponse(requestId);
@@ -654,8 +640,8 @@ function getHistory(userId, allowTime) {
             let history = JSON.parse(response['msg']);
             console.log("history: " + JSON.stringify(history));
 
-            for(let i=0; i<history.length; i++) {
-                if(history[i].type=='text') {
+            for (let i = 0; i < history.length; i++) {
+                if (history[i].type == 'text') {
                     // let timestr = history[i].request_time.substring(11, 19);
                     let requestId = history[i].request_id;
                     console.log("requestId: ", requestId);
@@ -669,11 +655,10 @@ function getHistory(userId, allowTime) {
                     addReceivedMessage(requestId, msg);
                 }
             }
-            if(history.length>=1) {
-                if(langstate=='korean') {
+            if (history.length >= 1) {
+                if (langstate == 'korean') {
                     addNotifyMessage("대화를 다시 시작하였습니다.");
-                }
-                else {
+                } else {
                     addNotifyMessage("Welcome back to the conversation");
                 }
                 chatPanel.scrollTop = chatPanel.scrollHeight;  // scroll needs to move bottom

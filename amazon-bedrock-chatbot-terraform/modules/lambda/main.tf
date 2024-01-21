@@ -31,6 +31,7 @@ module "lambda_chat_ws" {
 ###
 module "lambda_simple_ws" {
   source = "./simple-ws"
+  https_connection_url = var.https_connection_url
 }
 
 module "lambda_upload" {
@@ -55,6 +56,9 @@ module "lambda_delete_log" {
   call_log_table_name = var.call_log_table_name
 }
 
+###
+### For future use to hook some command when created.
+###
 #locals {
 #  update_function_cmd = <<EOF
 #    # Update the Lambda function that is needed.
@@ -73,3 +77,37 @@ module "lambda_delete_log" {
 #
 #  depends_on = [module.lambda_chat_ws]
 #}
+###
+### End of future use to hook some command when created.
+###
+
+###
+### Prompt API Lambda function.
+###
+module "layer" {
+  source = "terraform-aws-modules/lambda/aws"
+  version = "~> 5.0"
+  layer_name = "bedrock-layer"
+  description = "Lambda layer for Amazon Bedrock Integration"
+  compatible_runtimes = [local.python_runtime]
+  runtime = local.python_runtime
+  create_function = false
+  create_layer = true
+  source_path = [
+    {
+      path = "${path.module}/layer/python"
+      pip_requirements = true
+      prefix_in_zip = "python"
+    }
+  ]
+}
+
+module "lambda_prompt_api" {
+  source = "./prompt-api"
+  bedrock_region = var.bedrock_region
+  model_id = var.model_id
+  layers = [module.layer.lambda_layer_arn]
+}
+###
+### Enf of prompt API Lambda function.
+###

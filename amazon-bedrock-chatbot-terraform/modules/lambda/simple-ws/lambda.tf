@@ -43,7 +43,8 @@ module "lambda_simple_ws" {
   policy = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 
   environment_variables = {
-    connection_url: "https://8v6stbcr09.execute-api.ap-northeast-2.amazonaws.com/dev"
+#    connection_url: "https://8v6stbcr09.execute-api.ap-northeast-2.amazonaws.com/dev"
+    connection_url: var.https_connection_url
   }
 
   depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]

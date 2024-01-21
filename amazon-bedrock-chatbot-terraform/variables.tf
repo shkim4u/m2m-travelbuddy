@@ -4,12 +4,6 @@ variable "region" {
   default = "ap-northeast-2"
 }
 
-variable "bedrock_region" {
-  description = "Bedrock Region"
-  type = string
-  default = "us-east-1"
-}
-
 variable "stage" {
   description = "Stage"
   type = string
@@ -26,6 +20,12 @@ variable "project_name" {
   description = "Project Name"
   type = string
   default = "amazon-bedrock-chatbot"
+}
+
+variable "bedrock_region" {
+  description = "Bedrock Region"
+  type = string
+  default = "us-east-1"
 }
 
 variable "model_id" {

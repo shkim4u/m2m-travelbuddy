@@ -11,6 +11,10 @@ module "apigateway_rest" {
   delete_log_lambda_function_invoke_arn = var.delete_log_lambda_function_invoke_arn
   delete_log_lambda_function_name = var.delete_log_lambda_function_name
   role_arn = aws_iam_role.apigateway_role.arn
+  prompt_lambda_function_invoke_arn = var.prompt_api_lambda_function_invoke_arn
+  prompt_lambda_function_arn = var.prompt_api_lambda_function_arn
+  prompt_lambda_function_name = var.prompt_api_lambda_function_name
+  prompt_lambda_function_alias_name = var.prompt_api_lambda_function_alias_name
 }
 
 module "apigateway_ws" {

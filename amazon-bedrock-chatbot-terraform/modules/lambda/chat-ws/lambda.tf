@@ -92,6 +92,9 @@ module "lambda_chat_ws" {
     connection_url: var.https_connection_url
   }
 
+  tracing_mode = "Active"
+  attach_tracing_policy = true
+
   depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]
 }
 

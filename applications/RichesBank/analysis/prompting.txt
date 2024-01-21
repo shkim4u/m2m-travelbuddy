@@ -1,5 +1,4 @@
 1. Command Injection
-
 SAST 툴이 아래 자바 코드가 "CWE-78: Potential Command Injection" 취약점을 가지고 있다고 진단하였습니다:
 ---
             if(cmd!=null){

@@ -3,6 +3,17 @@ locals {
   model_id = var.model_id
 }
 
+module "lambda_chat_api_alias" {
+  source = "terraform-aws-modules/lambda/aws//modules/alias"
+
+  create        = true
+  refresh_alias = true
+
+  name = "live"
+
+  function_name = module.lambda_chat_api.lambda_function_name
+}
+
 module "lambda_chat_api" {
   source = "terraform-aws-modules/lambda/aws"
 
@@ -78,8 +89,17 @@ module "lambda_chat_api" {
     s3_bucket: var.s3_bucket_name,
     s3_prefix: var.s3_prefix,
     callLogTableName: var.call_log_table_name,
-    conversationMode: true
+    conversationMode: false
   }
+
+  tracing_mode = "Active"
+  attach_tracing_policy = true
+
+  # Publish a new version of the Lambda function
+  publish = true
+
+  # Apply provisioned concurrency to the published version
+  provisioned_concurrent_executions = 10
 
   depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]
 }

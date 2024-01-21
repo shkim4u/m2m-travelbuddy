@@ -10,6 +10,8 @@
    2. 어플리케이션 빌드 및 ECR 푸시
    3. ArgoCD를 통한 배포
 6. 취약점 수동 점검
+7. 발견한 취약점에 대해 필요한 조치 사항을 Generative AI를 통해 확인
+8. 생성형 AI를 통한 AppSec 활동 가속화 (Amazon Bedrock, WIP)
 
 ## 1. Cloud9 통합 환경 (IDE) 생성
 
@@ -371,4 +373,24 @@ cdk deploy GenerativeAiWebStack --require-approval=never
 ## 8. Security Hub 연동 (WIP)
 ```bash
 aws securityhub enable-security-hub
+```
+
+## 8. 생성형 AI를 통한 AppSec 활동 가속화 (Amazon Bedrock, WIP)
+### 8.1. Amazon Bedrock 설정
+TODO
+
+### 8.2. Amazon Bedrock Chatbot 자원 생성
+```bash
+cd ~/environment/appsec/amazon-bedrock-chatbot-terraform
+. ./configure.sh appsec ap-northeast-2
+
+# terraform init
+terraform init
+
+# terraform plan
+terraform plan
+
+# terraform apply
+terraform apply -var='bedrock_region=us-west-2' -auto-approve
+
 ```

@@ -285,7 +285,16 @@ resource "aws_api_gateway_deployment" "this" {
   description = local.stage_description
 
   triggers = {
-    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.this.body))
+#    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.this.body))
+    redeployment = sha1(join(",", tolist([
+      jsonencode(aws_api_gateway_rest_api.this.body),
+      jsonencode(aws_api_gateway_integration.chat),
+      jsonencode(aws_api_gateway_integration.query_result),
+      jsonencode(aws_api_gateway_integration.delete_log),
+      jsonencode(aws_api_gateway_integration.history),
+      jsonencode(aws_api_gateway_integration.prompt),
+      jsonencode(aws_api_gateway_integration.upload)
+    ])))
   }
 
   lifecycle {
@@ -362,3 +371,65 @@ resource "aws_lambda_permission" "allow_api_gateway_delete_log" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/delete"
 }
+
+###
+### Prompt API
+##
+resource "aws_api_gateway_resource" "prompt" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
+  path_part   = "prompt"
+}
+
+resource "aws_api_gateway_method" "prompt" {
+  rest_api_id   = aws_api_gateway_rest_api.this.id
+  resource_id   = aws_api_gateway_resource.prompt.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method_response" "prompt" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  resource_id = aws_api_gateway_resource.prompt.id
+  http_method = aws_api_gateway_method.prompt.http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+}
+
+resource "aws_api_gateway_integration" "prompt" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  resource_id = aws_api_gateway_resource.prompt.id
+  http_method = aws_api_gateway_method.prompt.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS"
+  passthrough_behavior = "WHEN_NO_TEMPLATES"
+
+#  uri                     = "${var.prompt_lambda_function_name}:${var.prompt_lambda_function_alias_name}"
+  uri                     = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:function:${var.prompt_lambda_function_name}:${var.prompt_lambda_function_alias_name}/invocations"
+
+  credentials = var.role_arn
+}
+
+resource "aws_api_gateway_integration_response" "prompt" {
+  rest_api_id = aws_api_gateway_rest_api.this.id
+  resource_id = aws_api_gateway_resource.prompt.id
+  http_method = aws_api_gateway_method.prompt.http_method
+  status_code = aws_api_gateway_method_response.prompt.status_code
+
+  depends_on = [aws_api_gateway_integration.prompt]
+}
+
+resource "aws_lambda_permission" "allows_api_gateway_prompt" {
+  statement_id  = "AllowExecutionFromSpecificAPIGateway-prompt"
+  action        = "lambda:InvokeFunction"
+  function_name = "${var.prompt_lambda_function_name}:${var.prompt_lambda_function_alias_name}"
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_deployment.this.execution_arn}/POST/prompt"
+}
+###
+### End of Prompt API
+###

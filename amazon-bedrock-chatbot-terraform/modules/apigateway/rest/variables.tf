@@ -10,3 +10,8 @@ variable "history_lambda_function_invoke_arn" {}
 variable "history_lambda_function_name" {}
 variable "delete_log_lambda_function_invoke_arn" {}
 variable "delete_log_lambda_function_name" {}
+
+variable "prompt_lambda_function_invoke_arn" {}
+variable "prompt_lambda_function_arn" {}
+variable "prompt_lambda_function_alias_name" {}
+variable "prompt_lambda_function_name" {}

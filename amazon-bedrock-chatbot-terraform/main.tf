@@ -19,6 +19,8 @@ module "lambda" {
   wss_connection_url = module.apigateway.wss_connection_url
   https_connection_url = module.apigateway.https_connection_url
   s3_prefix = var.s3_prefix
+  bedrock_region = var.bedrock_region
+  model_id = var.model_id
 }
 
 module "apigateway" {
@@ -36,6 +38,10 @@ module "apigateway" {
   # Function ARN for WebSocket API
   chat_ws_lambda_function_invoke_arn = module.lambda.chat_ws_lambda_function_invoke_arn
   chat_ws_lambda_function_name = module.lambda.chat_ws_lambda_function_name
+  prompt_api_lambda_function_invoke_arn = module.lambda.prompt_api_lambda_function_invoke_arn
+  prompt_api_lambda_function_arn = module.lambda.prompt_api_lambda_function_arn
+  prompt_api_lambda_function_name = module.lambda.prompt_api_lambda_function_name
+  prompt_api_lambda_function_alias_name = module.lambda.prompt_api_lambda_function_alias_name
 }
 
 #locals {

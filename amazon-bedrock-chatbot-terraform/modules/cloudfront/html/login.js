@@ -3,9 +3,9 @@ const userInput = document.querySelector('#userId');
 
 myForm.addEventListener('submit', onSubmit);
 
-// load userId 
-let userId = localStorage.getItem('userId'); // set userID if exists 
-if(userId != '') {
+// load userId
+let userId = localStorage.getItem('userId'); // set userID if exists
+if (userId != '') {
     userInput.value = userId;
 }
 
@@ -15,8 +15,8 @@ function onSubmit(e) {
     e.preventDefault();
     console.log(userInput.value);
 
-    localStorage.setItem('userId',userInput.value);
-    console.log('Save Profile> userId:', userInput.value)    
+    localStorage.setItem('userId', userInput.value);
+    console.log('Save Profile> userId:', userInput.value)
 
     window.location.href = "chat.html";
 }
