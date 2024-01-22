@@ -42,8 +42,16 @@ output "chat_ws_lambda_function_invoke_arn" {
   value = module.lambda_chat_ws.lambda_function_invoke_arn
 }
 
+output "chat_ws_lambda_function_arn" {
+  value = module.lambda_chat_ws.lambda_function_arn
+}
+
 output "chat_ws_lambda_function_name" {
   value = module.lambda_chat_ws.lambda_function_name
+}
+
+output "chat_ws_lambda_function_alias_name" {
+  value = module.lambda_chat_ws.lambda_function_alias_name
 }
 
 output "prompt_api_lambda_function_invoke_arn" {

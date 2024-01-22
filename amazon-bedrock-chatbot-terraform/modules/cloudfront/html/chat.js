@@ -41,10 +41,23 @@ function pong() {
 }
 
 function connect(endpoint, type) {
+    // Set "x-api-key" header when connecting.
     const ws = new WebSocket(endpoint);
+    // const ws = new WebSocket(endpoint, null, {
+    //    headers: {
+    //        ['x-api-key']: "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S"
+    //    }
+    // });
 
     // connection event
     ws.onopen = function () {
+        // payload = {
+        //     "headers": {
+        //         "x-api-key": "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S"
+        //     }
+        // }
+        // ws.send(payload);
+
         console.log('connected...');
         isConnected = true;
 
@@ -442,6 +455,10 @@ attachFile.addEventListener('click', function () {
             const xhr = new XMLHttpRequest();
 
             xhr.open("POST", uri, true);
+
+            // Set the "x-api-key" header
+            xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4 && xhr.status === 200) {
                     response = JSON.parse(xhr.responseText);
@@ -514,6 +531,10 @@ function sendRequest(text, requestId, requestTime) {
     retryNum.put(requestId, 12); // max 60s (5x12)
 
     xhr.open("POST", uri, true);
+
+    // Set the "x-api-key" header
+    xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             response = JSON.parse(xhr.responseText);
@@ -549,6 +570,10 @@ function sendRequestForSummary(object, requestId, requestTime) {
     retryNum.put(requestId, 60); // max 300s (5x60)
 
     xhr.open("POST", uri, true);
+
+    // Set the "x-api-key" header
+    xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             response = JSON.parse(xhr.responseText);
@@ -601,6 +626,10 @@ function sendRequestForRetry(requestId) {
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", uri, true);
+
+    // Set the "x-api-key" header
+    xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             response = JSON.parse(xhr.responseText);
@@ -634,6 +663,10 @@ function getHistory(userId, allowTime) {
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", uri, true);
+
+    // Set the "x-api-key" header
+    xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             let response = JSON.parse(xhr.responseText);
@@ -682,6 +715,10 @@ function deleteItems(userId) {
     const xhr = new XMLHttpRequest();
 
     xhr.open("POST", uri, true);
+
+    // Set the "x-api-key" header
+    xhr.setRequestHeader("x-api-key", "HZj9USwhbA6d75kmWpZ1N8IY2fBfkKIv4a3OEn5S");
+
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
             let response = JSON.parse(xhr.responseText);

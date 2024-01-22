@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo yum update -y
+sudo yum upgrade -y
+
 # 1. IDE IAM 설정 확인
 echo "1. Checking Cloud9 IAM role..."
 rm -vf ${HOME}/.aws/credentials
@@ -147,6 +150,25 @@ rm argocd-linux-amd64
 echo "11. Installing wscat and awscurl..."
 npm install -g wscat
 pip3 install awscurl
+
+eccho "12. Installing Python 3.11..."
+# Install Python 3.11:
+curl https://pyenv.run | bash
+exec $SHELL
+echo "Configure ~/.bash_profile as guided and restart the shell."
+
+# Install Dependencies for Python 3.11:
+sudo yum update -y
+sudo yum install -y gcc git zlib-devel openssl11-devel openssl libffi-devel bzip2 bzip2-devel ncurses-devel readline-devel xz-devel sqlite-devel
+
+# Install Python 3.11.7 using pyenv:
+pyenv install 3.11.7
+pyenv global 3.11.7
+
+# Refresh python version.
+echo "You may ignore if you see command not found error.
+hash -d python3
+hash -d python
 
 ## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc

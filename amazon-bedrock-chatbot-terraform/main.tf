@@ -5,6 +5,7 @@ module "cloudfront" {
 #  wss_connection_url = "<WebSocket URL (wss)>"
   rest_api_id = module.apigateway.rest_api_id
   rest_api_stage = module.apigateway.rest_api_stage
+  api_key = module.apigateway.api_key
 }
 
 module "dynamodb" {
@@ -38,6 +39,7 @@ module "apigateway" {
   # Function ARN for WebSocket API
   chat_ws_lambda_function_invoke_arn = module.lambda.chat_ws_lambda_function_invoke_arn
   chat_ws_lambda_function_name = module.lambda.chat_ws_lambda_function_name
+  chat_ws_lambda_function_alias_name = module.lambda.chat_ws_lambda_function_alias_name
   prompt_api_lambda_function_invoke_arn = module.lambda.prompt_api_lambda_function_invoke_arn
   prompt_api_lambda_function_arn = module.lambda.prompt_api_lambda_function_arn
   prompt_api_lambda_function_name = module.lambda.prompt_api_lambda_function_name

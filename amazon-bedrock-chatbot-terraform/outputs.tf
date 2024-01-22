@@ -21,3 +21,8 @@ output "rest_api_stage" {
   description = "The stage of the REST API"
   value = module.apigateway.rest_api_stage
 }
+
+output "api_key" {
+  description = "The API key of the REST and WebSocket API"
+  value = module.apigateway.api_key
+}

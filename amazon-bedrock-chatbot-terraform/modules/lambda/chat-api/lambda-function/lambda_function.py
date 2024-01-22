@@ -18,13 +18,13 @@ from langchain.chains import ConversationChain
 from langchain.memory import ConversationBufferMemory
 
 s3 = boto3.client('s3')
-s3_bucket = os.environ.get('s3_bucket') # bucket name
+s3_bucket = os.environ.get('s3_bucket')  # bucket name
 s3_prefix = os.environ.get('s3_prefix')
 callLogTableName = os.environ.get('callLogTableName')
 bedrock_region = os.environ.get('bedrock_region', 'us-west-2')
 modelId = os.environ.get('model_id', 'amazon.titan-tg1-large')
 print('model_id: ', modelId)
-conversationMode = os.environ.get('conversationMode', 'false')
+conversation_mode = os.environ.get('conversationMode', 'false')
 
 boto3_bedrock = boto3.client(
     service_name='bedrock-runtime',
@@ -33,31 +33,36 @@ boto3_bedrock = boto3.client(
 
 HUMAN_PROMPT = "\n\nHuman:"
 AI_PROMPT = "\n\nAssistant:"
+
+
 def get_parameter(modelId):
     if modelId == 'amazon.titan-tg1-large' or modelId == 'amazon.titan-tg1-xlarge':
         return {
-            "maxTokenCount":1024,
-            "stopSequences":[],
-            "temperature":0,
-            "topP":0.9
+            "maxTokenCount": 1024,
+            "stopSequences": [],
+            "temperature": 0,
+            "topP": 0.9
         }
     elif modelId == 'anthropic.claude-v1' or modelId == 'anthropic.claude-v2' or modelId == 'anthropic.claude-v2:1':
         return {
-            "max_tokens_to_sample":1024,
-            "temperature":0.1,
-            "top_k":250,
+            "max_tokens_to_sample": 1024,
+            "temperature": 0.1,
+            "top_k": 250,
             "top_p": 0.9,
             "stop_sequences": [HUMAN_PROMPT]
         }
+
+
 parameters = get_parameter(modelId)
 
 llm = Bedrock(
     model_id=modelId,
     client=boto3_bedrock,
-    #streaming=True,
+    # streaming=True,
     model_kwargs=parameters)
 
-map = dict() # Conversation
+map = dict()  # Conversation
+
 
 def get_prompt_template(query):
     # check korean
@@ -85,10 +90,11 @@ def get_prompt_template(query):
 
     return PromptTemplate.from_template(condense_template)
 
+
 # load documents from s3 for pdf and txt
 def load_document(file_type, s3_file_name):
     s3r = boto3.resource("s3")
-    doc = s3r.Object(s3_bucket, s3_prefix+'/'+s3_file_name)
+    doc = s3r.Object(s3_bucket, s3_prefix + '/' + s3_file_name)
 
     if file_type == 'pdf':
         contents = doc.get()['Body'].read()
@@ -103,14 +109,14 @@ def load_document(file_type, s3_file_name):
         contents = doc.get()['Body'].read().decode('utf-8')
 
     print('contents: ', contents)
-    new_contents = str(contents).replace("\n"," ")
+    new_contents = str(contents).replace("\n", " ")
     print('length: ', len(new_contents))
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000,
         chunk_overlap=100,
         separators=["\n\n", "\n", ".", " ", ""],
-        length_function = len,
+        length_function=len,
     )
 
     texts = text_splitter.split_text(new_contents)
@@ -118,39 +124,41 @@ def load_document(file_type, s3_file_name):
 
     return texts
 
+
 # load csv documents from s3
 def load_csv_document(s3_file_name):
     s3r = boto3.resource("s3")
-    doc = s3r.Object(s3_bucket, s3_prefix+'/'+s3_file_name)
+    doc = s3r.Object(s3_bucket, s3_prefix + '/' + s3_file_name)
 
-    lines = doc.get()['Body'].read().decode('utf-8').split('\n')   # read csv per line
+    lines = doc.get()['Body'].read().decode('utf-8').split('\n')  # read csv per line
     print('lins: ', len(lines))
 
     columns = lines[0].split(',')  # get columns
-    #columns = ["Category", "Information"]
-    #columns_to_metadata = ["type","Source"]
+    # columns = ["Category", "Information"]
+    # columns_to_metadata = ["type","Source"]
     print('columns: ', columns)
 
     docs = []
     n = 0
-    for row in csv.DictReader(lines, delimiter=',',quotechar='"'):
+    for row in csv.DictReader(lines, delimiter=',', quotechar='"'):
         # print('row: ', row)
-        #to_metadata = {col: row[col] for col in columns_to_metadata if col in row}
+        # to_metadata = {col: row[col] for col in columns_to_metadata if col in row}
         values = {k: row[k] for k in columns if k in row}
         content = "\n".join(f"{k.strip()}: {v.strip()}" for k, v in values.items())
         doc = Document(
             page_content=content,
             metadata={
                 'name': s3_file_name,
-                'row': n+1,
+                'row': n + 1,
             }
-            #metadata=to_metadata
+            # metadata=to_metadata
         )
         docs.append(doc)
-        n = n+1
+        n = n + 1
     print('docs[0]: ', docs[0])
 
     return docs
+
 
 def get_summary(texts):
     # check korean
@@ -159,7 +167,7 @@ def get_summary(texts):
     print('word_kor: ', word_kor)
 
     if word_kor:
-        #prompt_template = """\n\nHuman: 다음 텍스트를 간결하게 요약하세오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
+        # prompt_template = """\n\nHuman: 다음 텍스트를 간결하게 요약하세오. 텍스트의 요점을 다루는 글머리 기호로 응답을 반환합니다.
         prompt_template = """\n\nHuman: 다음 텍스트를 요약해서 500자 이내로 설명하세오.
 
         {text}
@@ -190,6 +198,7 @@ def get_summary(texts):
         # return summary[1:len(summary)-1]
         return summary
 
+
 def load_chatHistory(userId, allowTime, chat_memory):
     dynamodb_client = boto3.client('dynamodb')
 
@@ -214,27 +223,29 @@ def load_chatHistory(userId, allowTime, chat_memory):
 
             chat_memory.save_context({"input": text}, {"output": msg})
 
+
 def getAllowTime():
-    d = datetime.datetime.now() - datetime.timedelta(days = 2)
+    d = datetime.datetime.now() - datetime.timedelta(days=2)
     timeStr = str(d)[0:19]
-    print('allow time: ',timeStr)
+    print('allow time: ', timeStr)
 
     return timeStr
 
+
 def lambda_handler(event, context):
     print(event)
-    userId  = event['user_id']
+    userId = event['user_id']
     print('userId: ', userId)
-    requestId  = event['request_id']
+    requestId = event['request_id']
     print('requestId: ', requestId)
-    requestTime  = event['request_time']
+    requestTime = event['request_time']
     print('requestTime: ', requestTime)
-    type  = event['type']
+    type = event['type']
     print('type: ', type)
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, parameters, conversation, conversationMode, map, chat_memory
+    global modelId, llm, parameters, conversation, conversation_mode, map, chat_memory
 
     # create chat_memory
     if conversationMode == 'true':
@@ -281,16 +292,16 @@ def lambda_handler(event, context):
 
             if text == 'enableConversationMode':
                 conversationMode = 'true'
-                msg  = "Conversation mode is enabled"
+                msg = "Conversation mode is enabled"
             elif text == 'disableConversationMode':
                 conversationMode = 'false'
-                msg  = "Conversation mode is disabled"
+                msg = "Conversation mode is disabled"
             elif text == 'clearMemory':
                 chat_memory = ""
                 chat_memory = ConversationBufferMemory(human_prefix='Human', ai_prefix='Assistant')
                 map[userId] = chat_memory
                 print('initiate the chat memory!')
-                msg  = "The chat memory was intialized in this session."
+                msg = "The chat memory was intialized in this session."
             else:
                 if conversationMode == 'true':
                     conversation.prompt = get_prompt_template(text)
@@ -301,13 +312,13 @@ def lambda_handler(event, context):
                     chat_history_all = chats['history']
                     print('chat_history_all: ', chat_history_all)
                 else:
-                    msg = llm(HUMAN_PROMPT+text+AI_PROMPT)
-            #print('msg: ', msg)
+                    msg = llm(HUMAN_PROMPT + text + AI_PROMPT)
+            # print('msg: ', msg)
 
         elif type == 'document':
             object = body
 
-            file_type = object[object.rfind('.')+1:len(object)]
+            file_type = object[object.rfind('.') + 1:len(object)]
             print('file_type: ', file_type)
 
             if file_type == 'csv':
@@ -327,19 +338,19 @@ def lambda_handler(event, context):
         print('msg: ', msg)
 
         item = {
-            'user_id': {'S':userId},
-            'request_id': {'S':requestId},
-            'request_time': {'S':requestTime},
-            'type': {'S':type},
-            'body': {'S':body},
-            'msg': {'S':msg}
+            'user_id': {'S': userId},
+            'request_id': {'S': requestId},
+            'request_time': {'S': requestTime},
+            'type': {'S': type},
+            'body': {'S': body},
+            'msg': {'S': msg}
         }
 
         client = boto3.client('dynamodb')
         try:
-            resp =  client.put_item(TableName=callLogTableName, Item=item)
+            resp = client.put_item(TableName=callLogTableName, Item=item)
         except:
-            raise Exception ("Not able to write into dynamodb")
+            raise Exception("Not able to write into dynamodb")
 
         print('resp, ', resp)
 

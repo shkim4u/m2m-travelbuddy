@@ -1,3 +1,11 @@
+output "ws_api_id" {
+  value = aws_apigatewayv2_api.this.id
+}
+
+output "ws_api_stage_name" {
+  value = aws_apigatewayv2_stage.ws_api_stage.name
+}
+
 output "wss_connection_url" {
   description = "The URL of the websocket connection (WSS)"
   value = "${aws_apigatewayv2_api.this.api_endpoint}/${local.stage_name}/"

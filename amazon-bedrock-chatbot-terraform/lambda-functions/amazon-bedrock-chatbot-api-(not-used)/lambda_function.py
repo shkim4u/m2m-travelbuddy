@@ -24,7 +24,7 @@ callLogTableName = os.environ.get('callLogTableName')
 bedrock_region = os.environ.get('bedrock_region', 'us-west-2')
 modelId = os.environ.get('model_id', 'amazon.titan-tg1-large')
 print('model_id: ', modelId)
-conversationMode = os.environ.get('conversationMode', 'false')
+conversation_mode = os.environ.get('conversationMode', 'false')
 
 boto3_bedrock = boto3.client(
     service_name='bedrock-runtime',
@@ -234,7 +234,7 @@ def lambda_handler(event, context):
     body = event['body']
     print('body: ', body)
 
-    global modelId, llm, parameters, conversation, conversationMode, map, chat_memory
+    global modelId, llm, parameters, conversation, conversation_mode, map, chat_memory
 
     # create chat_memory
     if userId in map:

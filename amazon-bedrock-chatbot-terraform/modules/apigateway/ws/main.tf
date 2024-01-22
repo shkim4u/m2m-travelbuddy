@@ -11,7 +11,8 @@ resource "aws_apigatewayv2_integration" "ws_api_integration_connect" {
   description = "Integration for connect"
   connection_type = "INTERNET"
   integration_type          = "AWS_PROXY"
-  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+#  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+  integration_uri           = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:function:${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}/invocations"
   integration_method = "POST"
   credentials_arn           = var.role_arn
   passthrough_behavior      = "WHEN_NO_MATCH"
@@ -25,7 +26,8 @@ resource "aws_apigatewayv2_integration" "ws_api_integration_default" {
   description = "Integration for default"
   connection_type = "INTERNET"
   integration_type          = "AWS_PROXY"
-  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+#  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+  integration_uri           = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:function:${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}/invocations"
   integration_method = "POST"
   credentials_arn           = var.role_arn
   passthrough_behavior      = "WHEN_NO_MATCH"
@@ -39,7 +41,8 @@ resource "aws_apigatewayv2_integration" "ws_api_integration_disconnect" {
   description = "Integration for disconnect"
   connection_type = "INTERNET"
   integration_type          = "AWS_PROXY"
-  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+#  integration_uri           = var.chat_ws_lambda_function_invoke_arn
+  integration_uri           = "arn:aws:apigateway:${data.aws_region.current.name}:lambda:path/2015-03-31/functions/arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:function:${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}/invocations"
   integration_method = "POST"
   credentials_arn           = var.role_arn
   passthrough_behavior      = "WHEN_NO_MATCH"
@@ -186,7 +189,8 @@ resource "aws_apigatewayv2_stage" "ws_api_stage" {
 resource "aws_lambda_permission" "allow_api_gateway_any" {
   statement_id  = "AllowExecutionFromSpecificAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = var.chat_ws_lambda_function_name
+#  function_name = var.chat_ws_lambda_function_name
+  function_name = "${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}"
   principal     = "apigateway.amazonaws.com"
 #  source_arn    = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:${aws_apigatewayv2_api.this.id}/*/${aws_apigatewayv2_route.connect.route_key}"
 #  source_arn    = "${aws_apigatewayv2_stage.ws_api_stage.execution_arn}/*/*/*"
@@ -196,7 +200,8 @@ resource "aws_lambda_permission" "allow_api_gateway_any" {
 resource "aws_lambda_permission" "allow_api_gateway_connect" {
   statement_id  = "AllowExecutionFromSpecificAPIGateway-connect"
   action        = "lambda:InvokeFunction"
-  function_name = var.chat_ws_lambda_function_name
+#  function_name = var.chat_ws_lambda_function_name
+  function_name = "${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}"
   principal     = "apigateway.amazonaws.com"
 #  source_arn    = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:${aws_apigatewayv2_api.this.id}/*/${aws_apigatewayv2_route.connect.route_key}"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/$connect"
@@ -205,7 +210,8 @@ resource "aws_lambda_permission" "allow_api_gateway_connect" {
 resource "aws_lambda_permission" "allow_api_gateway_default" {
   statement_id  = "AllowExecutionFromSpecificAPIGateway-default"
   action        = "lambda:InvokeFunction"
-  function_name = var.chat_ws_lambda_function_name
+#  function_name = var.chat_ws_lambda_function_name
+  function_name = "${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}"
   principal     = "apigateway.amazonaws.com"
 #  source_arn    = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:${aws_apigatewayv2_api.this.id}/*/${aws_apigatewayv2_route.default.route_key}"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/$default"
@@ -214,7 +220,8 @@ resource "aws_lambda_permission" "allow_api_gateway_default" {
 resource "aws_lambda_permission" "allow_api_gateway_disconnect" {
   statement_id  = "AllowExecutionFromSpecificAPIGateway-disconnect"
   action        = "lambda:InvokeFunction"
-  function_name = var.chat_ws_lambda_function_name
+#  function_name = var.chat_ws_lambda_function_name
+  function_name = "${var.chat_ws_lambda_function_name}:${var.chat_ws_lambda_function_alias_name}"
   principal     = "apigateway.amazonaws.com"
 #  source_arn    = "arn:aws:execute-api:${data.aws_region.current.name}:${data.aws_caller_identity.this.account_id}:${aws_apigatewayv2_api.this.id}/*/${aws_apigatewayv2_route.disconnect.route_key}"
   source_arn    = "${aws_apigatewayv2_api.this.execution_arn}/*/$disconnect"

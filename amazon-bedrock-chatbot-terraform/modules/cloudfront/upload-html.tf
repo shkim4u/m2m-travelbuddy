@@ -7,7 +7,7 @@ locals {
       # sed is not compatible between MacOS and Linust: Linux uses -i, MacOS uses -i ''
       #sed -i 's/WSS_ENDPOINT/${var.wss_connection_url}/g' ${path.module}/html/chat.js
       # Cat all the contents and replace the string in one go
-      cat ${path.module}/html/chat-template.js | sed 's,WSS_ENDPOINT,${var.wss_connection_url},g' > ${path.module}/html/chat.js
+      cat ${path.module}/html/chat-template.js | sed 's,WSS_ENDPOINT,${var.wss_connection_url},g' | sed 's,YOUR_API_KEY_HERE,${var.api_key},g' > ${path.module}/html/chat.js
       cat ${path.module}/html/chat.js | grep "wss:"
       aws s3 sync ${path.module}/html s3://${aws_s3_bucket.this.bucket}
     EOT

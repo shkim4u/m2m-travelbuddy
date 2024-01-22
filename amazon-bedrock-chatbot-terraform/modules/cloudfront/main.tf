@@ -75,6 +75,11 @@ resource "aws_cloudfront_distribution" "this" {
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
+
+    custom_header {
+      name  = "x-api-key"
+      value = var.api_key
+    }
   }
   #<<
   #<< End of behavior for Chat REST API.
@@ -116,6 +121,11 @@ resource "aws_cloudfront_distribution" "this" {
       https_port             = 443
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
+    }
+
+    custom_header {
+      name  = "x-api-key"
+      value = var.api_key
     }
   }
   #<<
@@ -159,6 +169,11 @@ resource "aws_cloudfront_distribution" "this" {
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
+
+    custom_header {
+      name  = "x-api-key"
+      value = var.api_key
+    }
   }
   #<<
   #<< End of behavior for query result REST API.
@@ -201,6 +216,11 @@ resource "aws_cloudfront_distribution" "this" {
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
+
+    custom_header {
+      name  = "x-api-key"
+      value = var.api_key
+    }
   }
   #<<
   #<< End of behavior for history REST API.
@@ -242,6 +262,11 @@ resource "aws_cloudfront_distribution" "this" {
       https_port             = 443
       origin_protocol_policy = "https-only"
       origin_ssl_protocols   = ["TLSv1.2"]
+    }
+
+    custom_header {
+      name  = "x-api-key"
+      value = var.api_key
     }
   }
   #<<

@@ -24,6 +24,7 @@ resource "aws_api_gateway_method" "chat" {
   resource_id   = aws_api_gateway_resource.chat.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "chat" {
@@ -78,6 +79,7 @@ resource "aws_api_gateway_method" "upload" {
   resource_id   = aws_api_gateway_resource.upload.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "upload" {
@@ -132,6 +134,7 @@ resource "aws_api_gateway_method" "query_result" {
   resource_id   = aws_api_gateway_resource.query_result.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "query_result" {
@@ -185,6 +188,7 @@ resource "aws_api_gateway_method" "history" {
   resource_id   = aws_api_gateway_resource.history.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "history" {
@@ -239,6 +243,7 @@ resource "aws_api_gateway_method" "delete_log" {
   resource_id   = aws_api_gateway_resource.delete_log.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "delete_log" {
@@ -288,6 +293,12 @@ resource "aws_api_gateway_deployment" "this" {
 #    redeployment = sha1(jsonencode(aws_api_gateway_rest_api.this.body))
     redeployment = sha1(join(",", tolist([
       jsonencode(aws_api_gateway_rest_api.this.body),
+      jsonencode(aws_api_gateway_method.chat),
+      jsonencode(aws_api_gateway_method.query_result),
+      jsonencode(aws_api_gateway_method.delete_log),
+      jsonencode(aws_api_gateway_method.history),
+      jsonencode(aws_api_gateway_method.prompt),
+      jsonencode(aws_api_gateway_integration.upload),
       jsonencode(aws_api_gateway_integration.chat),
       jsonencode(aws_api_gateway_integration.query_result),
       jsonencode(aws_api_gateway_integration.delete_log),
@@ -386,6 +397,7 @@ resource "aws_api_gateway_method" "prompt" {
   resource_id   = aws_api_gateway_resource.prompt.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_method_response" "prompt" {

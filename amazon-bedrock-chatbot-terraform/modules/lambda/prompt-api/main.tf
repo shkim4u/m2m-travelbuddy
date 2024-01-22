@@ -41,10 +41,10 @@ module "lambda_prompt_api" {
   tracing_mode = "Active"
   attach_tracing_policy = true
 
-  # Publish a new version of the Lambda function
+  # Publish a new version of the Lambda function.
   publish = true
 
-  # Apply provisioned concurrency to the published version
+  # Apply provisioned concurrency to the published version.
   provisioned_concurrent_executions = 10
 
   # Add layers to the Lambda function.

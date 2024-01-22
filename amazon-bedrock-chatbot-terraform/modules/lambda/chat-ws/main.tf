@@ -95,6 +95,12 @@ module "lambda_chat_ws" {
   tracing_mode = "Active"
   attach_tracing_policy = true
 
+  # Publish a new version of the Lambda function.
+  publish = true
+
+  # Apply provisioned concurrency to the published version.
+  provisioned_concurrent_executions = 10
+
   depends_on = [null_resource.build_push_dkr_img, aws_ecr_repository.this]
 }
 
@@ -104,3 +110,22 @@ resource "aws_lambda_permission" "allow_api_gateway" {
   function_name = module.lambda_chat_ws.lambda_function_name
   principal     = "apigateway.amazonaws.com"
 }
+
+###
+### Alias.
+###
+module "lambda_chat_ws_alias" {
+  source = "terraform-aws-modules/lambda/aws//modules/alias"
+
+  create        = true
+  refresh_alias = true
+
+  function_version = module.lambda_chat_ws.lambda_function_version
+
+  name = "live"
+
+  function_name = module.lambda_chat_ws.lambda_function_name
+}
+###
+### End of Alias.
+###

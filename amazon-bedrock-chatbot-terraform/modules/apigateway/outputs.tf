@@ -15,5 +15,15 @@ output "rest_api_id" {
 
 output "rest_api_stage" {
   description = "The stage of the REST API"
-  value = module.apigateway_rest.rest_api_stage
+  value = module.apigateway_rest.rest_api_stage_name
+}
+
+output "rest_api_invoke_url" {
+  description = "The invoke URL of the REST API"
+  value = module.apigateway_rest.invoke_url
+}
+
+output "api_key" {
+  description = "The API key of the REST and WebSocket API"
+  value = aws_api_gateway_api_key.this.value
 }
