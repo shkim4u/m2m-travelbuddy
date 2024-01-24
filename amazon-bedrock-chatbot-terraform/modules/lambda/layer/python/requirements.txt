@@ -1,2 +1,0 @@
-# Required for notify lambda function.
-boto3
