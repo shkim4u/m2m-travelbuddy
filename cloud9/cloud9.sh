@@ -169,6 +169,7 @@ echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
 
 # Install Dependencies for Python 3.11:
 sudo yum update -y
+sudo yum remove -y openssl-devel
 sudo yum install -y gcc git zlib-devel openssl11-devel openssl libffi-devel bzip2 bzip2-devel ncurses-devel readline-devel xz-devel sqlite-devel
 
 # Install Python 3.11.7 using pyenv:
@@ -177,8 +178,8 @@ pyenv global 3.11.7
 
 # Refresh python version.
 echo "You may ignore if you see command not found error.
-hash -d python3
-hash -d python
+#hash -d python3
+#hash -d python
 
 ## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
