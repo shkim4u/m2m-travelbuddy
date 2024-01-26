@@ -157,6 +157,16 @@ curl https://pyenv.run | bash
 exec $SHELL
 echo "Configure ~/.bash_profile as guided and restart the shell."
 
+# Add pyenv to PATH:
+export PYENV_ROOT="$HOME/.pyenv"
+[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+
+# And add the following to ~/.bash_profile:
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bash_profile
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bash_profile
+echo 'eval "$(pyenv init -)"' >> ~/.bash_profile
+
 # Install Dependencies for Python 3.11:
 sudo yum update -y
 sudo yum install -y gcc git zlib-devel openssl11-devel openssl libffi-devel bzip2 bzip2-devel ncurses-devel readline-devel xz-devel sqlite-devel
