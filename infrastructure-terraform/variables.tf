@@ -45,5 +45,5 @@ variable "cicd_appsec_sec_slack_channel" {}
 
 variable "bedrock_region" {
   description = "Bedrock region to use"
-  default     = "us-east-1"
+  default     = "us-west-2"
 }

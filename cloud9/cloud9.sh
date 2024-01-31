@@ -177,11 +177,10 @@ pyenv install 3.11.7
 pyenv global 3.11.7
 
 # Refresh python version.
-echo "You may ignore if you see command not found error.
+#echo "You may ignore if you see command not found error."
 #hash -d python3
 #hash -d python
 
 ## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
 . ~/.bashrc
-
