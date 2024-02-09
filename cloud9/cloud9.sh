@@ -29,7 +29,8 @@ eksctl version
 
 ## 2.3. k9s 설치
 echo "2.3. Installing k9s..."
-curl -sL https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz | sudo tar xfz - -C /usr/local/bin
+#curl -sL https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz | sudo tar xfz - -C /usr/local/bin
+curl -sL https://github.com/derailed/k9s/releases/download/v0.31.8/k9s_Linux_amd64.tar.gz | sudo tar xfz - -C /usr/local/bin
 k9s version
 
 ## 2.4 Helm 설치
