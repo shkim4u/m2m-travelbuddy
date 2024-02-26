@@ -6,15 +6,13 @@ sudo yum upgrade -y
 # 1. IDE IAM 설정 확인
 echo "1. Checking Cloud9 IAM role..."
 rm -vf ${HOME}/.aws/credentials
-aws sts get-caller-identity --query Arn | grep cloud9-admin
+aws sts get-caller-identity --query Arn
 
 # 2. (Optional for Amazon EKS) EKS 관련 도구
-## 2.1. Kubectl
-# 설치
+## 2.1. Kubectl 설치
+# Refer to: https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/install-kubectl.html
 echo "2.1. Installing kubectl..."
-#sudo curl -o /usr/local/bin/kubectl  \
-#   https://s3.us-west-2.amazonaws.com/amazon-eks/1.27.1/2023-04-19/bin/linux/amd64/kubectl
-sudo curl -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.28.1/2023-09-14/bin/linux/amd64/kubectl
+sudo curl -o /usr/local/bin/kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.29.0/2024-01-04/bin/linux/amd64/kubectl
 
 # 실행 모드 변경
 sudo chmod +x /usr/local/bin/kubectl
@@ -85,76 +83,29 @@ yq --version
 echo "5.5. Installing bash-completion..."
 sudo yum install -y bash-completion
 
-## 6. Addition Cloud9 configurations.
-echo "6. Additional Cloud9 configurations..."
+## 6. [2023-12-06] CloudShell is now removed to reflect the license change of HashiCorp terraform, so manually install it.
+echo "6. Installing terraform..."
+rm -rf .tfenv
+rm -rf ~/bin
+git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+mkdir ~/bin
+ln -s ~/.tfenv/bin/* ~/bin/
+#tfenv install 1.6.6
+tfenv install latest
+tfenv use latest
+terraform --version
 
-echo "6.1. Configuring AWS_REGION..."
-export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
-
-echo "export AWS_REGION=${AWS_REGION}" | tee -a ~/.bash_profile
-
-aws configure set default.region ${AWS_REGION}
-
-# 확인
-aws configure get default.region
-
-echo "6.2. Configuring AWS ACCOUNT_ID..."
-export ACCOUNT_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId')
-
-echo "export ACCOUNT_ID=${ACCOUNT_ID}" | tee -a ~/.bash_profile
-
-## 7. Extend disk size.
-echo "7. Extending disk size..."
-echo "7.1. Checking disk size before extending..."
-df -h
-
-echo "7.2. Now extending the disk size..."
-curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cloud9/resize.sh | bash -s -- 100
-
-echo "7.3. Checking disk size with extension..."
-df -h
-
-## 8. Download cuDNN (CUDA Deep Neural Network Library) and install it.
-echo "8.1. Downloading cuDNN..."
-#curl -fsSL https://developer.download.nvidia.com/compute/cudnn/secure/8.1.1.33/cudnn-8.1.1.33-linux-x64-v8.1.1.33.tgz | tar -xz -C /usr/local
-export CUDNN_DOWNLOAD_URL="https://shkim4u-generative-ai.s3.ap-northeast-2.amazonaws.com/cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz"
-wget "${CUDNN_DOWNLOAD_URL}" -O cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
-tar -xvf cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
-
-echo "8.2. Installing cuDNN..."
-sudo mkdir -p /usr/local/cuda/include /usr/local/cuda/lib64
-sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include
-sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64
-sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
-
-# Load LD_LIBRARY_PATH
-# References
-# - https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/install-nvidia-driver.html
-# -https://repost.aws/ko/questions/QUBqYWuFr7SyC6P6Uae9LOww/sagemaker-g4-and-g5-instances-do-not-have-working-nvidia-drivers
-# - https://stackoverflow.com/questions/75614728/cuda-12-tf-nightly-2-12-could-not-find-cuda-drivers-on-your-machine-gpu-will
-# - https://arinzeakutekwe.medium.com/how-to-configure-nvidia-gpu-to-work-with-tensorflow-2-on-aws-sagemaker-1be98b9db464
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
-source ~/.bashrc
-/sbin/ldconfig -N -v $(sed 's/:/ /' <<< $LD_LIBRARY_PATH) 2>/dev/null
-
-echo "8.2. cuDNN installed!"
-
-## 9. [2023-12-06] Cloud9 is now removed to reflect the license change of HashiCorp terraform, so manually install it.
-echo "9. Installing terraform..."
-sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
-sudo yum -y install terraform
-
-echo "10. Installing ArooCD CLI..."
+echo "7. Installing ArooCD CLI..."
 # https://argo-cd.readthedocs.io/en/stable/cli_installation/
 curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
 sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 
-echo "11. Installing wscat and awscurl..."
+echo "8. Installing wscat and awscurl..."
 sudo npm install -g wscat
-#pip3 install awscurl
+pip3 install awscurl
 
-eccho "12. Installing Python 3.11..."
+eccho "9. Installing Python 3.11..."
 # Install Python 3.11:
 curl https://pyenv.run | bash
 exec $SHELL
@@ -184,7 +135,6 @@ pyenv global 3.11.7
 #hash -d python3
 #hash -d python
 
-## 99. awscurl for testing and AWS CLI Completer.
-pip3 install awscurl
+## 99. AWS CLI Completer.
 echo "complete -C '/usr/local/bin/aws_completer' aws" >> ~/.bashrc
 . ~/.bashrc
