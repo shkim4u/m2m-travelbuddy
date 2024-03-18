@@ -114,30 +114,40 @@ curl -fsSL https://raw.githubusercontent.com/shkim4u/kubernetes-misc/main/aws-cl
 echo "7.3. Checking disk size with extension..."
 df -h
 
-## 8. Download cuDNN (CUDA Deep Neural Network Library) and install it.
-echo "8.1. Downloading cuDNN..."
-#curl -fsSL https://developer.download.nvidia.com/compute/cudnn/secure/8.1.1.33/cudnn-8.1.1.33-linux-x64-v8.1.1.33.tgz | tar -xz -C /usr/local
-export CUDNN_DOWNLOAD_URL="https://shkim4u-generative-ai.s3.ap-northeast-2.amazonaws.com/cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz"
-wget "${CUDNN_DOWNLOAD_URL}" -O cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
-tar -xvf cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
+# Acquire the first argument as the "INSTALL_CUDA" flag.
+INSTALL_CUDA=${1:-"false"}
 
-echo "8.2. Installing cuDNN..."
-sudo mkdir -p /usr/local/cuda/include /usr/local/cuda/lib64
-sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include
-sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64
-sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
+# If the "INSTALL_CUDA" flag is set to "true", install CUDA and cuDNN.
+if [ "${INSTALL_CUDA}" = "true" ]; then
+    echo "Installing CUDA and cuDNN..."
+    ## 8. Download cuDNN (CUDA Deep Neural Network Library) and install it.
+    echo "8.1. Downloading cuDNN..."
+    #curl -fsSL https://developer.download.nvidia.com/compute/cudnn/secure/8.1.1.33/cudnn-8.1.1.33-linux-x64-v8.1.1.33.tgz | tar -xz -C /usr/local
+    export CUDNN_DOWNLOAD_URL="https://shkim4u-generative-ai.s3.ap-northeast-2.amazonaws.com/cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz"
+    wget "${CUDNN_DOWNLOAD_URL}" -O cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
+    tar -xvf cudnn-linux-x86_64-8.9.6.50_cuda12-archive.tar.xz
 
-# Load LD_LIBRARY_PATH
-# References
-# - https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/install-nvidia-driver.html
-# -https://repost.aws/ko/questions/QUBqYWuFr7SyC6P6Uae9LOww/sagemaker-g4-and-g5-instances-do-not-have-working-nvidia-drivers
-# - https://stackoverflow.com/questions/75614728/cuda-12-tf-nightly-2-12-could-not-find-cuda-drivers-on-your-machine-gpu-will
-# - https://arinzeakutekwe.medium.com/how-to-configure-nvidia-gpu-to-work-with-tensorflow-2-on-aws-sagemaker-1be98b9db464
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
-source ~/.bashrc
-/sbin/ldconfig -N -v $(sed 's/:/ /' <<< $LD_LIBRARY_PATH) 2>/dev/null
+    echo "8.2. Installing cuDNN..."
+    sudo mkdir -p /usr/local/cuda/include /usr/local/cuda/lib64
+    sudo cp cudnn-*-archive/include/cudnn*.h /usr/local/cuda/include
+    sudo cp -P cudnn-*-archive/lib/libcudnn* /usr/local/cuda/lib64
+    sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
 
-echo "8.2. cuDNN installed!"
+    # Load LD_LIBRARY_PATH
+    # References
+    # - https://docs.aws.amazon.com/ko_kr/AWSEC2/latest/UserGuide/install-nvidia-driver.html
+    # -https://repost.aws/ko/questions/QUBqYWuFr7SyC6P6Uae9LOww/sagemaker-g4-and-g5-instances-do-not-have-working-nvidia-drivers
+    # - https://stackoverflow.com/questions/75614728/cuda-12-tf-nightly-2-12-could-not-find-cuda-drivers-on-your-machine-gpu-will
+    # - https://arinzeakutekwe.medium.com/how-to-configure-nvidia-gpu-to-work-with-tensorflow-2-on-aws-sagemaker-1be98b9db464
+    echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}' >> ~/.bashrc
+    source ~/.bashrc
+    /sbin/ldconfig -N -v $(sed 's/:/ /' <<< $LD_LIBRARY_PATH) 2>/dev/null
+
+    echo "8.2. cuDNN installed!"
+else
+    echo "Skipping CUDA and cuDNN installation..."
+    exit 0
+fi
 
 ## 9. [2023-12-06] Cloud9 is now removed to reflect the license change of HashiCorp terraform, so manually install it.
 echo "9. Installing terraform..."
