@@ -146,7 +146,6 @@ if [ "${INSTALL_CUDA}" = "true" ]; then
     echo "8.2. cuDNN installed!"
 else
     echo "Skipping CUDA and cuDNN installation..."
-    exit 0
 fi
 
 ## 9. [2023-12-06] Cloud9 is now removed to reflect the license change of HashiCorp terraform, so manually install it.
