@@ -346,3 +346,10 @@ set-terraform-default-variables.sh
 
 amazon-bedrock-chatbot-terraform/builds
 !amazon-bedrock-chatbot-terraform/modules/cloudfront/html/*.js
+
+# [2024-04-16] Deprecated docs.
+*-deprecated.md
+
+# [2024-04-16] Exclude "TravelBuddy.zip" file from the ignored list.
+!TravelBuddy.zip
+infrastructure-terraform-deprecated

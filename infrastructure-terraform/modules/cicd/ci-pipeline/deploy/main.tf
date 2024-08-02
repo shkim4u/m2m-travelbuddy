@@ -15,7 +15,7 @@ resource "random_password" "argocd_admin_password" {
 resource "aws_secretsmanager_secret" "argocd_admin_password" {
   name = "${var.name}-${var.phase}-argocd-admin-password"
   recovery_window_in_days = 0
-  description = "ArgoCD Admin Password for ${var.name}-${var.phase}"
+  description = "ArgoCD Admin Password for ${var.name}-${var.phase} in EKS Cluster ${var.eks_cluster_name}"
 }
 
 #resource "aws_secretsmanager_secret_version" "argocd_admin_password" {
@@ -25,11 +25,11 @@ resource "aws_secretsmanager_secret" "argocd_admin_password" {
 
 # S3 bucket for the artifacts of the CoddeBuild project.
 #resource "aws_s3_bucket" "this" {
-#  bucket = "${var.name}-${var.phase}-deploy-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+#  bucket = "${var.name}-${var.phase}-deploy-${data.aws_caller_identity.current.account_id}"
 #  force_destroy = true
 #}
 
-# Role and permission for this.
+# Role and permission for deploy with ArgoCD.
 data "aws_iam_policy_document" "deploy_role_trust" {
   statement {
     effect = "Allow"

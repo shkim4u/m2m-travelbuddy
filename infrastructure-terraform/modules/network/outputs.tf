@@ -28,3 +28,17 @@ output "private_subnets_cidr_blocks" {
   value = module.vpc.private_subnets_cidr_blocks
 }
 
+output "nat_gateway_id_0" {
+    description = "NAT Gateway ID 0"
+    value = module.vpc.natgw_ids[0]
+}
+
+output "nat_gateway_id_1" {
+  description = "NAT Gateway ID 0"
+  value = module.vpc.natgw_ids[1]
+}
+
+output "nat_gateway_ids" {
+  description = "NAT Gateway IDs"
+  value = module.vpc.natgw_ids
+}

@@ -1,66 +1,65 @@
 # Application Modernization
 
 ## 변경 사항<br>
-***[2023-06-03]***
-1. RDS CloudFormation 템플릿 포함 (Include)
-2. FlightSpecial 마이크로서비스를 위한 빌드 파이프라인 추가
-   1. ECR 컨테이너 리포지터리
-   2. CodeCommit, CodeBuild, CodePipeline
-3. FlightSpecial 마이크로서비스를 위한 GitOps 배포 CodeCommit 리포지터리
-4. FlightSpecial Polyglot 데이터베이스를 위한 PostgreSQL 자원 생성 CDK Stack 추가
-
+| 일자         | 변경 내용 | 작성자 |
+|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----|
+| 2023-02-01 | 최초 작성  | 김상현 |
+| 2023-06-03 | - RDS CloudFormation 템플릿 포함 (Include)<br/>- FlightSpecial 마이크로서비스를 위한 빌드 파이프라인 추가 (ECR 리포지터리, CodeCommit/CodeBuild/CodePipeline)<br/>- FlightSpecial 마이크로서비스를 위한 GitOps 배포 CodeCommit 리포지터리<br/>- FlightSpecial Polyglot 데이터베이스를 위한 PostgreSQL 자원 생성 CDK Stack 추가 | 김상현 |
+| 2023-06-10 | 자원 배포 IaC 기본 코드 테라폼으로 변경 | 김상현 |
 
 ## Agenda
 
 - Sample Application 소개
 - Monolith - TravelBuddy 마이그레이션
-  - 이론: Monolith란?
+  - 이론: `Monolith`란?
   - 실습 환경 구성
-  - 실습 1: TravelBuddy 애플리케이션 컨테이너화
+  - 실습 1: `TravelBuddy` 애플리케이션 컨테이너화
   - 실습 2: Database 구성
-  - 실습 3: TravelBuddy 애플리케이션을 EKS에 배포
-- Microservice - HotelSpecial 애플리케이션
-  - 이론: Microservice란?
-  - 실습 B: Strangler Fig Pattern - FlightSpecial 애플리케이션을 분리
+  - 실습 3: `TravelBuddy` 애플리케이션을 EKS에 배포
+- `Microservice` 전환
+  - 토론: `Microservice`란?
+  - 토론: `Strangler Fig Pattern`
+  - 실습: `HotelSpecial` 애플리케이션 분리
+  - 실습 (Optional): `FlightSpecial` 애플리케이션 분리
 
-## "TravleBuddy" 소개
-"TravelBuddy"는 관광 및 여행 전문 서비스 회사로서 동명의 "TravelBuddy"라는 애플리케이션을 통해 다양한 관광, 여행, 숙박 관련 서비스를 제공하고 있습니다.<br>
+## ```TravleBuddy``` 소개
+`TravelBuddy`는 관광 및 여행 전문 서비스 회사로서 동명의 `TravelBuddy`라는 애플리케이션을 통해 다양한 관광, 여행, 숙박 관련 서비스를 제공하고 있습니다.<br>
 
-이 회사가 운영하는 "TravelBuddy" 애플리케이션은 사용자 친화적인 기능과 인터페이스를 통해 많은 고객을 유치함으로써 회사의 성장에 크게 기여하였습니다.<br>
-하지만 고객이 늘어나고 회사가 성장함에 따라 시스템에 발생하는 장애도 함께 증가하고 있으며, 유연하지 못한 시스템 구조로 인한 신규 서비스 출시 지연은 브지니스 민첩성마저 저하시키고 있습니다.<br>
+이 회사가 운영하는 `TravelBuddy` 애플리케이션은 사용자 친화적인 기능과 인터페이스를 통해 많은 고객을 유치함으로써 회사의 성장에 크게 기여하였습니다.<br>
+하지만 고객이 늘어나고 회사가 성장함에 따라 시스템에 발생하는 장애도 함께 증가하고 있으며, 유연하지 못한 시스템 구조로 인한 신규 서비스 출시 지연은 비지니스 민첩성마저 저하시키고 있습니다.<br>
 
-이 실습에서는 애플리케이션 현대화의 첫 번째 단계로서 기존 온프레미스 (On-Premise)에서 운영하던 가상의 웹 애플리케이션을 AWS 클라우드 환경으로 옮겨서 배포하고자 합니다.<br>
-현행 어플리케이션은 Java Spring Boot 기반으로 구현되어 있으며, 고객은 우선 컨테이너를 통한 Replatfom을 통하여 클라우드에서 기능이 잘 동작하는지 확인함으로써 클라우드 이전의 위험성을 줄이고 싶어 합니다.<br>
+이 실습에서는 애플리케이션 현대화의 첫 번째 단계로서 기존에 `온프레미스` (`On-Premise`)에서 운영하던 가상의 웹 애플리케이션을 AWS 클라우드 환경으로 옮겨서 배포하고자 합니다.<br>
+현행 어플리케이션은 `Java Spring Boot` 기반으로 구현되어 있으며, 고객은 우선 컨테이너를 활용한 `Replatfom`을 패턴을 활용하여 클라우드에서 기능이 잘 동작하는지 확인함으로써 클라우드 이전의 위험성을 줄이고 싶어 합니다.<br>
 그리고 이후 점진적으로 애플리케이션 현대화를 수행해 나갈 예정입니다.
 
-## TravelBuddy 마이그레이션
-이번 실습을 진행하면서 우리는 [TravelBuddy.zip](https://workshops.devax.academy/monoliths-to-microservices/module1/files/TravelBuddy.zip)라는 가상의 웹 애플리케이션을 활용하여 마이크로서비스 아키텍처로 전환하는 예제로 사용할 것입니다.
+## `TravelBuddy` 마이그레이션
+이번 실습을 진행하면서 우리는 [[TravelBuddy.zip]](prepare/TravelBuddy.zip) 파일을 통해 배포된 가상의 웹 애플리케이션을 활용하여 마이크로서비스 아키텍처로 전환하는 예제로 사용할 것입니다.
 
 ![travelbuddy.png](./docs/assets/travelbuddy.png)
 
-이 실습을 통해 다음의 Topic을 다룰 것입니다.
+이 실습을 통해 다음의 토픽을 다룰 것입니다.
 - AWS 환경에서 개발 및 배포 등의 작업을 수행하기 위해서 Cloud9을 사용
-- 1단계: 리플랫폼 (Replatform)
+- 1단계: `리플랫폼` (`Replatform`)
   - EKS 클러스터를 생성. 이 때 빌드/전달 (Build/Delivery) 파이프라인 및 배포 (Deploy) 파이프라인도 함께 생성
   - 위 두 파이프라인을 분리함으로써 Push 기반의 GitOps 체계 도입
     - (참고) [데브옵스의 확장 모델](https://www.samsungsds.com/kr/insights/gitops.html)
-  - Monolith인 TravelBuddy 애플리케이션을 컨테이너화하고 컨테이너 이미지를 ECR에 푸시
-- 2단계: 리팩터 (Refactor Piloting)
-  - Monolith 개념을 이해하고 TravelBuddy 애플리케이션을 분석하여 개선 방향을 검토
-  - Microservice 개념을 이해하고 HotelSpecial 애플리케이션을 통해 분리하는 과정을 체험
-  - (옵션) Pull 기반의 GitOps 구조를 구축 (ArgoCD)
-  - FlightSpecial 애플리케이션을 직접 개발하면서 학습 내용을 복습
+  - `Monolith`인 `TravelBuddy` 애플리케이션을 컨테이너화하고 컨테이너 이미지를 `Amazon ECR` 리포지터리에 푸시
+- 2단계: `리팩터` (`Refactor` Piloting)
+  - `Monolith` 개념을 이해하고 `TravelBuddy` 애플리케이션을 분석하여 개선 방향을 검토
+  - `Microservice` 개념을 이해하고 `HotelSpecial` 애플리케이션을 통해 분리하는 과정을 체험
+  - (옵션) Pull 기반의 `GitOps` 구조를 구축 (ArgoCD)
+  - `FlightSpecial` 애플리케이션을 직접 개발하면서 학습 내용을 복습
 
 또한 필요하다면 다음과 같은 주제를 함께 토론해 보면 좋을 것 같습니다.<br>
-- 도메인 주도 설계 (Domain-Driven Design)
-- Layered Architecture 및 SOLID 원칙
-- IRSA (IAM Role for Service Account)
+- `도메인 주도 설계` (`Domain-Driven Design`)
+- `Layered Architecture` 및 `SOLID` 원칙
+- `IRSA` (IAM Role for Service Account)
 
 ### 실습 환경 구성
-- 먼저 [Cloud9 환경 구성하기](./docs/cloud9-latest.md)를 합니다.
-- 다음으로 아래 방법 중 하나를 사용하여 EKS 클러스터를 생성합니다.
-  - [EKS Cluster를 생성 (CDK 사용)](./docs/eks-cluster-cdk.md)
-  - [EKS Cluster를 생성 (Terraform 사용)](./docs/eks-cluster-terraform.md)
+- 먼저 작업을 수행할 `Cloud9` 환경을 구성합니다.
+  - [[Cloud9 환경 구성하기]](./docs/cloud9-latest.md)
+- 다음으로 아래 방법 중 하나를 사용하여 `Amazon EKS` 클러스터를 생성합니다.
+  - [[`Amazon EKS` 클러스터 생성 (Terraform 사용)]](./docs/eks-cluster-terraform.md)
 
 ### 실습 1: TravelBuddy 애플리케이션 컨테이너화, 빌드 및 전달 (ECR 푸시)
 

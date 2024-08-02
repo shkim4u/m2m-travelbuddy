@@ -11,6 +11,69 @@ resource "aws_codecommit_repository" "application_source" {
 }
 
 ###
+### Build.
+###
+module "build_delivery" {
+  source = "./build-delivery"
+
+  name                        = var.name
+  phase                       = local.phase
+  pipeline_artifact_bucket_arn    = aws_s3_bucket.pipeline_artifact.arn
+  ecr_repository_url = var.ecr_repository_url
+  ecr_repository_arn = var.ecr_repository_arn
+}
+
+ module "post_process" {
+   source = "./post-process"
+   build_artifact_bucket_arn = module.build_delivery.build_artifact_bucket_arn
+   dev_slack_channel = var.dev_slack_channel
+   dev_slack_webhook_url = var.dev_slack_webhook_url
+   ecr_repository_arn = var.ecr_repository_arn
+   ecr_repository_url = var.dev_slack_webhook_url
+   eks_cluster_deploy_role_arn = var.eks_cluster_deploy_role_arn
+   eks_cluster_deploy_role_arn_staging = var.eks_cluster_deploy_role_arn_staging
+   eks_cluster_name = var.eks_cluster_name
+   eks_cluster_name_staging = var.eks_cluster_name_staging
+   name = var.name
+   phase = local.phase
+   pipeline_artifact_bucket_arn = aws_s3_bucket.pipeline_artifact.arn
+ }
+
+
+###
+### [2024-02-14] KSH: DAST (Dynamic Application Security Testing)를 위한 CodeBuild 프로젝트 추가.
+###
+module "dast" {
+  source = "./dast"
+
+  # Staging 환경에서 DAST를 수행한다.
+  eks_cluster_deploy_role_arn = var.eks_cluster_deploy_role_arn_staging
+  eks_cluster_name            = var.eks_cluster_name_staging
+  name = var.name
+  phase = local.phase
+  pipeline_artifact_bucket_arn = aws_s3_bucket.pipeline_artifact.arn
+  application_configuration_repo_url = var.application_configuration_repo_url_staging
+  ecr_repository_url = var.ecr_repository_url
+}
+
+###
+### Approval handler.
+###
+module "approval_handler" {
+  source = "./approval-handler"
+  aws_codepipeline_pipeline_name = local.aws_codepipeline_pipeline_name
+  build_artifact_bucket_arn = module.build_delivery.build_artifact_bucket_arn
+  manual_approval_action_name = local.manual_approval_action_name
+  manual_approval_stage_name = local.manual_approval_stage_name
+  name = var.name
+  phase = local.phase
+  pipeline_artifact_bucket_arn = aws_s3_bucket.pipeline_artifact.arn
+  post_process_artifact_bucket_arn = module.post_process.post_process_artifact_bucket_arn
+  sec_slack_channel = var.sec_slack_channel
+  sec_slack_webhook_url = var.sec_slack_webhook_url
+}
+
+###
 ### [2023-12-23] KSH: 배포 CodeBuild 프로젝트 모듈화
 ###
 module "deploy" {
@@ -25,490 +88,9 @@ module "deploy" {
   ecr_repository_url = var.ecr_repository_url
 }
 
-###
-### Begin of CodeBuild project, role and related permissions.
-###
-
-## 1. S3 bucket.
-resource "aws_s3_bucket" "build" {
-  bucket = "${var.name}-${local.phase}-build-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
-  force_destroy = true
-}
-
-## 2. IAM role and policies.
-data "aws_iam_policy_document" "build_role_trust" {
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["codebuild.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-data "aws_iam_policy_document" "build_role_policy" {
-  statement {
-    effect = "Allow"
-    actions = ["cloudformation:*", "iam:*", "ecr:GetAuthorizationToken"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-#      "s3:GetObject", "s3:GetObjectVersion", "s3:PutObject"
-      "s3:Abort*",
-      "s3:DeleteObject*",
-      "s3:GetBucket*",
-      "s3:GetObject*",
-      "s3:List*",
-      "s3:PutObject*",
-#      "s3:PutObjectLegalHold",
-#      "s3:PutObjectRetention",
-#      "s3:PutObjectTagging",
-#      "s3:PutObjectVersionTagging"
-    ]
-    resources = [
-      aws_s3_bucket.build.arn,
-      "${aws_s3_bucket.build.arn}/*",
-      aws_s3_bucket.pipeline_artifact.arn,
-      "${aws_s3_bucket.pipeline_artifact.arn}/*"
-    ]
-  }
-
-#  statement {
-#    effect = "Allow"
-#    actions = [
-#      "ecr:*"
-#    ]
-#    resources = [
-#      "*"
-#    ]
-#  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "ecr:GetDownloadUrlForLayer", "ecr:BatchGetImage",
-      "ecr:BatchCheckLayerAvailability", "ecr:PutImage",
-      "ecr:InitiateLayerUpload", "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload"
-    ]
-    resources = [var.ecr_repository_arn]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "airflow:CreateCliToken"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "rds:DescribeDBInstances",
-      "secretsmanager:ListSecrets"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "acm:ListCertificates"
-    ]
-    resources = ["*"]
-  }
-}
-
-# Role and permission for build.
-resource "aws_iam_role" "build" {
-  name = "${var.name}-${local.phase}-build-role"
-  assume_role_policy = data.aws_iam_policy_document.build_role_trust.json
-}
-
-resource "aws_iam_role_policy" "build" {
-  name = "${var.name}-${local.phase}-build-policy"
-  role = aws_iam_role.build.id
-  policy = data.aws_iam_policy_document.build_role_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "build" {
-  for_each = {
-    for k, v in {
-      AWSLambda_FullAccess = "${local.iam_role_policy_prefix}/AWSLambda_FullAccess",
-      AmazonAPIGatewayAdministrator = "${local.iam_role_policy_prefix}/AmazonAPIGatewayAdministrator",
-      AmazonSSMFullAccess = "${local.iam_role_policy_prefix}/AmazonSSMFullAccess",
-      AWSCodeCommitPowerUser = "${local.iam_role_policy_prefix}/AWSCodeCommitPowerUser",
-    }: k => v if true
-  }
-
-  policy_arn = each.value
-  role = aws_iam_role.build.name
-}
-
-#---
-
-# For post process.
-resource "aws_s3_bucket" "post_process" {
-  bucket = "${var.name}-${local.phase}-post-process-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
-  force_destroy = true
-}
-
-## 2. IAM role and policies.
-data "aws_iam_policy_document" "post_process_role_trust" {
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["codebuild.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-data "aws_iam_policy_document" "post_process_role_policy" {
-  statement {
-    effect = "Allow"
-    actions = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:Abort*",
-      "s3:DeleteObject*",
-      "s3:GetBucket*",
-      "s3:GetObject*",
-      "s3:List*",
-      "s3:PutObject*",
-    ]
-    resources = [
-      aws_s3_bucket.build.arn,
-      "${aws_s3_bucket.build.arn}/*",
-      aws_s3_bucket.post_process.arn,
-      "${aws_s3_bucket.post_process.arn}/*",
-      aws_s3_bucket.pipeline_artifact.arn,
-      "${aws_s3_bucket.pipeline_artifact.arn}/*"
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "secretsmanager:ListSecrets"
-    ]
-    resources = ["*"]
-  }
-}
-
-# For post process.
-resource "aws_s3_bucket" "approval_handler" {
-  bucket = "${var.name}-${local.phase}-approval-handler-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
-  force_destroy = true
-}
-
-data "aws_iam_policy_document" "approval_handler_role_trust" {
-  statement {
-    effect = "Allow"
-    principals {
-      type        = "Service"
-      identifiers = ["codebuild.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-data "aws_iam_policy_document" "approval_handler_role_policy" {
-  statement {
-    effect = "Allow"
-    actions = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = ["codepipeline:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:Abort*",
-      "s3:DeleteObject*",
-      "s3:GetBucket*",
-      "s3:GetObject*",
-      "s3:List*",
-      "s3:PutObject*",
-    ]
-    resources = [
-      aws_s3_bucket.build.arn,
-      "${aws_s3_bucket.build.arn}/*",
-      aws_s3_bucket.post_process.arn,
-      "${aws_s3_bucket.post_process.arn}/*",
-      aws_s3_bucket.approval_handler.arn,
-      "${aws_s3_bucket.approval_handler.arn}/*",
-      aws_s3_bucket.pipeline_artifact.arn,
-      "${aws_s3_bucket.pipeline_artifact.arn}/*"
-    ]
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "secretsmanager:ListSecrets"
-    ]
-    resources = ["*"]
-  }
-}
-
-# Role and permission policy for post-process.
-resource "aws_iam_role" "post_process" {
-  name = "${var.name}-${local.phase}-post-process-role"
-  assume_role_policy = data.aws_iam_policy_document.post_process_role_trust.json
-}
-
-resource "aws_iam_role_policy" "post_process" {
-  name = "${var.name}-${local.phase}-post-process-policy"
-  role = aws_iam_role.post_process.id
-  policy = data.aws_iam_policy_document.post_process_role_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "post_process" {
-  for_each = {
-    for k, v in {
-      AmazonBedrockFullAccess = "${local.iam_role_policy_prefix}/AmazonBedrockFullAccess"
-    }: k => v if true
-  }
-
-  policy_arn = each.value
-  role = aws_iam_role.post_process.name
-}
-
-# Role and permission policy for approval handler.
-resource "aws_iam_role" "approval_handler" {
-  name = "${var.name}-${local.phase}-approval-handler-role"
-  assume_role_policy = data.aws_iam_policy_document.approval_handler_role_trust.json
-}
-
-resource "aws_iam_role_policy" "approval_handler" {
-  name = "${var.name}-${local.phase}-approval-handler-policy"
-  role = aws_iam_role.approval_handler.id
-  policy = data.aws_iam_policy_document.approval_handler_role_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "approval_handler" {
-  for_each = {
-    for k, v in {
-      AmazonBedrockFullAccess = "${local.iam_role_policy_prefix}/AmazonBedrockFullAccess"
-    }: k => v if true
-  }
-
-  policy_arn = each.value
-  role = aws_iam_role.approval_handler.name
-}
-
-## 3. CodeBuild.
-resource "aws_codebuild_project" "build" {
-  name = "${var.name}-${local.phase}-build"
-  service_role = aws_iam_role.build.arn
-
-  artifacts {
-    # 만약 Build Spec에서 정의되는 Artifact 이름을 유효하게 하고, S3 Prefix 및 객체 이름을 지정할 수 잏게 하려면 "S3" 타입으로 지정하고,
-    # Artifact Namespace Type을 "BUILD_ID"로 지정한다.
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
-    type = "CODEPIPELINE"
-  }
-
-  cache {
-    type = "LOCAL"
-    modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
-  }
-
-  environment {
-    compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:7.0"
-    type = "LINUX_CONTAINER"
-    privileged_mode = true
-    environment_variable {
-      name = "ECR_REPO_URI"
-      value = var.ecr_repository_url
-    }
-    environment_variable {
-      name  = "WEIGHTED_ERRORS"
-      value = "10"
-    }
-    environment_variable {
-      name  = "WEIGHTED_WARNINGS"
-      value = "3"
-    }
-    environment_variable {
-      name  = "WEIGHTED_NOTES"
-      value = "1"
-    }
-    environment_variable {
-      name  = "LOC_SCALER"
-      value = "1000"
-    }
-    environment_variable {
-      name  = "NVS_THRESHOLD"
-      value = "10"
-    }
-  }
-
-  source {
-    type = "CODEPIPELINE"
-    buildspec = "buildspec.yaml"  # CDK: buildspec.yml, Terraform: buildspec.yaml
-  }
-
-  description = "Build project for ${var.name}-${local.phase}"
-}
-
-resource "aws_codebuild_project" "post_process" {
-  name = "${var.name}-${local.phase}-post-process"
-  service_role = aws_iam_role.post_process.arn
-
-  artifacts {
-    # 만약 Build Spec에서 정의되는 Artifact 이름을 유효하게 하고, S3 Prefix 및 객체 이름을 지정할 수 잏게 하려면 "S3" 타입으로 지정하고,
-    # Artifact Namespace Type을 "BUILD_ID"로 지정한다.
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
-    type = "CODEPIPELINE"
-  }
-
-  cache {
-    type = "LOCAL"
-    modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
-  }
-
-  environment {
-    compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:7.0"
-    type = "LINUX_CONTAINER"
-    privileged_mode = true
-
-    environment_variable {
-      name = "DEV_SLACK_WEBHOOK_URL"
-      value = var.dev_slack_webhook_url
-    }
-
-    environment_variable {
-      name = "DEV_SLACK_CHANNEL"
-      value = var.dev_slack_channel
-    }
-
-    environment_variable {
-      name  = "DEV_SLACK_SEND_BATCH_SIZE"
-      value = "1"
-    }
-
-    environment_variable {
-      name = "MOCK_BEDROCK"
-      value = "false"
-    }
-
-    environment_variable {
-      name  = "BEDROCK_REGION"
-      value = var.bedrock_region
-    }
-  }
-
-  source {
-    type = "CODEPIPELINE"
-    buildspec = "postprocess.yaml"
-  }
-
-  description = "Post process project for ${var.name}-${local.phase}"
-}
-
-resource "aws_codebuild_project" "approval_handler" {
-  name = "${var.name}-${local.phase}-approval-handler"
-  service_role = aws_iam_role.approval_handler.arn
-
-  artifacts {
-    # 만약 Build Spec에서 정의되는 Artifact 이름을 유효하게 하고, S3 Prefix 및 객체 이름을 지정할 수 잏게 하려면 "S3" 타입으로 지정하고,
-    # Artifact Namespace Type을 "BUILD_ID"로 지정한다.
-    # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
-    type = "CODEPIPELINE"
-  }
-
-  cache {
-    type = "LOCAL"
-    modes = ["LOCAL_DOCKER_LAYER_CACHE", "LOCAL_SOURCE_CACHE"]
-  }
-
-  environment {
-    compute_type = "BUILD_GENERAL1_LARGE"
-    image = "aws/codebuild/standard:7.0"
-    type = "LINUX_CONTAINER"
-    privileged_mode = true
-
-    environment_variable {
-      name = "SEC_SLACK_WEBHOOK_URL"
-      value = var.sec_slack_webhook_url
-    }
-
-    environment_variable {
-      name = "SEC_SLACK_CHANNEL"
-      value = var.sec_slack_channel
-    }
-
-    environment_variable {
-      name  = "SEC_SLACK_SEND_BATCH_SIZE"
-      value = "1"
-    }
-
-    environment_variable {
-      name = "AUTO_APPROVE_BY_NVS"
-      value = "true"
-    }
-
-    environment_variable {
-      name = "PIPELINE_NAME"
-      value = local.aws_codepipeline_pipeline_name
-    }
-
-    environment_variable {
-      name = "STAGE_NAME"
-      value = local.manual_approval_stage_name
-    }
-
-    environment_variable {
-      name = "ACTION_NAME"
-      value = local.manual_approval_action_name
-    }
-
-    environment_variable {
-      name  = "NVS_THRESHOLD"
-      value = "10"
-    }
-  }
-
-  source {
-    type = "CODEPIPELINE"
-    buildspec = "approval-handler.yaml"
-  }
-
-  description = "Approval handler project for ${var.name}-${local.phase}"
-}
-
-###
-### End of of CodeBuild project, role and related permissions.
-###
-
 ## S3 bucket for CodePipeline artifact.
 resource "aws_s3_bucket" "pipeline_artifact" {
-  bucket = "pipeline-artifact-${var.name}-${local.phase}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  bucket = "ppln-artifact-${var.name}-${local.phase}-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
 }
 
@@ -641,8 +223,10 @@ resource "aws_codepipeline" "pipeline" {
       output_artifacts = ["BuildOutput"]
       run_order = 1
 
+      namespace = "Build"
+
       configuration = {
-        ProjectName = aws_codebuild_project.build.id
+        ProjectName = module.build_delivery.codebuild_project_id
       }
     }
   }
@@ -665,7 +249,54 @@ resource "aws_codepipeline" "pipeline" {
       run_order = 1
 
       configuration = {
-        ProjectName = aws_codebuild_project.post_process.id
+        ProjectName = module.post_process.codebuild_project_id
+        EnvironmentVariables = jsonencode([
+          {
+            name = "IMAGE_TAG"
+            # Refer to: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-variables.html
+            value = "#{Build.IMAGE_TAG}"
+            type = "PLAINTEXT"
+          },
+          {
+            name = "COMMIT_ID"
+            value = "#{Build.COMMIT_ID}"
+            type = "PLAINTEXT"
+          }
+        ])
+      }
+    }
+  }
+
+  # [2024-02-14] DAST (Dynamic Application Security Testing)를 위한 Stage 추가.
+  stage {
+    name = "DAST_Stage"
+    action {
+      name = "DAST_Action"
+      category = "Build"
+      owner = "AWS"
+      provider = "CodeBuild"
+      version = "1"
+
+      input_artifacts = ["SourceOutput", "BuildOutput"]
+      output_artifacts = ["DASTOutput"]
+      run_order = 1
+
+      configuration = {
+        ProjectName = module.dast.codebuild_project_id
+        PrimarySource = "SourceOutput"
+        EnvironmentVariables = jsonencode([
+          {
+            name = "IMAGE_TAG"
+            # Refer to: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-variables.html
+            value = "#{Build.IMAGE_TAG}"
+            type = "PLAINTEXT"
+          },
+          {
+            name = "COMMIT_ID"
+            value = "#{Build.COMMIT_ID}"
+            type = "PLAINTEXT"
+          }
+        ])
       }
     }
   }
@@ -691,13 +322,14 @@ resource "aws_codepipeline" "pipeline" {
       provider = "CodeBuild"
       version = "1"
 
-      input_artifacts = ["BuildOutput", "PostProcessOutput"]
+      # TODO: Perform stop or go also with DAST result.
+      input_artifacts = ["BuildOutput", "PostProcessOutput", "DASTOutput"]
       output_artifacts = ["ApprovalHandlerOutput"]
       run_order = 1
 
       # Set primary source artifact as the first input artifact.
       configuration = {
-        ProjectName = aws_codebuild_project.approval_handler.id
+        ProjectName = module.approval_handler.codebuild_project_id
         PrimarySource = "BuildOutput"
       }
     }
@@ -718,6 +350,19 @@ resource "aws_codepipeline" "pipeline" {
       configuration = {
         ProjectName = module.deploy.codebuild_project_id
         PrimarySource = "BuildOutput"
+        EnvironmentVariables = jsonencode([
+          {
+            name = "IMAGE_TAG"
+            # Refer to: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-variables.html
+            value = "#{Build.IMAGE_TAG}"
+            type = "PLAINTEXT"
+          },
+          {
+            name = "COMMIT_ID"
+            value = "#{Build.COMMIT_ID}"
+            type = "PLAINTEXT"
+          }
+        ])
       }
     }
   }

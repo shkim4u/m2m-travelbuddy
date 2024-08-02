@@ -1,7 +1,9 @@
+##############################
+# Lookup host and token data #
+##############################
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
-
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
@@ -24,6 +26,9 @@ provider "helm" {
   }
 }
 
+# Kubectl provider is not provided by the official HashiCorp. It is a community provider.
+# So, if you use this inside the child module, then it should be defined in itw own provider block.
+# Refer to: https://discuss.hashicorp.com/t/terraform-cloud-workspace-error-while-installing-hashicorp-kubectl-provider-registry/21437
 provider "kubectl" {
   apply_retry_count      = 5
   host                   = module.eks.cluster_endpoint

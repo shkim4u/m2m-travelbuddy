@@ -6,9 +6,8 @@
 - (Optional) 콘솔 권한 추가하기
 - 현재의 아키텍처 리뷰
 
-## 테라폼을 사용하여 EKS 클러스터 생성하기
-우리는 이미 앞선 과정에서 CDK를 사용하여 Amazon EKS를 생성하는 과정을 배웠습니다.<br>
-이번에는 이러한 내용을 포함하고 있는 테라폼 IaC 코드를 사용하여 EKS 클러스터를 배포하고 이후 과정으로 진행할 준비를 하고자 합니다.<br>
+## 1. 테라폼을 사용하여 EKS 클러스터 생성하기
+`IaC (Infrastructure as Code)` 도구인 `테라폼`을 사용하여 `Amazon EKS` 클러스터를 배포하고 이후 과정으로 진행할 준비를 하고자 합니다.<br>
 - 테라폼의 장점 
   - 자원 관리를 적절한 추상화 수준에서 정의하고 통제할 수 있는 설정 언어 지원 (HCL)
   - IaC 코드, 상태 파일, 실제 자원을 일치시키기 위하여 최선의 노력 (Best Effort)
@@ -21,12 +20,11 @@
 
 아래 명령어를 통해, 클러스터를 배포합니다. 30 ~ 40분 정도 소요됩니다.<br>
 
-- (참고) ```~/environment/m2m-travelbuddy/infrastructure-terraform/modules/eks/main.tf``` 파일 5라인 근방에서 EKS Admin Role을 확인해 봅니다. 우리는 이 정보를 사용하여 ```aws_auth``` ConfigMap의 동작 양상을 한번 살펴볼 것입니다. (혹시 강사가 언급하는 것을 깜빡한다면 알려주세요~^^)
-    ![EKS Admin User and Role](./assets/terraform-eks-admin-role.png)
+- (참고) 우리가 테라폼을 통해 자원을 배포하는 사용하는 `Cloud9`의 IAM 주체 (Principal)는 기본적으로 `Amazon EKS` 클러스터에 접근할 권한이 없을 수 있습니다. 시간이 허락한다면 `kubectl`이나 `AWS 콘솔`에서 IAM 주체가 `쿠버네테스` API 서버에 접근하기 위하여 필요한 사항을 살펴볼 것입니다. (혹시 강사가 언급하는 것을 깜빡한다면 알려주세요~^^)
 
-- (참고) 설정하지 않아도 EKS 클러스터 생성 후에 kubectl로 접근할 수 있습니다. 방법은?
+- (토론) `Amazon EKS` 클러스터가 생성된 후 특별한 설정을 하지 않아도 `kubectl`을 사용하여 클러스터에 접근할 수 있습니다. 이유는 무엇일까요?
 
-아래 명령을 실행하여 Day 1 자원을 생성하기에 앞서 몇몇 ALB (ArgoCD, Argo Rollouts 등)에서 사용하기 위한 Amazon Certificate Manager (ACM) 사설 (Private) CA를 생성하고 Self-signed Root CA 인증서를 설치합니다.<br>
+본격적으로 자원을 생성하기 앞서, 우선 아래 명령을 실행하여 몇몇 ALB (어플리케이션, ArgoCD, Argo Rollouts 등)에서 사용하기 위한 `Amazon Certificate Manager` (ACM) 사설 (Private) CA를 생성하고 Self-signed Root CA 인증서를 설치합니다.<br>
 
 ```bash
 hash -d aws
@@ -36,7 +34,11 @@ cd ~/environment/m2m-travelbuddy/infrastructure-terraform
 # 1. Configure Terraform workspace and Private Certificate Authority.
 . ./configure.sh travelbuddy-prod ap-northeast-2
 
-echo $TF_VAR_ca_arn
+env | grep TF_VAR
+cat <<EOF >> terraform.tfvars
+ca_arn = "${TF_VAR_ca_arn}"
+eks_cluster_production_name = "${TF_VAR_eks_cluster_production_name}"
+eks_cluster_staging_name = "${TF_VAR_eks_cluster_staging_name}"
 ```
 
 위와 같이 수행하면 ACM에 사설 CA가 생성되는데 강사와 함께 ACM 콘솔로 이동하여 Private CA를 한번 살펴봅니다.<br>

@@ -163,7 +163,7 @@ echo "11. Installing wscat and awscurl..."
 npm install -g wscat
 #pip3 install awscurl
 
-eccho "12. Installing Python 3.11..."
+echo "12. Installing Python 3.11..."
 # Install Python 3.11:
 curl https://pyenv.run | bash
 exec $SHELL

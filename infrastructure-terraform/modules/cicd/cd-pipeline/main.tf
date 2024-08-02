@@ -1,7 +1,16 @@
-## CodeCommit repository.
+### GitOps CodeCommit repository (Production).
 resource "aws_codecommit_repository" "configuration_source" {
   repository_name = "${var.name}-configuration"
   description = "Configuration source code repository for ${var.name}"
+}
+
+###
+### GitOps CodeCommit repository (Staging).
+### ArgoCO를 활용한 Pull 기반 GitOps에서만 사용되므로 추가적인 리소스 생성은 필요하지 않음.
+###
+resource "aws_codecommit_repository" "configuration_source_staging" {
+  repository_name = "${var.name}-configuration-staging"
+  description = "Configuration source code repository for ${var.name} (staging)"
 }
 
 ###
@@ -10,7 +19,7 @@ resource "aws_codecommit_repository" "configuration_source" {
 
 ## 1. S3 bucket.
 resource "aws_s3_bucket" "deploy" {
-  bucket = "${var.name}-${local.phase}-deploy-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  bucket = "${var.name}-${local.phase}-deploy-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
 }
 
@@ -166,7 +175,8 @@ resource "aws_codebuild_project" "deploy" {
 
 ## S3 bucket for CodePipeline artifact.
 resource "aws_s3_bucket" "pipeline_artifact" {
-  bucket = "pipeline-artifact-${var.name}-${local.phase}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.name}"
+  # Ensure bucket name length less than or equal to 63 characters.
+  bucket = "ppln-artifact-${var.name}-${local.phase}-${data.aws_caller_identity.current.account_id}"
   force_destroy = true
 }
 
