@@ -58,9 +58,9 @@ rm -rf aws awscliv2.zip
 
 ## 4. Upgrade AWS CDK.
 echo "4. Upgrading AWS CDK..."
-npm uninstall -g aws-cdk
+sudo npm uninstall -g aws-cdk
 sudo rm -rf $(which cdk)
-npm install -g aws-cdk
+sudo npm install -g aws-cdk
 cdk --version
 
 ## 5. Installing Misc.
@@ -72,7 +72,7 @@ sudo yum install -y session-manager-plugin.rpm
 rm -rf session-manager-plugin.rpm
 
 echo "5.2. Installing AWS Cloud9 CLI..."
-npm install -g c9
+sudo npm install -g c9
 
 echo "5.3. Installing jq..."
 sudo yum install -y jq
@@ -160,7 +160,7 @@ sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
 rm argocd-linux-amd64
 
 echo "11. Installing wscat and awscurl..."
-npm install -g wscat
+sudo npm install -g wscat
 #pip3 install awscurl
 
 echo "12. Installing Python 3.11..."

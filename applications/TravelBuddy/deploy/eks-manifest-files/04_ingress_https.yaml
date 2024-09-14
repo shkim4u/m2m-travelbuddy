@@ -23,5 +23,5 @@ spec:
             backend:
               service:
                 name: "travelbuddy-service"
-                port:
+                port:x
                   number: 80
