@@ -1,6 +1,8 @@
 #!/bin/bash
 
 CLOUD9_INSTANCE_TYPE=$1
+# 인수로 주어진 VPC ID가 없으면 기본 VPC ID를 사용.
+VPC_ID=${2:-$(aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text)}
 
 # IAM User 생성.
 aws iam create-user --user-name admin
@@ -30,7 +32,10 @@ aws iam add-role-to-instance-profile --role-name AWSCloud9SSMAccessRole --instan
 
 # 기본 VPC 조회
 #export VPC_ID=`aws ec2 describe-vpcs --query "Vpcs[?isDefault==true].VpcId" --output text`
-export VPC_ID=`aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text` && echo $VPC_ID
+#export VPC_ID=`aws ec2 describe-vpcs --filter "Name=isDefault,Values=true" --query "Vpcs[0].VpcId" --output text` && echo $VPC_ID
+
+# VPC ID 출력
+echo $VPC_ID
 
 # Region 조회
 export AWS_REGION=`aws ec2 describe-availability-zones --output text --query "AvailabilityZones[0].[RegionName]"` && echo $AWS_REGION

@@ -365,6 +365,13 @@ module "karpenter" {
 
   cluster_name = module.eks.cluster_name
   enable_irsa = true
+  iam_policy_statements = [
+    {
+      effect    = "Allow"
+      actions   = ["iam:PassRole"]
+      resources = ["*"]
+    },
+  ]
   enable_pod_identity = true
   irsa_namespace_service_accounts = ["karpenter:${local.karpenter_service_account_name}"]
   irsa_oidc_provider_arn = module.eks.oidc_provider_arn
