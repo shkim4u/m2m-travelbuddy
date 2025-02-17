@@ -89,7 +89,26 @@ sudo yum install -y bash-completion
 echo "6. Additional Cloud9 configurations..."
 
 echo "6.1. Configuring AWS_REGION..."
-export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+#export AWS_REGION=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region')
+VERSIONID=$(awk /VERSION_ID=/ /etc/os-release |cut -d \" -f 2)
+
+#if [[ "$VERSIONID" == "2023" || "$VERSIONID" == "22.04" ]]; then
+#  # Get the METADATA INSTANCE V2 token
+#  TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+#  # Get the ID of the environment host Amazon EC2 instance.
+#  export INSTANCEID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id 2> /dev/null)
+#  export AWS_REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/' 2> /dev/null)
+#else
+#  # Get the ID of the environment host Amazon EC2 instance.
+#  export INSTANCEID=$(curl http://169.254.169.254/latest/meta-data/instance-id 2> /dev/null)
+#  export AWS_REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/' 2> /dev/null)
+#fi
+
+# Get the METADATA INSTANCE V2 token
+TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+# Get the ID of the environment host Amazon EC2 instance.
+export INSTANCEID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id 2> /dev/null)
+export AWS_REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/' 2> /dev/null)
 
 echo "export AWS_REGION=${AWS_REGION}" | tee -a ~/.bash_profile
 
@@ -99,7 +118,8 @@ aws configure set default.region ${AWS_REGION}
 aws configure get default.region
 
 echo "6.2. Configuring AWS ACCOUNT_ID..."
-export ACCOUNT_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId')
+#export ACCOUNT_ID=$(curl -s 169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.accountId')
+export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
 echo "export ACCOUNT_ID=${ACCOUNT_ID}" | tee -a ~/.bash_profile
 
